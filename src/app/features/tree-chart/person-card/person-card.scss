@@ -75,7 +75,8 @@
   font-family: var(--font-sans);
 }
 
-/* How the person is related to whoever the tree is centred on. */
+/* How the person is related to whoever the tree is centred on. The card is sized to fit it,
+   so the letter spacing is also in CARD_METRICS.kin.spacing (state/card-metrics.ts). */
 .kin {
   fill: var(--t-kin);
   font-family: var(--font-sc);

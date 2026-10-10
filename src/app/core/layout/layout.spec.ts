@@ -66,6 +66,19 @@ function pathPoints(d: string, steps = 24): Pt[] {
   return out;
 }
 
+function expectLinesClearOfCards(result: LayoutResult): void {
+  const paths = [
+    ...result.connectors.flatMap((c) => (['square', 'curved'] as const).flatMap((style) => connectorPaths(c, style).map((p) => p.d))),
+    ...result.links.map(linkPath),
+  ];
+  for (const d of paths) {
+    for (const pt of pathPoints(d)) {
+      const behind = result.cards.find((c) => pt.x > c.x + 0.5 && pt.x < c.x + c.w - 0.5 && pt.y > c.y + 0.5 && pt.y < c.y + c.h - 0.5);
+      expect(behind?.personId, `${d} at ${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).toBeUndefined();
+    }
+  }
+}
+
 function expectNoOverlaps(result: LayoutResult, gap = 1): void {
   const byRow = new Map<number, LayoutResult['cards']>();
   for (const c of result.cards) byRow.set(c.y, [...(byRow.get(c.y) ?? []), c]);
@@ -122,16 +135,7 @@ describe('layout', () => {
       });
 
       it('never runs a line behind a card', () => {
-        const paths = [
-          ...result.connectors.flatMap((c) => (['square', 'curved'] as const).flatMap((style) => connectorPaths(c, style).map((p) => p.d))),
-          ...result.links.map(linkPath),
-        ];
-        for (const d of paths) {
-          for (const pt of pathPoints(d)) {
-            const behind = result.cards.find((c) => pt.x > c.x + 0.5 && pt.x < c.x + c.w - 0.5 && pt.y > c.y + 0.5 && pt.y < c.y + c.h - 0.5);
-            expect(behind?.personId, `${d} at ${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).toBeUndefined();
-          }
-        }
+        expectLinesClearOfCards(result);
       });
     });
   }
@@ -211,6 +215,21 @@ describe('layout', () => {
         .sort((a, b) => a.x - b.x)
         .map((c) => c.personId);
     for (const row of first.rows) expect(order(second, row.y)).toEqual(order(first, row.y));
+  });
+
+  it('makes room for a card made wider', () => {
+    const doc = fixtures['sample']();
+    const result = computeLayout(doc, COMFORTABLE_LAYOUT, undefined, new Map([['I14', 260]]));
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+    expect(card('I14').w).toBe(260);
+    expect(card('I11').w).toBe(COMFORTABLE_LAYOUT.cardWidth);
+    expectNoOverlaps(result);
+    expectLinesClearOfCards(result);
+    // Simon and Ruth's marker stays in the gap between their cards; their children hang from it.
+    const union = result.unions.find((u) => u.familyId === 'F5')!;
+    const [left, right] = [card('I11'), card('I14')].sort((a, b) => a.x - b.x);
+    expect(union.cx).toBeCloseTo((left.x + left.w + right.x) / 2, 5);
+    expect(result.connectors.find((c) => c.familyId === 'F5')!.stem.x).toBeCloseTo(union.cx, 5);
   });
 
   it('uses the card size and gaps it is given', () => {

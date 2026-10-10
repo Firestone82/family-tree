@@ -62,6 +62,8 @@ const GUTTER = 64;
 const UNION_LABEL_GAP = 15;
 /** Room the sex symbol takes from the first line of a card. */
 const SYMBOL_ROOM = 14;
+/** A card grows at most to this many times its width to fit a relationship name; beyond, the name is shortened. */
+const MAX_CARD_STRETCH = 2;
 const DASH: Record<string, string> = { adopted: '5 4', foster: '1.2 3.6', step: '9 4', unknown: '2 4' };
 
 export function renderPoster(input: PosterInput): PosterResult {
@@ -87,8 +89,25 @@ export function renderPoster(input: PosterInput): PosterResult {
   const births = new Map(doc.people.map((p) => [p.id, birthSurname(fullIndex, p, language.surnameFor)]));
   const surnames = new Map(doc.people.map((p) => [p.id, surnameLinesIn(language, p, births.get(p.id))]));
 
+  const measure = (t: string, f: FontSpec) => input.measure(t, cssFont(f)) + (f.letterSpacing ?? 0) * f.size * Math.max(0, Array.from(t).length - 1);
+  const fit = (t: string, f: FontSpec, max: number) => fitText(t, f, max, measure);
+
+  // Relationship names, as seen from the person in the middle; their twins are named as such.
+  const kin: ReadonlyMap<string, Kin> = centerId ? kinship(fullIndex, centerId) : new Map();
+  const twins = centerId ? birthGroupOf(input.doc, centerId) : undefined;
+  const bornWith = new Map(twins ? twins.memberIds.filter((m) => m !== centerId).map((m) => [m, twins.memberIds.length]) : []);
+  const relations = new Map(doc.people.map((p) => [p.id, settings.showRelationships ? kinLabel(language, kin.get(p.id), p.sex, bornWith.get(p.id)) : '']));
+
   // Cards: every card has the same lines, so rows line up.
   const card = theme.card;
+  // The sex symbol sits in the top right corner; the first line stops short of it.
+  const symbolRoom = settings.showSex ? SYMBOL_ROOM : 0;
+  // A relationship name that does not fit makes its card wider.
+  const widths = new Map<string, number>();
+  for (const [id, relation] of relations) {
+    const needed = Math.ceil(card.textX + measure(relation, card.kin) + symbolRoom + card.padRight);
+    if (relation && needed > card.width) widths.set(id, Math.min(needed, card.width * MAX_CARD_STRETCH));
+  }
   const lines = presentLines(
     theme,
     settings,
@@ -97,27 +116,19 @@ export function renderPoster(input: PosterInput): PosterResult {
   const cardHeight = cardHeightFor(theme, lines);
   let options: LayoutOptions = { ...COMFORTABLE_LAYOUT, ...theme.spacing, cardWidth: card.width, cardHeight };
   const layoutWith = (o: LayoutOptions) => {
-    const l = computeLayout(doc, o);
+    const l = computeLayout(doc, o, undefined, widths);
     return theme.flow === 'up' ? flipLayout(l) : l;
   };
   let layout = layoutWith(options);
 
-  const measure = (t: string, f: FontSpec) => input.measure(t, cssFont(f)) + (f.letterSpacing ?? 0) * f.size * Math.max(0, Array.from(t).length - 1);
-  const fit = (t: string, f: FontSpec, max: number) => fitText(t, f, max, measure);
-
-  const kin: ReadonlyMap<string, Kin> = centerId ? kinship(fullIndex, centerId) : new Map();
-  const textWidth = card.width - card.textX - card.padRight;
-  // The sex symbol sits in the top right corner; the first line stops short of it.
-  const symbolRoom = settings.showSex ? SYMBOL_ROOM : 0;
-  // Twins of the person in the middle are named as such.
-  const twins = centerId ? birthGroupOf(input.doc, centerId) : undefined;
-  const bornWith = new Map(twins ? twins.memberIds.filter((m) => m !== centerId).map((m) => [m, twins.memberIds.length]) : []);
   const texts = new Map<string, CardText>();
   for (const p of doc.people) {
+    const textWidth = (widths.get(p.id) ?? card.width) - card.textX - card.padRight;
     const place = p.birth?.place ?? p.death?.place ?? '';
     const names = surnames.get(p.id) ?? { surname: p.name.surname.trim(), birth: '' };
+    const relation = relations.get(p.id) ?? '';
     texts.set(p.id, {
-      kin: settings.showRelationships ? fit(kinLabel(language, kin.get(p.id), p.sex, bornWith.get(p.id)), card.kin, textWidth - symbolRoom) : '',
+      kin: relation ? fit(relation, card.kin, textWidth - symbolRoom) : '',
       given: fit(p.name.given.trim() || language.unnamed, card.given, textWidth - (settings.showRelationships ? 0 : symbolRoom)),
       surname: fit(names.surname, card.surname, textWidth),
       birth: fit(names.birth, card.birth, textWidth),

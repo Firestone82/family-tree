@@ -68,7 +68,8 @@ export function treeShape(layout: LayoutResult, index: TreeIndex, focusIds: read
   const present = focusIds.filter((id) => cardOf.has(id));
   if (!present.length) return null;
 
-  const S = layout.cards[0].w;
+  // The usual card size sets the scale; a card made wider for a long relationship name does not.
+  const S = Math.min(...layout.cards.map((c) => c.w));
   const H = layout.cards[0].h;
   const b = layout.bounds;
   const room = options.room ?? { x: b.x - S, y: b.y - H * 1.6, w: b.w + S * 2, h: b.h + H * 3.2 };

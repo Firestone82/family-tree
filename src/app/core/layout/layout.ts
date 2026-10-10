@@ -102,14 +102,21 @@ const ENDED_REASONS = new Set(['divorce', 'separation', 'annulment']);
  * Lays out a whole document. `hint` maps person ids to their x position in the
  * previous layout; when given, the previous left-to-right order is kept unless a
  * different order has fewer crossings, so small edits do not reshuffle the chart.
+ * `widths` gives some people a card wider than `options.cardWidth`, for a
+ * relationship name that would not fit otherwise.
  */
-export function computeLayout(doc: TreeDocument, options: LayoutOptions = COMFORTABLE_LAYOUT, hint?: ReadonlyMap<string, number>): LayoutResult {
+export function computeLayout(
+  doc: TreeDocument,
+  options: LayoutOptions = COMFORTABLE_LAYOUT,
+  hint?: ReadonlyMap<string, number>,
+  widths?: ReadonlyMap<string, number>,
+): LayoutResult {
   const index = new TreeIndex(doc);
   const components = orderComponents(index, doc.meta.homePersonId);
   const parts: ComponentLayout[] = [];
   let offset = 0;
   for (const people of components) {
-    const part = new ComponentLayout(people, index, options, doc.meta.homePersonId, hint);
+    const part = new ComponentLayout(people, index, options, doc.meta.homePersonId, hint, widths);
     part.run();
     part.shift(offset - part.minX());
     offset = part.maxX() + options.componentGap;
@@ -153,9 +160,22 @@ class ComponentLayout {
     private readonly o: LayoutOptions,
     private readonly homeId: string | undefined,
     private readonly hint?: ReadonlyMap<string, number>,
+    private readonly widths?: ReadonlyMap<string, number>,
   ) {
     this.W = o.cardWidth;
     this.Gp = o.partnerGap;
+  }
+
+  /** A person's card width: the usual one, or wider for a long relationship name. */
+  widthOf(personId: string): number {
+    return Math.max(this.W, this.widths?.get(personId) ?? this.W);
+  }
+
+  /** Where the card of the block's member `i` starts, from the block's left edge. */
+  memberLeft(item: Item, i: number): number {
+    let x = 0;
+    for (let k = 0; k < i; k++) x += this.widthOf(item.members[k]) + this.Gp;
+    return x;
   }
 
   run(): void {
@@ -544,7 +564,7 @@ class ComponentLayout {
       for (const group of groups.values()) {
         group.sort((a, b) => this.index.order(a) - this.index.order(b));
         const members = arrangeBlock(group, adjacency);
-        const width = members.length * this.W + (members.length - 1) * this.Gp;
+        const width = members.reduce((sum, m) => sum + this.widthOf(m), 0) + (members.length - 1) * this.Gp;
         const item = this.newItem('block', r, width, this.index.order(group[0]));
         item.members = members;
         for (const m of members) this.blockOf.set(m, item);
@@ -669,8 +689,8 @@ class ComponentLayout {
   }
 
   memberOffset(item: Item, personId: string): number {
-    const i = item.members.indexOf(personId);
-    return Math.max(0, i) * (this.W + this.Gp) + this.W / 2;
+    const i = Math.max(0, item.members.indexOf(personId));
+    return this.memberLeft(item, i) + this.widthOf(item.members[i]) / 2;
   }
 
   /** Index of the gap (between member g and g + 1) holding a couple's marker, or -1. */
@@ -701,7 +721,7 @@ class ComponentLayout {
 
   private computeJunctionOffset(item: Item, f: Family): number {
     const g = this.junctionGap(item, f);
-    if (g >= 0) return (g + 1) * this.W + g * this.Gp + this.Gp / 2;
+    if (g >= 0) return this.memberLeft(item, g) + this.widthOf(item.members[g]) + this.Gp / 2;
     const inBlock = f.partners.filter((p) => item.members.includes(p));
     if (inBlock.length) {
       let deepest = inBlock[0];
@@ -1308,7 +1328,6 @@ function assignTracks(intervals: Interval[]): { track: Map<string, number>; coun
 // ---------------------------------------------------------------------------
 
 function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
-  const W = o.cardWidth;
   const H = o.cardHeight;
   const R = Math.max(0, ...parts.map((p) => p.rows.length));
 
@@ -1375,7 +1394,7 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
     for (const item of part.items) {
       if (item.kind === 'block') {
         item.members.forEach((id, i) => {
-          const card: LayoutCard = { personId: id, x: item.x + i * (W + o.partnerGap), y: rowY[item.rank], w: W, h: H, rank: item.rank };
+          const card: LayoutCard = { personId: id, x: item.x + part.memberLeft(item, i), y: rowY[item.rank], w: part.widthOf(id), h: H, rank: item.rank };
           cards.push(card);
           cardOf.set(id, card);
           ranks.set(id, item.rank);
@@ -1414,7 +1433,7 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
       for (const link of primary) {
         const card = cardOf.get(link.childId);
         if (!card) continue;
-        const target: Pt = { x: card.x + W / 2, y: card.y };
+        const target: Pt = { x: card.x + card.w / 2, y: card.y };
         const chain = part.chains.get(chainKey(f.id, link.childId));
         if (!chain) {
           drops.push({ childId: link.childId, relation: link.relation, x: target.x, points: [target] });
@@ -1447,7 +1466,7 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
         relation: link.relation,
         from: from.stem,
         clearY: from.clearY,
-        to: { x: card.x + W / 2, y: card.y },
+        to: { x: card.x + card.w / 2, y: card.y },
       });
     }
   }
@@ -1492,7 +1511,6 @@ function buildUnion(
   rowY: number[],
   rowH: number[],
 ): LayoutUnion | undefined {
-  const W = o.cardWidth;
   const H = o.cardHeight;
   const ended = !!f.end?.reason && ENDED_REASONS.has(f.end.reason);
   const base = { familyId: f.id, kind: f.kind, ended };
@@ -1508,7 +1526,7 @@ function buildUnion(
   if (partnerCards.length === 1) {
     if (!hasChildren) return undefined;
     const c = partnerCards[0];
-    return { ...base, mode: 'single', cx: c.x + W / 2, cy: c.y + H, line: [], rank: c.rank };
+    return { ...base, mode: 'single', cx: c.x + c.w / 2, cy: c.y + H, line: [], rank: c.rank };
   }
   if (partnerCards.length !== 2) return undefined;
 
@@ -1517,9 +1535,9 @@ function buildUnion(
     const deep = a.rank > b.rank ? a : b;
     const high = deep === a ? b : a;
     const deepOnRight = deep.x > high.x;
-    const from: Pt = { x: deepOnRight ? high.x + W : high.x, y: high.y + H / 2 };
-    const to: Pt = { x: deepOnRight ? deep.x : deep.x + W, y: deep.y + H / 2 };
-    return { ...base, mode: 'split', cx: deep.x + W / 2, cy: deep.y + H, line: [from, to], rank: deep.rank };
+    const from: Pt = { x: deepOnRight ? high.x + high.w : high.x, y: high.y + H / 2 };
+    const to: Pt = { x: deepOnRight ? deep.x : deep.x + deep.w, y: deep.y + H / 2 };
+    return { ...base, mode: 'split', cx: deep.x + deep.w / 2, cy: deep.y + H, line: [from, to], rank: deep.rank };
   }
 
   const item = part.blockOf.get(f.partners[0])!;
@@ -1534,7 +1552,7 @@ function buildUnion(
   let line: Pt[];
   if (j === i + 1) {
     line = [
-      { x: left.x + W, y: midY },
+      { x: left.x + left.w, y: midY },
       { x: right.x, y: midY },
     ];
   } else {
@@ -1550,10 +1568,10 @@ function buildUnion(
         { x: sx, y: liftY },
         { x: jx, y: liftY },
         { x: jx, y: midY },
-        { x: left.x + W, y: midY },
+        { x: left.x + left.w, y: midY },
       ];
     } else {
-      const sx = left.x + W - BRIDGE_INSET;
+      const sx = left.x + left.w - BRIDGE_INSET;
       line = [
         { x: sx, y: left.y },
         { x: sx, y: liftY },

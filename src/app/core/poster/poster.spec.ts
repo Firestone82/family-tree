@@ -68,6 +68,14 @@ describe('printed page', () => {
     expect(result.svg).toContain('>roz. Nováková<');
   });
 
+  it('makes a card wider for a relationship name that does not fit', () => {
+    const cs = { ...doc, view: { ...doc.view, language: 'cs' } };
+    // Seen from Luca, Ruth is his uncle Simon's former wife: too long for the usual card.
+    const result = renderPoster({ doc: cs, settings: settings({ centerId: 'I23' }), measure });
+    expect(result.svg).toContain('>Bývalá manželka strýce<');
+    expect(result.svg).not.toContain('Bývalá manželka str…');
+  });
+
   it('can turn a layout upside down for styles that grow upwards', () => {
     const layout = computeLayout(doc);
     const flipped = flipLayout(layout);

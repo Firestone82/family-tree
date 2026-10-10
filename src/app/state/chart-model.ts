@@ -34,11 +34,15 @@ export interface CardLabel {
 /** Room the sex symbol takes from the first line of a card, and the focus mark from the last. */
 export const CORNER_ROOM = 16;
 
+/** A card grows at most to this many times the usual width to fit its relationship name; beyond, the name is shortened. */
+const MAX_CARD_STRETCH = 2;
+
 /**
  * Everything the chart draws, derived from the store: the layout, colours,
  * relationship names and card labels. The layout is only recomputed when the
  * shape of the tree changes, not when someone edits a name or a date, or when
- * the tree is centred on someone else.
+ * the tree is centred on someone else (unless a relationship name then needs
+ * a wider card).
  */
 @Injectable({ providedIn: 'root' })
 export class ChartModel {
@@ -100,10 +104,39 @@ export class ChartModel {
     const options = this.options();
     const prev = this.previous;
     const hint = prev && prev.loadId === s.loadId ? new Map(prev.result.cards.map((c) => [c.personId, c.x + c.w / 2])) : undefined;
-    const result = computeLayout(s.doc, options, hint);
+    const result = computeLayout(s.doc, options, hint, this.cardWidths());
     this.previous = { result, loadId: s.loadId };
     return result;
   });
+
+  /** How each person is related to the one in the middle, as their card says: "Bývalá manželka strýce". */
+  private readonly relations = computed<ReadonlyMap<string, string>>(() => {
+    if (!this.view().showRelationships) return new Map();
+    const lang = this.language();
+    const kin = this.kin();
+    const bornWith = this.focusBornWith();
+    return new Map(this.store.doc().people.map((p) => [p.id, kinLabel(lang, kin.get(p.id), p.sex, bornWith.get(p.id))]));
+  });
+
+  /** Cards wider than the rest, for a relationship name that would not fit on the usual card. */
+  readonly cardWidths = computed<ReadonlyMap<string, number>>(
+    () => {
+      this.measure.fontsVersion();
+      const m = this.metrics();
+      const base = this.options().cardWidth;
+      const font = cardFonts(m).kin;
+      // The name starts after the shield and stops short of the sex symbol.
+      const room = m.textX + m.padRight + (this.view().showSex ? CORNER_ROOM : 0);
+      const out = new Map<string, number>();
+      for (const [id, relation] of this.relations()) {
+        if (!relation) continue;
+        const needed = Math.ceil(room + this.measure.width(relation, font, m.kin.size * m.kin.spacing));
+        if (needed > base) out.set(id, Math.min(needed, base * MAX_CARD_STRETCH));
+      }
+      return out;
+    },
+    { equal: sameEntries },
+  );
 
   /** The surname each person was born with: as recorded, or their father's in the tree's language. */
   readonly birthSurnames = computed<ReadonlyMap<string, string>>(() => {
@@ -137,21 +170,22 @@ export class ChartModel {
     const doc = this.store.doc();
     const view = this.view();
     const lang = this.language();
-    const kin = this.kin();
+    const relations = this.relations();
     const surnames = this.surnameLines();
     const birthRow = this.birthRow();
-    const bornWith = this.focusBornWith();
     const focusId = this.focusId();
     const m = this.metrics();
     const fonts = cardFonts(m);
-    const width = this.options().cardWidth - m.textX - m.padRight;
+    const widths = this.cardWidths();
+    const cardWidth = this.options().cardWidth;
     // The sex symbol takes the top right corner, the focus mark the bottom right.
     const top = view.showSex ? CORNER_ROOM : 0;
     const out = new Map<string, CardLabel>();
     for (const p of doc.people) {
+      const width = (widths.get(p.id) ?? cardWidth) - m.textX - m.padRight;
       const dates = lang.lifespan(p);
       const place = p.birth?.place ?? p.death?.place ?? '';
-      const relation = view.showRelationships ? kinLabel(lang, kin.get(p.id), p.sex, bornWith.get(p.id)) : '';
+      const relation = relations.get(p.id) ?? '';
       const title = [displayName(p), relation, dates].filter(Boolean).join(', ');
       const bottom = p.id === focusId ? CORNER_ROOM : 0;
       const last = view.showPlaces ? 'place' : view.showDates ? 'dates' : birthRow ? 'birth' : 'surname';
@@ -162,7 +196,7 @@ export class ChartModel {
         birth: this.measure.fit(names.birth, fonts.birth, width - (last === 'birth' ? bottom : 0)),
         dates: view.showDates ? this.measure.fit(dates, fonts.dates, width - (last === 'dates' ? bottom : 0)) : '',
         place: view.showPlaces ? this.measure.fit(place, fonts.place, width - bottom) : '',
-        kin: relation ? this.measure.fit(relation, fonts.kin, width - top) : '',
+        kin: relation ? this.measure.fit(relation, fonts.kin, width - top, m.kin.size * m.kin.spacing) : '',
         initials: initials(p),
         title,
         photo: view.showPhotos ? p.photo : undefined,
@@ -197,6 +231,10 @@ function shallowEqual<T extends object>(a: T, b: T): boolean {
   const ka = Object.keys(a) as (keyof T)[];
   const kb = Object.keys(b) as (keyof T)[];
   return ka.length === kb.length && ka.every((k) => a[k] === b[k]);
+}
+
+function sameEntries<K, V>(a: ReadonlyMap<K, V>, b: ReadonlyMap<K, V>): boolean {
+  return a.size === b.size && [...a].every(([k, v]) => b.get(k) === v);
 }
 
 /**

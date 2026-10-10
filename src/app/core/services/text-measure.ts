@@ -21,7 +21,12 @@ export class TextMeasurer {
     document.fonts.addEventListener?.('loadingdone', refresh);
   }
 
-  width(text: string, font: string): number {
+  /** Width in pixels; `spacing` is letter spacing in pixels, which the canvas does not apply. */
+  width(text: string, font: string, spacing = 0): number {
+    return this.measured(text, font) + spacing * Math.max(0, Array.from(text).length - 1);
+  }
+
+  private measured(text: string, font: string): number {
     const key = `${font}|${text}`;
     const cached = this.cache.get(key);
     if (cached !== undefined) return cached;
@@ -48,15 +53,15 @@ export class TextMeasurer {
   }
 
   /** The text, shortened with an ellipsis when it is wider than `max`. */
-  fit(text: string, font: string, max: number): string {
-    if (!text || this.width(text, font) <= max) return text;
+  fit(text: string, font: string, max: number, spacing = 0): string {
+    if (!text || this.width(text, font, spacing) <= max) return text;
     const chars = Array.from(text);
     let lo = 0;
     let hi = chars.length;
     while (lo < hi) {
       const mid = Math.ceil((lo + hi) / 2);
       const candidate = chars.slice(0, mid).join('').trimEnd() + '…';
-      if (this.width(candidate, font) <= max) lo = mid;
+      if (this.width(candidate, font, spacing) <= max) lo = mid;
       else hi = mid - 1;
     }
     return lo > 0 ? chars.slice(0, lo).join('').trimEnd() + '…' : '…';

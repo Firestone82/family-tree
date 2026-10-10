@@ -4,5 +4,5 @@
 </div>
 <div class="dialog-actions">
   <button type="button" class="btn" (click)="done.emit()">{{ t('common.cancel') }}</button>
-  <button type="button" class="btn primary" (click)="confirm()"><stemma-icon name="trash" [size]="16" />{{ t('dialog.delete.confirm') }}</button>
+  <button #confirmButton type="button" class="btn primary" (click)="confirm()"><stemma-icon name="trash" [size]="16" />{{ t('dialog.delete.confirm') }}</button>
 </div>

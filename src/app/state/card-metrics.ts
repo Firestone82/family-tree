@@ -12,8 +12,12 @@ export interface CardMetrics {
   birth: { size: number; y: number; shift: number };
   dates: { size: number; y: number };
   place: { size: number; y: number };
-  /** The relationship line at the top; `shift` moves the other lines down to make room. */
-  kin: { size: number; y: number; shift: number };
+  /**
+   * The relationship line at the top; `shift` moves the other lines down to make
+   * room. `spacing` is its letter spacing in em, as in person-card.scss: a card
+   * is made wider to fit this line, so it is measured with the spacing.
+   */
+  kin: { size: number; y: number; shift: number; spacing: number };
   radius: number;
 }
 
@@ -27,7 +31,7 @@ export const CARD_METRICS: CardMetrics = {
   birth: { size: 11.5, y: 57, shift: 14 },
   dates: { size: 11.5, y: 58 },
   place: { size: 11, y: 72 },
-  kin: { size: 10.5, y: 18, shift: 12 },
+  kin: { size: 10.5, y: 18, shift: 12, spacing: 0.04 },
   radius: 5,
 };
 
