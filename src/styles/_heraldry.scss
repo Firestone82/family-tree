@@ -1,0 +1,81 @@
+// Family colours (tinctures) outside the chart: small shields in lists and the legend.
+
+.mini-shield {
+  display: inline-block;
+  flex: none;
+  width: 16px;
+  height: 19px;
+  background: var(--tc, var(--rule-2));
+  clip-path: path('M0,0H16V8C16,13.8 12,17.4 8,19C4,17.4 0,13.8 0,8Z');
+}
+
+.mini-shield[data-tincture='argent'] {
+  background: var(--rule-2);
+}
+
+/* The family colours outside the chart (lists, legend) follow the chart's archive/night palette. */
+:root {
+  --tc-azure: #2f5d9e;
+  --tc-gules: #a53b3b;
+  --tc-vert: #2e7250;
+  --tc-purpure: #6a4b90;
+  --tc-or: #c4952c;
+  --tc-tenne: #b3632a;
+  --tc-sanguine: #8b2f53;
+  --tc-celeste: #3a88b3;
+  --tc-sable: #353b42;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --tc-azure: #5a85c6;
+    --tc-gules: #c55f5b;
+    --tc-vert: #4f9a71;
+    --tc-purpure: #9172b6;
+    --tc-or: #d6ab48;
+    --tc-tenne: #cd8145;
+    --tc-sanguine: #b0527a;
+    --tc-celeste: #5eacd4;
+    --tc-sable: #5b636c;
+  }
+}
+
+:root[data-theme='dark'] {
+  --tc-azure: #5a85c6;
+  --tc-gules: #c55f5b;
+  --tc-vert: #4f9a71;
+  --tc-purpure: #9172b6;
+  --tc-or: #d6ab48;
+  --tc-tenne: #cd8145;
+  --tc-sanguine: #b0527a;
+  --tc-celeste: #5eacd4;
+  --tc-sable: #5b636c;
+}
+
+[data-tincture='azure'] {
+  --tc: var(--tc-azure);
+}
+[data-tincture='gules'] {
+  --tc: var(--tc-gules);
+}
+[data-tincture='vert'] {
+  --tc: var(--tc-vert);
+}
+[data-tincture='purpure'] {
+  --tc: var(--tc-purpure);
+}
+[data-tincture='or'] {
+  --tc: var(--tc-or);
+}
+[data-tincture='tenne'] {
+  --tc: var(--tc-tenne);
+}
+[data-tincture='sanguine'] {
+  --tc: var(--tc-sanguine);
+}
+[data-tincture='celeste'] {
+  --tc: var(--tc-celeste);
+}
+[data-tincture='sable'] {
+  --tc: var(--tc-sable);
+}

@@ -1,0 +1,62 @@
+.kin-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 7px 0 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+
+  stemma-icon {
+    color: var(--kin);
+  }
+}
+
+.kin-chip {
+  padding: 1px 9px 2px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--kin) 14%, var(--sheet));
+  color: var(--kin-ink);
+  font-family: var(--font-sc);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.of {
+  color: var(--ink-3);
+}
+
+.shield {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 40px;
+  margin-top: 2px;
+  padding-bottom: 6px;
+  background: var(--tc, var(--rule-2));
+  clip-path: path('M0,0H34V17C34,29.3 25.5,36.9 17,40C8.5,36.9 0,29.3 0,17Z');
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+
+  &[data-tincture='or'] {
+    color: #2a1f0a;
+  }
+
+  &[data-tincture='argent'] {
+    background: var(--sheet-2);
+    box-shadow: inset 0 0 0 1px var(--rule-2);
+    color: var(--ink);
+  }
+}
+
+.photo {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 2px var(--tc, var(--rule-2));
+}

@@ -1,0 +1,35 @@
+@for (u of unions(); track u.familyId) {
+  @if (u.d) {
+    <svg:path class="partner-line" [attr.d]="u.d" />
+  }
+  @if (u.at; as at) {
+    @let m = u.mark;
+    <svg:g
+      class="union"
+      [attr.data-kind]="m.kind"
+      [class.apart]="m.apart"
+      [attr.transform]="'translate(' + at.x + ',' + at.y + ')'"
+      (click)="onPick(u.familyId, $event)"
+    >
+      <svg:circle class="hit" r="14" />
+      <svg:rect class="badge" [attr.x]="m.plate.x" [attr.y]="m.plate.y" [attr.width]="m.plate.w" [attr.height]="m.plate.h" [attr.rx]="m.plate.rx" />
+      @for (ring of m.rings; track $index) {
+        <svg:circle class="ring" [attr.cx]="ring.cx" [attr.cy]="ring.cy" [attr.r]="ring.r" />
+      }
+      @if (m.stone) {
+        <svg:path class="stone" [attr.d]="m.stone" />
+      }
+      @if (m.dot) {
+        <svg:circle class="dot" [attr.r]="m.dot" />
+      }
+      @if (m.slash) {
+        <svg:path class="cut-under" [attr.d]="m.slash" />
+        <svg:path class="cut" [attr.d]="m.slash" />
+      }
+      <svg:title>{{ u.title }}</svg:title>
+    </svg:g>
+  }
+}
+@for (l of labels(); track l.familyId) {
+  <svg:text class="label" [attr.lang]="lang()" [attr.x]="l.x" [attr.y]="l.y" text-anchor="middle" (click)="onPick(l.familyId, $event)">{{ l.text }}</svg:text>
+}

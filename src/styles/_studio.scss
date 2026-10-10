@@ -1,0 +1,21 @@
+// Groups of settings in the print studio, and the copy of the page that is printed.
+
+.studio-group {
+  display: grid;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--rule);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  h3 {
+    font-size: 17px;
+  }
+}
+
+/* The copy of the page that is printed; hidden on screen. */
+.stemma-print {
+  display: none;
+}

@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Stemma family tree file format, version 1.x (this schema describes 1.3).
+
+  Compatibility rules (see docs/xml-format.md):
+  * The namespace never changes between versions.
+  * formatVersion="MAJOR.MINOR". Minor versions only add optional elements and
+    attributes. Readers ignore what they do not understand and write it back.
+  * Elements and attributes from other namespaces are allowed almost anywhere,
+    so other tools can attach their own data.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:t="urn:stemma:family-tree"
+           targetNamespace="urn:stemma:family-tree"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.3">
+
+  <xs:element name="familyTree" type="t:FamilyTree">
+    <xs:key name="personId">
+      <xs:selector xpath="t:people/t:person"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+    <xs:key name="familyId">
+      <xs:selector xpath="t:families/t:family"/>
+      <xs:field xpath="@id"/>
+    </xs:key>
+    <xs:keyref name="partnerRef" refer="t:personId">
+      <xs:selector xpath="t:families/t:family/t:partner"/>
+      <xs:field xpath="@ref"/>
+    </xs:keyref>
+    <xs:keyref name="childRef" refer="t:personId">
+      <xs:selector xpath="t:families/t:family/t:child"/>
+      <xs:field xpath="@ref"/>
+    </xs:keyref>
+    <xs:keyref name="homePersonRef" refer="t:personId">
+      <xs:selector xpath="t:meta/t:homePerson"/>
+      <xs:field xpath="@ref"/>
+    </xs:keyref>
+    <xs:keyref name="printCenterRef" refer="t:personId">
+      <xs:selector xpath="t:print"/>
+      <xs:field xpath="@center"/>
+    </xs:keyref>
+    <xs:keyref name="printPartnerRef" refer="t:personId">
+      <xs:selector xpath="t:print"/>
+      <xs:field xpath="@partner"/>
+    </xs:keyref>
+  </xs:element>
+
+  <!-- Simple types -->
+
+  <xs:simpleType name="Id">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z_][A-Za-z0-9._\-]*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="FormatVersion">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d+(\.\d+){0,2}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- A calendar date that may be truncated to a month or a year. -->
+  <xs:simpleType name="PartialDate">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Sex">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="female"/>
+      <xs:enumeration value="male"/>
+      <xs:enumeration value="other"/>
+      <xs:enumeration value="unknown"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="DateQualifier">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="about"/>
+      <xs:enumeration value="before"/>
+      <xs:enumeration value="after"/>
+      <xs:enumeration value="estimated"/>
+      <xs:enumeration value="calculated"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="FamilyType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="marriage"/>
+      <xs:enumeration value="partnership"/>
+      <xs:enumeration value="unknown"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ChildRelation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="biological"/>
+      <xs:enumeration value="adopted"/>
+      <xs:enumeration value="foster"/>
+      <xs:enumeration value="step"/>
+      <xs:enumeration value="unknown"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="EndReason">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="divorce"/>
+      <xs:enumeration value="separation"/>
+      <xs:enumeration value="annulment"/>
+      <xs:enumeration value="death"/>
+      <xs:enumeration value="other"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="TreeStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="auto"/>
+      <xs:enumeration value="archive"/>
+      <xs:enumeration value="print"/>
+      <xs:enumeration value="night"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ColorBy">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="family"/>
+      <xs:enumeration value="generation"/>
+      <xs:enumeration value="sex"/>
+      <xs:enumeration value="none"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="LineStyle">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="square"/>
+      <xs:enumeration value="curved"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Density">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="comfortable"/>
+      <xs:enumeration value="compact"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 1.1: a BCP 47 language tag such as "en" or "cs". -->
+  <xs:simpleType name="Language">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 1.1 -->
+  <xs:simpleType name="Orientation">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="auto"/>
+      <xs:enumeration value="portrait"/>
+      <xs:enumeration value="landscape"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- 1.1: a number of generations, or "all". -->
+  <xs:simpleType name="Reach">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="all|\d{1,3}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Content from other namespaces, allowed at the end of most elements. -->
+  <xs:group name="Foreign">
+    <xs:sequence>
+      <xs:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:group>
+
+  <!-- Document -->
+
+  <xs:complexType name="FamilyTree">
+    <xs:sequence>
+      <xs:element name="meta" type="t:Meta"/>
+      <xs:element name="view" type="t:View" minOccurs="0"/>
+      <xs:element name="people" type="t:People"/>
+      <xs:element name="families" type="t:Families"/>
+      <!-- 1.1 -->
+      <xs:element name="print" type="t:Print" minOccurs="0"/>
+      <!-- 1.3 -->
+      <xs:element name="background" type="t:Background" minOccurs="0"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:attribute name="formatVersion" type="t:FormatVersion" use="required"/>
+    <xs:attribute name="generator" type="xs:string"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="Meta">
+    <xs:sequence>
+      <xs:element name="title" type="xs:string"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="created" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="modified" type="xs:dateTime" minOccurs="0"/>
+      <xs:element name="homePerson" type="t:Reference" minOccurs="0"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <!-- How the chart is drawn. Every attribute is optional and has a default. -->
+  <xs:complexType name="View">
+    <xs:group ref="t:Foreign"/>
+    <xs:attribute name="style" type="t:TreeStyle" default="auto"/>
+    <xs:attribute name="colorBy" type="t:ColorBy" default="family"/>
+    <xs:attribute name="lines" type="t:LineStyle" default="square"/>
+    <xs:attribute name="density" type="t:Density" default="comfortable"/>
+    <xs:attribute name="showDates" type="xs:boolean" default="true"/>
+    <xs:attribute name="showPlaces" type="xs:boolean" default="false"/>
+    <xs:attribute name="showPhotos" type="xs:boolean" default="true"/>
+    <xs:attribute name="showGenerations" type="xs:boolean" default="true"/>
+    <!-- 1.1 -->
+    <xs:attribute name="showRelationships" type="xs:boolean" default="true"/>
+    <xs:attribute name="showUnions" type="xs:boolean" default="true"/>
+    <xs:attribute name="language" type="t:Language" default="en"/>
+    <!-- 1.2 -->
+    <xs:attribute name="showSex" type="xs:boolean" default="true"/>
+    <xs:attribute name="sexColors" type="xs:boolean" default="false"/>
+    <xs:attribute name="showTree" type="xs:boolean" default="true"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <!--
+    1.1: how the tree is printed. theme and paper are open lists (a newer version
+    may add styles and paper sizes); unknown values are kept and drawn with the
+    defaults (heirloom, A3).
+  -->
+  <xs:complexType name="Print">
+    <xs:group ref="t:Foreign"/>
+    <xs:attribute name="theme" type="xs:string" default="heirloom"/>
+    <xs:attribute name="paper" type="xs:string" default="A3"/>
+    <xs:attribute name="orientation" type="t:Orientation" default="auto"/>
+    <xs:attribute name="center" type="t:Id"/>
+    <xs:attribute name="partner" type="t:Id"/>
+    <xs:attribute name="withPartner" type="xs:boolean" default="true"/>
+    <xs:attribute name="centered" type="xs:boolean" default="true"/>
+    <xs:attribute name="ancestors" type="t:Reach" default="all"/>
+    <xs:attribute name="descendants" type="t:Reach" default="all"/>
+    <xs:attribute name="branches" type="t:Reach" default="all"/>
+    <xs:attribute name="title" type="xs:string"/>
+    <xs:attribute name="subtitle" type="xs:string"/>
+    <xs:attribute name="showDates" type="xs:boolean" default="true"/>
+    <xs:attribute name="showPlaces" type="xs:boolean" default="true"/>
+    <xs:attribute name="showPhotos" type="xs:boolean" default="true"/>
+    <xs:attribute name="showUnions" type="xs:boolean" default="true"/>
+    <xs:attribute name="showRelationships" type="xs:boolean" default="true"/>
+    <xs:attribute name="showGenerations" type="xs:boolean" default="true"/>
+    <!-- 1.2 -->
+    <xs:attribute name="showSex" type="xs:boolean" default="true"/>
+    <xs:attribute name="sexColors" type="xs:boolean" default="false"/>
+    <xs:attribute name="showTree" type="xs:boolean" default="true"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="People">
+    <xs:sequence>
+      <xs:element name="person" type="t:Person" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="Families">
+    <xs:sequence>
+      <xs:element name="family" type="t:Family" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <!-- People -->
+
+  <xs:complexType name="Person">
+    <xs:sequence>
+      <xs:element name="name" type="t:Name"/>
+      <xs:element name="birth" type="t:Event" minOccurs="0"/>
+      <!-- Present when the person has died, even with no date or place. -->
+      <xs:element name="death" type="t:Event" minOccurs="0"/>
+      <xs:element name="occupation" type="xs:string" minOccurs="0"/>
+      <xs:element name="photo" type="t:Photo" minOccurs="0"/>
+      <xs:element name="notes" type="xs:string" minOccurs="0"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="t:Id" use="required"/>
+    <xs:attribute name="sex" type="t:Sex" default="unknown"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="Name">
+    <xs:group ref="t:Foreign"/>
+    <xs:attribute name="given" type="xs:string"/>
+    <xs:attribute name="surname" type="xs:string"/>
+    <!-- The surname at birth when it differs from the current one ("née"). -->
+    <xs:attribute name="birthSurname" type="xs:string"/>
+    <xs:attribute name="nickname" type="xs:string"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <!-- A dated event. Use dateText for dates that are not calendar dates ("Easter 1902"). -->
+  <xs:complexType name="Event">
+    <xs:group ref="t:Foreign"/>
+    <xs:attribute name="date" type="t:PartialDate"/>
+    <xs:attribute name="dateQualifier" type="t:DateQualifier"/>
+    <xs:attribute name="dateText" type="xs:string"/>
+    <xs:attribute name="place" type="xs:string"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="EndEvent">
+    <xs:complexContent>
+      <xs:extension base="t:Event">
+        <xs:attribute name="reason" type="t:EndReason"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Either embedded base64 data with a media type, or an href. -->
+  <xs:complexType name="Photo">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="mediaType" type="xs:string"/>
+        <xs:attribute name="encoding" type="xs:string" fixed="base64"/>
+        <xs:attribute name="href" type="xs:anyURI"/>
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!--
+    1.3: a picture of one's own behind the chart, instead of the drawn tree.
+    Embedded like a photo; width and height are its size in pixels (an SVG's
+    own units), fit is how it fills the area behind the chart.
+  -->
+  <xs:complexType name="Background">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="mediaType" type="xs:string"/>
+        <xs:attribute name="encoding" type="xs:string" fixed="base64"/>
+        <xs:attribute name="href" type="xs:anyURI"/>
+        <xs:attribute name="width" type="t:PositiveNumber"/>
+        <xs:attribute name="height" type="t:PositiveNumber"/>
+        <xs:attribute name="fit" type="t:BackgroundFit" default="cover"/>
+        <xs:attribute name="opacity" type="t:Opacity" default="1"/>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:anyAttribute namespace="##other" processContents="lax"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:simpleType name="BackgroundFit">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="cover"/>
+      <xs:enumeration value="contain"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="Opacity">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0"/>
+      <xs:maxInclusive value="1"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="PositiveNumber">
+    <xs:restriction base="xs:decimal">
+      <xs:minExclusive value="0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <!-- Families -->
+
+  <xs:complexType name="Family">
+    <xs:sequence>
+      <xs:element name="partner" type="t:Reference" minOccurs="0" maxOccurs="2"/>
+      <xs:element name="start" type="t:Event" minOccurs="0"/>
+      <xs:element name="end" type="t:EndEvent" minOccurs="0"/>
+      <!-- In birth order. -->
+      <xs:element name="child" type="t:Child" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="notes" type="xs:string" minOccurs="0"/>
+      <!-- 1.1: when the couple got engaged. Engaged and not married yet: type="partnership". -->
+      <xs:element name="engagement" type="t:Event" minOccurs="0"/>
+      <xs:group ref="t:Foreign"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="t:Id" use="required"/>
+    <xs:attribute name="type" type="t:FamilyType" default="marriage"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="Reference">
+    <xs:attribute name="ref" type="t:Id" use="required"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+
+  <xs:complexType name="Child">
+    <xs:group ref="t:Foreign"/>
+    <xs:attribute name="ref" type="t:Id" use="required"/>
+    <xs:attribute name="relation" type="t:ChildRelation" default="biological"/>
+    <!-- 1.3: children of one family with the same value were born together (twins, triplets). -->
+    <xs:attribute name="birthGroup" type="xs:token"/>
+    <xs:anyAttribute namespace="##other" processContents="lax"/>
+  </xs:complexType>
+</xs:schema>

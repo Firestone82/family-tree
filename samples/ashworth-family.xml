@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<familyTree xmlns="urn:stemma:family-tree" formatVersion="1.3" generator="Stemma 1.3.0">
+  <meta>
+    <title>The Ashworth family</title>
+    <description>An example tree. Five generations across England, France, Czechia and Italy.</description>
+    <created>2026-10-10T08:00:00.000Z</created>
+    <modified>2026-10-10T08:00:00.000Z</modified>
+    <homePerson ref="I11"/>
+  </meta>
+  <view style="auto" colorBy="family" lines="square" density="comfortable" showDates="true" showPlaces="true" showPhotos="true" showGenerations="true" showRelationships="true" showUnions="true" language="en" showSex="true" sexColors="true" showTree="true"/>
+  <people>
+    <person id="I1" sex="male">
+      <name given="Thomas" surname="Ashworth"/>
+      <birth date="1898-03-14" place="Leeds, England"/>
+      <death date="1971-11-02" place="Leeds, England"/>
+      <occupation>Bookbinder</occupation>
+      <notes>Ran a small bindery on Kirkgate for forty years.</notes>
+    </person>
+    <person id="I2" sex="female">
+      <name given="Edith" surname="Ashworth" birthSurname="Barlow"/>
+      <birth date="1901-07-22" place="York, England"/>
+      <death date="1988" place="Leeds, England"/>
+    </person>
+    <person id="I3" sex="female">
+      <name given="Florence" surname="Barlow"/>
+      <birth date="1904" place="York, England"/>
+      <death date="1990" place="Scarborough, England"/>
+      <occupation>Milliner</occupation>
+    </person>
+    <person id="I4" sex="male">
+      <name given="Lucien" surname="Moreau"/>
+      <birth date="1903-01-09" place="Lyon, France"/>
+      <death date="1965" place="Lyon, France"/>
+      <occupation>Silk weaver</occupation>
+    </person>
+    <person id="I5" sex="female">
+      <name given="Camille" surname="Moreau" birthSurname="Duval"/>
+      <birth date="1906" place="Lyon, France"/>
+      <death date="1994-02" place="Annecy, France"/>
+    </person>
+    <person id="I6" sex="male">
+      <name given="Arthur" surname="Ashworth"/>
+      <birth date="1924-05-30" place="Leeds, England"/>
+      <death date="2003-08-17" place="Manchester, England"/>
+      <occupation>Civil engineer</occupation>
+    </person>
+    <person id="I7" sex="female">
+      <name given="Margaret" surname="Ashworth" nickname="Peggy"/>
+      <birth date="1927-12-03" place="Leeds, England"/>
+      <death date="2019-04-09" place="Harrogate, England"/>
+      <occupation>Schoolteacher</occupation>
+    </person>
+    <person id="I8" sex="male">
+      <name given="Harold" surname="Ashworth"/>
+      <birth date="1931" place="Leeds, England"/>
+      <death date="2010" place="Leeds, England"/>
+    </person>
+    <person id="I9" sex="female">
+      <name given="Hélène" surname="Ashworth" birthSurname="Moreau"/>
+      <birth date="1930-09-12" place="Lyon, France"/>
+      <death date="2016-01-25" place="Manchester, England"/>
+    </person>
+    <person id="I10" sex="male">
+      <name given="Jules" surname="Moreau"/>
+      <birth date="1934" place="Lyon, France"/>
+      <death date="2008" place="Grenoble, France"/>
+    </person>
+    <person id="I11" sex="male">
+      <name given="Simon" surname="Ashworth"/>
+      <birth date="1954-02-11" place="Manchester, England"/>
+      <occupation>Architect</occupation>
+    </person>
+    <person id="I12" sex="female">
+      <name given="Claire" surname="Ferri" birthSurname="Ashworth"/>
+      <birth date="1957-06-04" place="Manchester, England"/>
+    </person>
+    <person id="I13" sex="male">
+      <name given="Daniel" surname="Ashworth"/>
+      <birth date="1961" place="Salford, England"/>
+      <notes>Adopted by Arthur and Hélène in 1963.</notes>
+    </person>
+    <person id="I14" sex="female">
+      <name given="Ruth" surname="Kelly"/>
+      <birth date="1955" place="Dublin, Ireland"/>
+    </person>
+    <person id="I15" sex="female">
+      <name given="Šárka" surname="Ashworth" birthSurname="Nováková"/>
+      <birth date="1964-03-08" place="Brno, Czechia"/>
+    </person>
+    <person id="I16" sex="male">
+      <name given="Jiří" surname="Novák"/>
+      <birth date="1938" place="Brno, Czechia"/>
+      <death date="2015-10" place="Brno, Czechia"/>
+      <occupation>Machinist</occupation>
+    </person>
+    <person id="I17" sex="female">
+      <name given="Věra" surname="Nováková" birthSurname="Dvořáková"/>
+      <birth date="1941-11-27" place="Olomouc, Czechia"/>
+    </person>
+    <person id="I18" sex="male">
+      <name given="Marco" surname="Ferri"/>
+      <birth date="1955" place="Turin, Italy"/>
+    </person>
+    <person id="I19" sex="female">
+      <name given="Sophie" surname="Moreau"/>
+      <birth date="1960" place="Grenoble, France"/>
+    </person>
+    <person id="I20" sex="female">
+      <name given="Emily" surname="Grant" birthSurname="Ashworth"/>
+      <birth date="1981-09-14" place="Manchester, England"/>
+    </person>
+    <person id="I21" sex="male">
+      <name given="Jack" surname="Ashworth"/>
+      <birth date="1984" place="Manchester, England"/>
+    </person>
+    <person id="I22" sex="male">
+      <name given="Tomáš" surname="Ashworth"/>
+      <birth date="1993-01-30" place="Manchester, England"/>
+    </person>
+    <person id="I23" sex="male">
+      <name given="Luca" surname="Ferri"/>
+      <birth date="1985" place="Turin, Italy"/>
+    </person>
+    <person id="I24" sex="female">
+      <name given="Giulia" surname="Ferri"/>
+      <birth date="1988" place="Turin, Italy"/>
+    </person>
+    <person id="I25" sex="male">
+      <name given="Oliver" surname="Grant"/>
+      <birth date="1980" place="Bristol, England"/>
+    </person>
+    <person id="I26" sex="female">
+      <name given="Mia" surname="Chen"/>
+      <birth date="1994" place="Vancouver, Canada"/>
+    </person>
+    <person id="I27" sex="female">
+      <name given="Isla" surname="Grant"/>
+      <birth date="2012-04-02" place="Bristol, England"/>
+    </person>
+    <person id="I28" sex="male">
+      <name given="Noah" surname="Grant"/>
+      <birth date="2015" place="Bristol, England"/>
+    </person>
+    <person id="I29" sex="male">
+      <name given="Leo" surname="Ashworth"/>
+      <birth date="2022-08-19" place="Manchester, England"/>
+    </person>
+  </people>
+  <families>
+    <family id="F1" type="marriage">
+      <partner ref="I1"/>
+      <partner ref="I2"/>
+      <start date="1922-06-10" place="York, England"/>
+      <child ref="I6"/>
+      <child ref="I7"/>
+      <child ref="I8"/>
+    </family>
+    <family id="F2" type="unknown">
+      <child ref="I2"/>
+      <child ref="I3"/>
+    </family>
+    <family id="F3" type="marriage">
+      <partner ref="I4"/>
+      <partner ref="I5"/>
+      <start date="1929" place="Lyon, France"/>
+      <child ref="I9"/>
+      <child ref="I10"/>
+    </family>
+    <family id="F4" type="marriage">
+      <partner ref="I6"/>
+      <partner ref="I9"/>
+      <start date="1952-07-19" place="Lyon, France"/>
+      <child ref="I11"/>
+      <child ref="I12"/>
+      <child ref="I13" relation="adopted"/>
+    </family>
+    <family id="F5" type="marriage">
+      <partner ref="I11"/>
+      <partner ref="I14"/>
+      <start date="1979" place="Manchester, England"/>
+      <end reason="divorce" date="1988"/>
+      <child ref="I20"/>
+      <child ref="I21"/>
+    </family>
+    <family id="F6" type="marriage">
+      <partner ref="I11"/>
+      <partner ref="I15"/>
+      <start date="1991-05-18" place="Brno, Czechia"/>
+      <child ref="I22"/>
+    </family>
+    <family id="F7" type="marriage">
+      <partner ref="I16"/>
+      <partner ref="I17"/>
+      <start date="1962" place="Brno, Czechia"/>
+      <child ref="I15"/>
+    </family>
+    <family id="F8" type="marriage">
+      <partner ref="I18"/>
+      <partner ref="I12"/>
+      <start date="1983" place="Turin, Italy"/>
+      <child ref="I23"/>
+      <child ref="I24"/>
+    </family>
+    <family id="F9" type="marriage">
+      <partner ref="I10"/>
+      <child ref="I19"/>
+    </family>
+    <family id="F10" type="marriage">
+      <partner ref="I25"/>
+      <partner ref="I20"/>
+      <start date="2010" place="Bristol, England"/>
+      <child ref="I27"/>
+      <child ref="I28"/>
+    </family>
+    <family id="F11" type="partnership">
+      <partner ref="I22"/>
+      <partner ref="I26"/>
+      <start date="2019"/>
+      <child ref="I29"/>
+      <engagement date="2024-12-24" place="Prague, Czechia"/>
+    </family>
+  </families>
+  <print theme="heirloom" paper="A3" orientation="auto" center="I11" centered="true" ancestors="all" descendants="2" branches="1" showDates="true" showPlaces="true" showPhotos="true" showUnions="true" showRelationships="true" showGenerations="true" showSex="true" sexColors="true" showTree="true"/>
+</familyTree>

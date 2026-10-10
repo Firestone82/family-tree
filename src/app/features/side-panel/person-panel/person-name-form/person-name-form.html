@@ -1,0 +1,55 @@
+@let p = person();
+<h3>{{ t('name.title') }}</h3>
+<div class="field">
+  <label for="person-given">{{ t('name.given') }}</label>
+  <input
+    id="person-given"
+    class="input"
+    autocomplete="off"
+    [value]="p.name.given"
+    [placeholder]="t('name.givenPlaceholder')"
+    (input)="setName('given', $event)"
+    (change)="trimName('given', $event)"
+  />
+</div>
+<div class="grid-2">
+  <div class="field">
+    <label for="person-surname">{{ t('name.surname') }}</label>
+    <input
+      id="person-surname"
+      class="input"
+      autocomplete="off"
+      [value]="p.name.surname"
+      (input)="setName('surname', $event)"
+      (change)="trimName('surname', $event)"
+    />
+  </div>
+  <div class="field">
+    <label for="person-birthSurname">{{ t('name.birthSurname') }}</label>
+    <input
+      id="person-birthSurname"
+      class="input"
+      autocomplete="off"
+      [value]="p.name.birthSurname ?? ''"
+      [placeholder]="birthSurnameHint()"
+      (input)="setName('birthSurname', $event)"
+      (change)="trimName('birthSurname', $event)"
+    />
+  </div>
+</div>
+<div class="field">
+  <label for="person-nickname">{{ t('name.nickname') }}</label>
+  <input
+    id="person-nickname"
+    class="input"
+    autocomplete="off"
+    [value]="p.name.nickname ?? ''"
+    [placeholder]="t('name.nicknamePlaceholder')"
+    (input)="setName('nickname', $event)"
+    (change)="trimName('nickname', $event)"
+  />
+</div>
+<div class="field">
+  <span class="field-label" id="person-sex-label">{{ t('name.sex') }}</span>
+  <stemma-segmented labelledBy="person-sex-label" [options]="sexes()" [value]="p.sex" (valueChange)="setSex($event)" />
+</div>

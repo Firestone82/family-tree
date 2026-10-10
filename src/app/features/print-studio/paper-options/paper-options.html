@@ -1,0 +1,39 @@
+@let s = model.settings();
+<h3 id="print-g-paper">{{ t('print.paper') }}</h3>
+<div class="grid-2">
+  <div class="field">
+    <label for="print-paper">{{ t('print.size') }}</label>
+    <select id="print-paper" class="select" (change)="setPaper($event)">
+      @for (p of papers; track p.id) {
+        <option [value]="p.id" [selected]="isPaper(p.id)">{{ p.label }}</option>
+      }
+      <option [value]="fitPaper" [selected]="fit()">{{ t('print.fit') }}</option>
+    </select>
+  </div>
+  <div class="field">
+    <span class="field-label" id="print-orientation">{{ t('print.orientation') }}</span>
+    <stemma-segmented
+      labelledBy="print-orientation"
+      [compact]="true"
+      [disabled]="fit()"
+      [options]="orientations()"
+      [value]="s.orientation"
+      (valueChange)="model.set({ orientation: $event })"
+    />
+  </div>
+</div>
+<div class="field">
+  <label for="print-title">{{ t('print.titleField') }}</label>
+  <input id="print-title" class="input" autocomplete="off" [value]="s.title ?? ''" [placeholder]="treeTitle()" (input)="setText('title', $event)" />
+</div>
+<div class="field">
+  <label for="print-subtitle">{{ t('print.subtitle') }}</label>
+  <input
+    id="print-subtitle"
+    class="input"
+    autocomplete="off"
+    [value]="s.subtitle ?? ''"
+    [placeholder]="t('print.subtitlePlaceholder')"
+    (input)="setText('subtitle', $event)"
+  />
+</div>

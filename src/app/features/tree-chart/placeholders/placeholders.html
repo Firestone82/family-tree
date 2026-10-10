@@ -1,0 +1,7 @@
+@for (p of layout().placeholders; track p.familyId) {
+  <svg:g class="placeholder" [attr.transform]="'translate(' + p.cx + ',' + p.cy + ')'" (click)="onPick(p.familyId, $event)">
+    <svg:circle [attr.r]="p.r" />
+    <svg:text text-anchor="middle" dominant-baseline="central">?</svg:text>
+    <svg:title>{{ t('chart.placeholder') }}</svg:title>
+  </svg:g>
+}

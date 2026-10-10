@@ -1,0 +1,6 @@
+@for (l of secondary(); track l.key) {
+  <svg:path class="link secondary" [attr.d]="l.d" [attr.data-relation]="l.relation" />
+}
+@for (p of drops(); track p.key) {
+  <svg:path class="link" [class.on-path]="p.onPath" [attr.d]="p.d" [attr.data-relation]="p.relation" />
+}

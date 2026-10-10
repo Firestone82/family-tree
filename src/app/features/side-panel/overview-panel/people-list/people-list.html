@@ -1,0 +1,35 @@
+<div class="section-head">
+  <h3>{{ t('overview.peopleTitle') }}</h3>
+  <button type="button" class="link-btn" (click)="add.emit()"><stemma-icon name="plus" [size]="14" />{{ t('overview.addPerson') }}</button>
+</div>
+@if (searchable()) {
+  <div class="search">
+    <stemma-icon name="search" [size]="16" />
+    <label class="visually-hidden" for="people-search">{{ t('overview.find') }}</label>
+    <input id="people-search" class="input" type="search" autocomplete="off" [placeholder]="t('overview.find')" [value]="query()" (input)="search($event)" />
+  </div>
+}
+@let groups = families();
+@if (groups.length > 1 && !query()) {
+  <div class="families-head">
+    <span class="families-count">{{ t('overview.families', { count: groups.length }) }}</span>
+    <button type="button" class="link-btn" (click)="setAll(canOpenAll())">{{ canOpenAll() ? t('overview.openAll') : t('overview.closeAll') }}</button>
+  </div>
+}
+<ul class="families">
+  @for (f of groups; track f.key) {
+    <li>
+      <stemma-family-group
+        [label]="f.label"
+        [tincture]="f.tincture"
+        [members]="f.members"
+        [open]="f.open"
+        [countLabel]="f.count"
+        (toggleOpen)="toggle(f.key, f.open)"
+        (pick)="open.emit($event)"
+      />
+    </li>
+  } @empty {
+    <li class="empty-note">{{ query() ? t('overview.noMatch') : t('overview.nobody') }}</li>
+  }
+</ul>

@@ -1,0 +1,13 @@
+<button type="button" class="head" [attr.aria-expanded]="open()" (click)="toggleOpen.emit()">
+  <stemma-icon name="chevronRight" class="chevron" [size]="14" />
+  <span class="mini-shield" [attr.data-tincture]="tincture()"></span>
+  <span class="label">{{ label() }}</span>
+  <span class="count" [attr.aria-label]="countLabel()">{{ members().length }}</span>
+</button>
+@if (open()) {
+  <ul class="members">
+    @for (m of members(); track m.id) {
+      <li><button type="button" stemmaPersonRow [name]="m.name" [dates]="m.dates" [tincture]="m.tincture" (click)="pick.emit(m.id)"></button></li>
+    }
+  </ul>
+}

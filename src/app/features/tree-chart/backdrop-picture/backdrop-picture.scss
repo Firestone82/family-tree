@@ -1,0 +1,15 @@
+:host {
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+
+:host(.faded) {
+  opacity: 0;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}

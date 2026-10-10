@@ -1,0 +1,15 @@
+@if (ordinal(); as n) {
+  <span class="ordinal">{{ n }}.</span>
+}
+@if (icon(); as name) {
+  <stemma-icon [name]="name" [size]="16" />
+} @else {
+  <span class="mini-shield" [attr.data-tincture]="tincture()"></span>
+}
+<span class="name">{{ name() }}</span>
+@if (tag()) {
+  <span class="tag">{{ tag() }}</span>
+}
+@if (dates()) {
+  <span class="dates">{{ dates() }}</span>
+}

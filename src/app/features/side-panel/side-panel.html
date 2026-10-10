@@ -1,0 +1,27 @@
+@if (ui.narrow()) {
+  <button
+    type="button"
+    class="handle"
+    [attr.aria-label]="ui.sheetFull() ? t('panel.less') : t('panel.more')"
+    [attr.aria-expanded]="ui.sheetFull()"
+    (click)="toggle()"
+    (pointerdown)="dragStart($event)"
+    (pointermove)="dragMove($event)"
+    (pointerup)="dragEnd($event)"
+    (pointercancel)="dragEnd($event)"
+  >
+    <span></span>
+  </button>
+}
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a tap on the lowered sheet raises it; the handle button above does the same from the keyboard -->
+<div class="scroll" [class.locked]="ui.narrow() && !ui.sheetFull()" (click)="peekTap($event)">
+  @if (ui.adding(); as request) {
+    <stemma-add-relative [request]="request" />
+  } @else if (store.selectedPerson(); as person) {
+    <stemma-person-panel [person]="person" />
+  } @else if (store.selectedFamily(); as family) {
+    <stemma-family-panel [family]="family" />
+  } @else {
+    <stemma-overview-panel [closable]="ui.narrow()" />
+  }
+</div>

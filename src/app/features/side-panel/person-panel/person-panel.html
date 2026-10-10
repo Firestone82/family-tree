@@ -1,0 +1,16 @@
+@let p = person();
+<stemma-person-header [person]="p" (closePanel)="people.close()" />
+<div class="panel-body">
+  <stemma-person-summary [person]="p" (add)="add($event)" />
+  <stemma-person-name-form [person]="p" />
+  <stemma-person-life-form [person]="p" />
+  <stemma-person-family [person]="p" />
+  <section class="panel-section">
+    <div class="footer-actions">
+      @if (!isFocus()) {
+        <button type="button" class="btn" (click)="people.centreOn(p.id)"><stemma-icon name="target" [size]="16" />{{ t('person.centreHere') }}</button>
+      }
+      <button type="button" class="btn danger" (click)="people.askDelete(p.id)"><stemma-icon name="trash" [size]="16" />{{ t('person.delete') }}</button>
+    </div>
+  </section>
+</div>

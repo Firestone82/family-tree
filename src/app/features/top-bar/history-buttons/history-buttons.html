@@ -1,0 +1,20 @@
+<button
+  type="button"
+  class="btn ghost icon"
+  (click)="people.undo()"
+  [disabled]="!store.canUndo()"
+  [attr.aria-label]="t('history.undo')"
+  [title]="t('history.undoHint')"
+>
+  <stemma-icon name="undo" />
+</button>
+<button
+  type="button"
+  class="btn ghost icon"
+  (click)="people.redo()"
+  [disabled]="!store.canRedo()"
+  [attr.aria-label]="t('history.redo')"
+  [title]="t('history.redoHint')"
+>
+  <stemma-icon name="redo" />
+</button>

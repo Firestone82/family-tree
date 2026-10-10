@@ -1,0 +1,21 @@
+@let p = person();
+@if (p.photo) {
+  <img class="photo" [src]="p.photo" alt="" [attr.data-tincture]="tincture()" />
+} @else {
+  <span class="shield" [attr.data-tincture]="tincture()" aria-hidden="true">{{ initials() }}</span>
+}
+<div class="grow">
+  <h2>{{ name() }}</h2>
+  @if (subline()) {
+    <p class="panel-sub">{{ subline() }}</p>
+  }
+  @if (isFocus()) {
+    <p class="kin-line"><stemma-icon name="target" [size]="14" />{{ t('person.centredOn', { name: given() }) }}</p>
+  } @else if (kin()) {
+    <p class="kin-line">
+      <span class="kin-chip" [attr.lang]="kinLang()">{{ kin() }}</span>
+      <span class="of">{{ t('person.kinOf', { name: focusName() }) }}</span>
+    </p>
+  }
+</div>
+<button type="button" class="btn ghost icon" (click)="closePanel.emit()" [attr.aria-label]="t('common.close')"><stemma-icon name="close" /></button>

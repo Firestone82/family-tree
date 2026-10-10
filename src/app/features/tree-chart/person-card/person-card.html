@@ -1,0 +1,57 @@
+@let c = card();
+@let m = metrics();
+@let l = label();
+<svg:rect class="card-shadow" y="1.6" [attr.width]="c.w" [attr.height]="c.h" [attr.rx]="m.radius" />
+<svg:rect class="card-shape" [attr.width]="c.w" [attr.height]="c.h" [attr.rx]="m.radius" />
+@if (l.photo; as photo) {
+  <svg:clipPath [attr.id]="clipId()">
+    <svg:circle [attr.cx]="badgeX()" [attr.cy]="c.h / 2" [attr.r]="m.photo.r" />
+  </svg:clipPath>
+  <svg:circle class="photo-ring" [attr.cx]="badgeX()" [attr.cy]="c.h / 2" [attr.r]="m.photo.r + 1.5" />
+  <svg:image
+    [attr.href]="photo"
+    [attr.x]="badgeX() - m.photo.r"
+    [attr.y]="c.h / 2 - m.photo.r"
+    [attr.width]="m.photo.r * 2"
+    [attr.height]="m.photo.r * 2"
+    preserveAspectRatio="xMidYMid slice"
+    [attr.clip-path]="'url(#' + clipId() + ')'"
+  />
+} @else {
+  <svg:g class="shield" [attr.transform]="shieldTransform()">
+    <svg:path class="shield-field" [attr.d]="shield()" />
+    <svg:text
+      class="shield-initials"
+      [attr.font-size]="m.shield.initials"
+      [attr.x]="m.shield.w / 2"
+      [attr.y]="m.shield.h * 0.46"
+      text-anchor="middle"
+      dominant-baseline="central"
+    >
+      {{ l.initials }}
+    </svg:text>
+  </svg:g>
+}
+@if (sexSymbol()) {
+  <svg:path class="sex-mark" [attr.transform]="symbolTransform()" [attr.d]="sexSymbol()" />
+}
+@if (focus()) {
+  <svg:g class="focus-mark" [attr.transform]="focusTransform()">
+    <svg:circle r="6" class="focus-ring" />
+    <svg:circle r="2.4" class="focus-dot" />
+  </svg:g>
+}
+@if (l.kin) {
+  <svg:text class="kin" [attr.font-size]="m.kin.size" [attr.x]="m.textX" [attr.y]="m.kin.y">{{ l.kin }}</svg:text>
+}
+<svg:text class="given" [attr.font-size]="m.given.size" [attr.x]="m.textX" [attr.y]="m.given.y + shift()">{{ l.given }}</svg:text>
+@if (l.surname) {
+  <svg:text class="surname" [attr.font-size]="m.surname.size" [attr.x]="m.textX" [attr.y]="m.surname.y + shift()">{{ l.surname }}</svg:text>
+}
+@if (l.dates) {
+  <svg:text class="dates" [attr.font-size]="m.dates.size" [attr.x]="m.textX" [attr.y]="m.dates.y + shift()">{{ l.dates }}</svg:text>
+}
+@if (l.place) {
+  <svg:text class="place" [attr.font-size]="m.place.size" [attr.x]="m.textX" [attr.y]="m.place.y + shift()">{{ l.place }}</svg:text>
+}
+<svg:title>{{ l.title }}</svg:title>

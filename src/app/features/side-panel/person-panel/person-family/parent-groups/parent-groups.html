@@ -1,0 +1,36 @@
+@for (g of groups(); track g.family.id) {
+  <div class="group">
+    <span class="group-label">{{ t(g.label) }}</span>
+    @for (parent of g.parents; track parent.id) {
+      <button
+        type="button"
+        stemmaPersonRow
+        [name]="parent.name"
+        [dates]="parent.dates"
+        [tincture]="parent.tincture"
+        (click)="people.select(parent.id)"
+      ></button>
+    } @empty {
+      <p class="empty-note">{{ t('parents.none') }}</p>
+    }
+    <div class="adds">
+      @if (g.canAdd) {
+        <button type="button" class="link-btn" (click)="people.startAdd('parent', person().id)">
+          <stemma-icon name="plus" [size]="14" />{{ t('parents.add') }}
+        </button>
+      }
+      <button type="button" class="link-btn" (click)="people.unlinkFromParents(g.family.id, person().id)">
+        <stemma-icon name="unlink" [size]="14" />{{ t('parents.unlink') }}
+      </button>
+    </div>
+  </div>
+} @empty {
+  <div class="group">
+    <span class="group-label">{{ t('parents.biological') }}</span>
+    <div class="adds">
+      <button type="button" class="link-btn" (click)="people.startAdd('parent', person().id)">
+        <stemma-icon name="plus" [size]="14" />{{ t('parents.add') }}
+      </button>
+    </div>
+  </div>
+}

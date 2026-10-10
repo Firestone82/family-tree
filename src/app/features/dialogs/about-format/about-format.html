@@ -1,0 +1,13 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.about.title') }}</h2>
+  <p>{{ t('dialog.about.text', { version }) }}</p>
+  <ul class="notes">
+    @for (p of points; track p) {
+      <li>{{ t(p) }}</li>
+    }
+  </ul>
+  <p>{{ t('dialog.about.docs') }}</p>
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn primary" (click)="done.emit()">{{ t('common.done') }}</button>
+</div>

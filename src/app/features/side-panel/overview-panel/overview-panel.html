@@ -1,0 +1,46 @@
+<header class="panel-head">
+  <div class="grow">
+    <label class="visually-hidden" for="tree-title">{{ t('overview.titleLabel') }}</label>
+    <input
+      id="tree-title"
+      class="title-input"
+      autocomplete="off"
+      [value]="meta().title"
+      [placeholder]="t('overview.titlePlaceholder')"
+      (input)="documents.setTitle(value($event))"
+      (change)="documents.finishTitle(value($event))"
+    />
+    <p class="panel-sub">{{ summary() }}</p>
+  </div>
+  @if (closable()) {
+    <button type="button" class="btn ghost icon" (click)="ui.peopleOpen.set(false)" [attr.aria-label]="t('common.close')"><stemma-icon name="close" /></button>
+  }
+</header>
+<div class="panel-body">
+  <section class="panel-section">
+    <label class="visually-hidden" for="tree-description">{{ t('overview.description') }}</label>
+    <textarea
+      id="tree-description"
+      class="textarea quiet"
+      rows="2"
+      [value]="meta().description ?? ''"
+      [placeholder]="t('overview.descriptionPlaceholder')"
+      (input)="documents.setDescription(value($event))"
+    ></textarea>
+  </section>
+
+  <section class="panel-section">
+    <stemma-people-list (open)="open($event)" (add)="add()" />
+  </section>
+
+  <stemma-colour-legend />
+
+  <section class="panel-section">
+    <h3>{{ t('overview.tips') }}</h3>
+    <ul class="tips">
+      @for (tip of tips; track tip) {
+        <li>{{ t(tip) }}</li>
+      }
+    </ul>
+  </section>
+</div>

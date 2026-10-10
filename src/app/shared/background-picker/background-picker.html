@@ -1,0 +1,36 @@
+@if (picture(); as p) {
+  <div class="current">
+    <img class="thumb" [src]="p.href" alt="" />
+    <div class="about">
+      <span class="name">{{ p.name || t('background.yours') }}</span>
+      <span class="size">{{ size() }}</span>
+    </div>
+  </div>
+  @if (soft()) {
+    <p class="hint">{{ t('background.soft') }}</p>
+  }
+  <div class="field">
+    <span class="field-label" [id]="idPrefix() + '-fit'">{{ t('background.fit') }}</span>
+    <stemma-segmented [labelledBy]="idPrefix() + '-fit'" [options]="fits()" [value]="p.fit" (valueChange)="actions.set({ fit: $event })" />
+  </div>
+  <div class="field">
+    <label [for]="idPrefix() + '-opacity'">
+      {{ t('background.opacity') }} <span class="value">{{ percent() }} %</span>
+    </label>
+    <input type="range" class="range" [id]="idPrefix() + '-opacity'" min="10" max="100" step="5" [value]="percent()" (input)="setOpacity($event)" />
+  </div>
+  <div class="actions">
+    <button type="button" class="btn small" (click)="actions.choose()" [disabled]="actions.busy()">
+      <stemma-icon name="image" [size]="15" />{{ actions.busy() ? t('background.reading') : t('background.replace') }}
+    </button>
+    <button type="button" class="btn small ghost" (click)="actions.remove()">{{ t('background.remove') }}</button>
+  </div>
+} @else {
+  <p class="hint">{{ t('background.drawn') }}</p>
+  <div class="actions">
+    <button type="button" class="btn small" (click)="actions.choose()" [disabled]="actions.busy()">
+      <stemma-icon name="image" [size]="15" />{{ actions.busy() ? t('background.reading') : t('background.choose') }}
+    </button>
+  </div>
+  <p class="hint">{{ t('background.formats') }}</p>
+}

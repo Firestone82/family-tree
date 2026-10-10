@@ -1,0 +1,85 @@
+.partner-line {
+  fill: none;
+  stroke: var(--t-line);
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.union {
+  cursor: pointer;
+
+  &:hover .ring {
+    stroke-width: 1.9;
+  }
+}
+
+.hit {
+  fill: transparent;
+}
+
+.badge {
+  fill: var(--t-card);
+  stroke: var(--t-card-edge);
+  stroke-width: 1;
+}
+
+.ring {
+  fill: none;
+  stroke: var(--t-ink);
+  stroke-width: 1.35;
+}
+
+.dot {
+  fill: var(--t-ink);
+}
+
+/* A couple who broke up: the rings come apart and fade, and a divorce cuts across them. */
+.apart {
+  .badge {
+    stroke-dasharray: 2.4 1.8;
+  }
+
+  .ring {
+    stroke: var(--t-muted);
+  }
+}
+
+.cut {
+  fill: none;
+  stroke: var(--t-break);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* A halo in the card colour, so the slash stands out over the rings. */
+.cut-under {
+  fill: none;
+  stroke: var(--t-card);
+  stroke-width: 4.4;
+  stroke-linecap: round;
+}
+
+.stone {
+  fill: var(--t-card);
+  stroke: var(--t-ink);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+/* Marriage date and place, on the line under the couple. */
+.label {
+  fill: var(--t-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.01em;
+  paint-order: stroke;
+  stroke: var(--t-paper);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  cursor: pointer;
+
+  &:hover {
+    fill: var(--t-ink);
+  }
+}

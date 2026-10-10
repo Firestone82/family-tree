@@ -1,0 +1,21 @@
+.placeholder {
+  cursor: pointer;
+
+  circle {
+    fill: var(--t-card);
+    stroke: var(--t-muted);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 2.6;
+  }
+
+  text {
+    fill: var(--t-muted);
+    font-family: var(--font-serif);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &:hover circle {
+    stroke: var(--t-ink);
+  }
+}

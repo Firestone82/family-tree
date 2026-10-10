@@ -1,0 +1,15 @@
+<div class="field">
+  <label for="add-status">{{ t('add.relationship') }}</label>
+  <select id="add-status" class="select" (change)="choose($event)">
+    @for (s of statuses(); track s.value) {
+      <option [value]="s.value" [selected]="s.value === status()">{{ s.label }}</option>
+    }
+  </select>
+  <span class="hint">{{ t('add.relationshipHint') }}</span>
+</div>
+@if (orphans()) {
+  <label class="check">
+    <input type="checkbox" [checked]="join()" (change)="joinChange.emit(checked($event))" />
+    {{ t('add.otherParentOf', { names: orphans() }) }}
+  </label>
+}

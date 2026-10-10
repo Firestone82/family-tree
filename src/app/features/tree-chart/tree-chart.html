@@ -1,0 +1,89 @@
+@let view = model.view();
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -- a click on empty space clears the selection; Escape does the same -->
+<svg
+  #svg
+  class="canvas"
+  role="group"
+  [attr.aria-label]="t('chart.label')"
+  (pointerdown)="gestures.down($event)"
+  (pointermove)="gestures.move($event)"
+  (pointerup)="gestures.up($event)"
+  (pointercancel)="gestures.up($event)"
+  (click)="onBackgroundClick()"
+>
+  <defs>
+    <pattern id="stemma-dots" width="22" height="22" patternUnits="userSpaceOnUse" [attr.patternTransform]="dotTransform()">
+      <circle cx="1.2" cy="1.2" r="1.05" class="dot" />
+    </pattern>
+  </defs>
+  <rect class="backdrop" width="100%" height="100%" />
+
+  <g class="world" [attr.transform]="worldTransform()">
+    @if (view.showTree) {
+      @if (store.doc().background; as picture) {
+        <g stemmaBackdropPicture [layout]="model.layout()" [picture]="picture" [faded]="gliding()"></g>
+      } @else {
+        <g stemmaTreeBackdrop [layout]="model.layout()" [focusIds]="model.focusIds()" [faded]="gliding()"></g>
+      }
+    }
+    @if (view.showGenerations) {
+      <g stemmaBands [layout]="displayed()"></g>
+    }
+    <g stemmaFamilyLines [layout]="displayed()"></g>
+    <g stemmaUnions [layout]="displayed()" (pick)="onUnionPick($event)"></g>
+    <g stemmaPlaceholders [layout]="displayed()" (pick)="onPlaceholderPick($event)"></g>
+
+    <g class="cards">
+      @for (c of displayed().cards; track c.personId) {
+        <g
+          stemmaCard
+          [card]="c"
+          [label]="model.labels().get(c.personId)!"
+          [tincture]="tinctureOf(c.personId)"
+          [metrics]="model.metrics()"
+          [selected]="c.personId === selectedId()"
+          [focus]="c.personId === model.focusId()"
+          [kinRow]="view.showRelationships"
+          [showSex]="view.showSex"
+          [sexColors]="view.sexColors"
+          [class.flash]="flashId() === c.personId"
+          (pick)="onCardPick(c.personId, $event)"
+          (dblclick)="onCardDoubleClick(c.personId, $event)"
+        ></g>
+      }
+    </g>
+
+    <g class="selection">
+      @if (selectedCard(); as c) {
+        <rect
+          class="selection-ring"
+          [attr.x]="c.x - 4.5"
+          [attr.y]="c.y - 4.5"
+          [attr.width]="c.w + 9"
+          [attr.height]="c.h + 9"
+          [attr.rx]="model.metrics().radius + 4"
+        />
+      }
+      @if (selectedUnion(); as m) {
+        <circle class="selection-ring" [attr.cx]="m.x" [attr.cy]="m.y" r="15" />
+      }
+    </g>
+  </g>
+</svg>
+
+@if (quickAdd(); as q) {
+  <stemma-quick-add
+    [left]="q.left"
+    [top]="q.top"
+    [below]="q.below"
+    [name]="q.name"
+    [parentsFull]="q.parentsFull"
+    [isFocus]="q.isFocus"
+    (add)="startAdd($event)"
+    (centre)="centreHere()"
+  />
+}
+
+@if (!isEmpty()) {
+  <stemma-zoom-controls [style.bottom.px]="insetBottom() + 14" [percent]="zoomPercent()" (zoomIn)="zoom(1.25)" (zoomOut)="zoom(0.8)" (fit)="fit(true)" />
+}

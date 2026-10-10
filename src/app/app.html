@@ -1,0 +1,13 @@
+<stemma-top-bar />
+<main class="workspace">
+  <stemma-chart [insetBottom]="ui.chartInsetBottom()" tabindex="-1" />
+  @if (isEmpty() && !ui.restoring()) {
+    <stemma-empty-state />
+  } @else if (ui.showSampleNote()) {
+    <stemma-sample-note />
+  }
+  <stemma-side-panel />
+</main>
+<stemma-toasts />
+<stemma-dialogs />
+<stemma-print-studio />

@@ -1,0 +1,8 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.delete.title', { name: name() }) }}</h2>
+  <p>{{ t('dialog.delete.text', { name: name() }) }}</p>
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn" (click)="done.emit()">{{ t('common.cancel') }}</button>
+  <button type="button" class="btn primary" (click)="confirm()"><stemma-icon name="trash" [size]="16" />{{ t('dialog.delete.confirm') }}</button>
+</div>

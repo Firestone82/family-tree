@@ -1,0 +1,49 @@
+@let f = family();
+<header class="panel-head">
+  <stemma-icon name="rings" [size]="26" [stroke]="1.5" />
+  <div class="grow">
+    <h2>{{ title() }}</h2>
+    <p class="panel-sub">{{ subtitle() }}</p>
+  </div>
+  <button type="button" class="btn ghost icon" (click)="families.close()" [attr.aria-label]="t('common.close')"><stemma-icon name="close" /></button>
+</header>
+
+<div class="panel-body">
+  @if (f.partners.length === 2) {
+    <section class="panel-section">
+      <stemma-relationship-editor [family]="f" />
+    </section>
+  }
+
+  <section class="panel-section">
+    <h3>{{ f.partners.length ? t('familyPanel.partners') : t('familyPanel.parents') }}</h3>
+    @for (p of partners(); track p.id) {
+      <div class="row-with-action">
+        <button type="button" stemmaPersonRow [name]="p.name" [dates]="p.dates" [tincture]="p.tincture" (click)="people.select(p.id)"></button>
+        <button
+          type="button"
+          class="row-action danger"
+          (click)="families.removePartner(f.id, p.id)"
+          [title]="t('familyPanel.removeFromFamily')"
+          [attr.aria-label]="t('familyPanel.removeFromFamily')"
+        >
+          <stemma-icon name="unlink" [size]="16" />
+        </button>
+      </div>
+    } @empty {
+      <p class="empty-note">{{ t('familyPanel.noPartners') }}</p>
+    }
+  </section>
+
+  <stemma-family-children [family]="f" />
+
+  <section class="panel-section">
+    <div class="field">
+      <label for="family-notes">{{ t('familyPanel.notes') }}</label>
+      <textarea id="family-notes" class="textarea" [value]="f.notes ?? ''" (input)="setNotes($event)"></textarea>
+    </div>
+    <div>
+      <button type="button" class="btn danger" (click)="families.remove(f.id)"><stemma-icon name="trash" [size]="16" />{{ t('familyPanel.remove') }}</button>
+    </div>
+  </section>
+</div>

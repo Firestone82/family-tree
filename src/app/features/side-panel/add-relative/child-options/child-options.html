@@ -1,0 +1,22 @@
+<div class="field">
+  <span class="field-label" id="add-other-label">{{ t('add.otherParent') }}</span>
+  <div class="radio-list" role="radiogroup" aria-labelledby="add-other-label">
+    @for (p of options(); track p.id) {
+      <label class="radio">
+        <input type="radio" name="add-other-parent" [checked]="otherParentId() === p.id" (change)="otherParentChange.emit(p.id)" />
+        {{ p.name }}
+      </label>
+    }
+    <label class="radio">
+      <input type="radio" name="add-other-parent" [checked]="otherParentId() === null" (change)="otherParentChange.emit(null)" />
+      {{ t('add.noOtherParent') }}
+    </label>
+  </div>
+  @if (!options().length) {
+    <span class="hint">{{ t('add.otherParentHint') }}</span>
+  }
+</div>
+<div class="field">
+  <span class="field-label" id="add-crel-label">{{ t('add.childRelation') }}</span>
+  <stemma-segmented labelledBy="add-crel-label" [options]="relations()" [value]="relation()" (valueChange)="relationChange.emit($event)" />
+</div>

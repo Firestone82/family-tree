@@ -1,0 +1,15 @@
+@let ready = !!model.poster() && !model.busy();
+@if (model.canPrint) {
+  <button type="button" class="btn primary" (click)="model.output('print')" [disabled]="!ready">
+    <stemma-icon name="printer" [size]="17" />{{ t('print.print') }}
+  </button>
+}
+<button type="button" class="btn" [class.primary]="!model.canPrint" (click)="model.output('pdf')" [disabled]="!ready">
+  <stemma-icon name="file" [size]="17" />{{ model.busy() === 'pdf' ? t('print.busy') : 'PDF' }}
+</button>
+<button type="button" class="btn" (click)="model.output('png')" [disabled]="!ready">
+  <stemma-icon name="image" [size]="17" />{{ model.busy() === 'png' ? t('print.busy') : 'PNG' }}
+</button>
+<button type="button" class="btn" (click)="model.output('svg')" [disabled]="!ready">
+  <stemma-icon name="download" [size]="17" />{{ model.busy() === 'svg' ? t('print.busy') : 'SVG' }}
+</button>

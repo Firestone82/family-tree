@@ -1,0 +1,21 @@
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+
+  .btn {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 54px;
+    padding: 6px 4px;
+    font-size: 12.5px;
+  }
+}
+
+.facts {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}

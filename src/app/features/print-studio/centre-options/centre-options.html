@@ -1,0 +1,22 @@
+<h3 id="print-g-middle">{{ t('print.middle') }}</h3>
+<div class="grid-2">
+  <div class="field">
+    <label for="print-center">{{ t('print.person') }}</label>
+    <select id="print-center" class="select" (change)="setCenter($event)">
+      @for (p of model.people(); track p.id) {
+        <option [value]="p.id" [selected]="p.id === model.centerId()">{{ p.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="field">
+    <label for="print-partner">{{ t('print.with') }}</label>
+    <select id="print-partner" class="select" (change)="setPartner($event)" [disabled]="!model.partners().length">
+      @for (p of model.partners(); track p.id) {
+        <option [value]="p.id" [selected]="p.id === model.partnerChoice()">{{ p.label }}</option>
+      }
+      <option value="" [selected]="!model.partnerChoice()">{{ t('print.nobody') }}</option>
+    </select>
+  </div>
+</div>
+<stemma-switch [checked]="model.settings().centered" (checkedChange)="model.set({ centered: $event })">{{ t('print.keepCentred') }}</stemma-switch>
+<span class="hint">{{ t('print.keepCentredHint') }}</span>

@@ -1,0 +1,4 @@
+@for (b of bands(); track b.key) {
+  <svg:rect class="band" [class.odd]="b.odd" [attr.x]="b.x" [attr.y]="b.y" [attr.width]="b.w" [attr.height]="b.h" rx="12" />
+  <svg:text class="label" [attr.x]="b.labelX" [attr.y]="b.labelY" text-anchor="middle" dominant-baseline="central">{{ b.label }}</svg:text>
+}

@@ -1,0 +1,33 @@
+.link {
+  fill: none;
+  stroke: var(--t-line);
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  &[data-relation='adopted'] {
+    stroke-dasharray: 5 4;
+  }
+
+  &[data-relation='foster'] {
+    stroke-dasharray: 1.2 3.6;
+  }
+
+  &[data-relation='step'] {
+    stroke-dasharray: 9 4;
+  }
+
+  &[data-relation='unknown'] {
+    stroke-dasharray: 2 4;
+  }
+
+  &.secondary {
+    stroke-dasharray: 3 4;
+    opacity: 0.85;
+  }
+
+  &.on-path {
+    stroke: var(--t-line-path);
+    stroke-width: 2.1;
+  }
+}

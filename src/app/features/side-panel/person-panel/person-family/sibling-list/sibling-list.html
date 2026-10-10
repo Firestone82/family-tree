@@ -1,0 +1,24 @@
+<div class="group">
+  <span class="group-label">{{ t('siblings.title') }}</span>
+  @for (s of siblings(); track s.id) {
+    <button type="button" stemmaPersonRow [name]="s.name" [dates]="s.dates" [tincture]="s.tincture" [tag]="s.tag" (click)="people.select(s.id)"></button>
+  } @empty {
+    @if (!halfSiblings().length) {
+      <p class="empty-note">{{ t('siblings.none') }}</p>
+    }
+  }
+  <div class="adds">
+    <button type="button" class="link-btn" (click)="people.startAdd('sibling', person().id)">
+      <stemma-icon name="plus" [size]="14" />{{ t('siblings.add') }}
+    </button>
+  </div>
+</div>
+
+@if (halfSiblings().length) {
+  <div class="group">
+    <span class="group-label">{{ t('siblings.half') }}</span>
+    @for (s of halfSiblings(); track s.id) {
+      <button type="button" stemmaPersonRow [name]="s.name" [dates]="s.dates" [tincture]="s.tincture" (click)="people.select(s.id)"></button>
+    }
+  </div>
+}

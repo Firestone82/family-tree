@@ -1,0 +1,33 @@
+:host {
+  display: contents;
+}
+
+dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: 0;
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--sheet);
+  color: var(--ink);
+  box-shadow: var(--shadow-2);
+
+  &.wide {
+    width: min(720px, calc(100vw - 32px));
+  }
+
+  &::backdrop {
+    background: var(--scrim);
+  }
+
+  &[open] {
+    animation: dialog-in 160ms ease-out;
+  }
+}
+
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}

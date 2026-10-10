@@ -1,0 +1,21 @@
+:host {
+  display: grid;
+}
+
+.background {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.switches {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+}
+
+@media (max-width: 380px) {
+  .switches {
+    grid-template-columns: 1fr;
+  }
+}

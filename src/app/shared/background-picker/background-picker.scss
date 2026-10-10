@@ -1,0 +1,60 @@
+:host {
+  display: grid;
+  gap: 10px;
+}
+
+.current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* A small swatch of the picture on a checkerboard, so transparent pictures show as such. */
+.thumb {
+  flex: none;
+  width: 56px;
+  height: 42px;
+  border: 1px solid var(--rule-2);
+  border-radius: var(--radius-sm);
+  background: repeating-conic-gradient(var(--sheet-2) 0 25%, var(--sheet) 0 50%) 0 0 / 10px 10px;
+  object-fit: cover;
+}
+
+.about {
+  display: grid;
+  min-width: 0;
+}
+
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.size,
+.value {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.range {
+  width: 100%;
+  accent-color: var(--ink);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hint {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: 1.45;
+}

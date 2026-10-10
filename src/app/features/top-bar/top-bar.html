@@ -1,0 +1,35 @@
+<header class="bar">
+  <button type="button" class="brand" (click)="ui.showOverview()" [attr.aria-label]="t('bar.brand', { title: title() })">
+    <svg class="logo" viewBox="0 0 26 30" aria-hidden="true">
+      <path class="logo-shield" d="M0,0H26V12.6C26,22.2 19.5,27.6 13,30C6.5,27.6 0,22.2 0,12.6Z" />
+      <path class="logo-mark" d="M7.5,8.5H18.5M13,8.5V15M9,15H17M9,15V20.5M17,15V20.5" />
+    </svg>
+    <span class="wordmark">Stemma</span>
+  </button>
+  <span class="divider" aria-hidden="true"></span>
+  <button type="button" class="title" (click)="ui.showOverview()" [title]="t('bar.overview')">{{ title() }}</button>
+  <span class="spacer"></span>
+  <nav class="actions" [attr.aria-label]="t('bar.actions')">
+    <stemma-history-buttons />
+    @if (ui.narrow()) {
+      <button type="button" class="btn ghost icon" (click)="ui.togglePeople()" [attr.aria-label]="t('bar.people')" [title]="t('bar.people')">
+        <stemma-icon name="people" />
+      </button>
+    }
+    <button
+      type="button"
+      class="btn ghost"
+      [class.icon]="ui.narrow()"
+      (click)="documents.openPrint()"
+      [attr.aria-label]="t('bar.print')"
+      [title]="t('bar.printHint')"
+    >
+      <stemma-icon name="printer" />
+      @if (!ui.narrow()) {
+        <span>{{ t('bar.printShort') }}</span>
+      }
+    </button>
+    <stemma-appearance-menu [iconOnly]="ui.narrow()" />
+    <stemma-file-menu />
+  </nav>
+</header>

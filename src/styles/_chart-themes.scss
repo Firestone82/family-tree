@@ -1,0 +1,221 @@
+// The chart's colours, one set per chart style. Components of the chart use
+// only these tokens (--t-*), so a new style is a new set here.
+//
+// auto     follows light or dark mode on the device
+// archive  grey-green board with index-card names
+// print    white paper and black ink
+// night    dark slate
+
+@use 'sass:list';
+@use 'sass:map';
+
+$light: (
+  paper: #e9ece6,
+  dots: #cdd3cb,
+  band: rgb(29 39 49 / 0.035),
+  card: #fbfbf8,
+  card-edge: #c3cac2,
+  shadow: rgb(29 39 49 / 0.08),
+  ink: #1d2731,
+  muted: #5b6770,
+  faint: #8b969d,
+  line: #5c6871,
+  line-path: #1d2731,
+  select: #1d2731,
+  kin: #8a5524,
+  card-male: #e8eef5,
+  card-female: #f6e9ec,
+  male: #2f5d9e,
+  female: #a33d5e,
+  break: #b0443a,
+  tree-wood: #b9a787,
+  tree-bark: #a08d6b,
+  tree-shade: #cbd8c0,
+  tree-body: #d6e0cc,
+  tree-top: #e0e8d7,
+  tree-light: #e5ecdd,
+  leaf-0: #9bb38a,
+  leaf-1: #abc19b,
+  leaf-2: #bbcfac,
+  leaf-3: #cadbbc,
+);
+
+$dark: (
+  paper: #13181c,
+  dots: #252d33,
+  band: rgb(235 230 219 / 0.03),
+  card: #1e252b,
+  card-edge: #353f47,
+  shadow: rgb(0 0 0 / 0.35),
+  ink: #ebe6db,
+  muted: #a4adb4,
+  faint: #7d8890,
+  line: #8a959d,
+  line-path: #ebe6db,
+  select: #ebe6db,
+  kin: #d6a96d,
+  card-male: #1f2832,
+  card-female: #2b2226,
+  male: #84aae2,
+  female: #e08aa3,
+  break: #e88a7c,
+  tree-wood: #3b3630,
+  tree-bark: #4a443c,
+  tree-shade: #18211b,
+  tree-body: #1b251e,
+  tree-top: #1f2a22,
+  tree-light: #212d24,
+  leaf-0: #2b3e2f,
+  leaf-1: #324836,
+  leaf-2: #3a523f,
+  leaf-3: #435d48,
+);
+
+$print: map.merge(
+  $light,
+  (
+    paper: #ffffff,
+    dots: transparent,
+    band: rgb(0 0 0 / 0.028),
+    card: #ffffff,
+    card-edge: #8f989e,
+    shadow: transparent,
+    ink: #12161a,
+    muted: #3d464d,
+    faint: #6b757c,
+    line: #2a3137,
+    line-path: #000000,
+    select: #12161a,
+    kin: #6b4318,
+    card-male: #eef3f9,
+    card-female: #fbeef1,
+    break: #9a2b20,
+    tree-wood: #e0d7cb,
+    tree-bark: #d0c4b5,
+    tree-shade: #e5f0e1,
+    tree-body: #ecf4e9,
+    tree-top: #f2f8f0,
+    tree-light: #f5faf3,
+    leaf-0: #c0dcb6,
+    leaf-1: #cce4c3,
+    leaf-2: #d8ebd0,
+    leaf-3: #e2f0dc,
+  )
+);
+
+// Family colours on the name shields.
+$tinctures-light: (
+  'azure': (
+    #2f5d9e,
+    #ffffff,
+  ),
+  'gules': (
+    #a53b3b,
+    #ffffff,
+  ),
+  'vert': (
+    #2e7250,
+    #ffffff,
+  ),
+  'purpure': (
+    #6a4b90,
+    #ffffff,
+  ),
+  'or': (
+    #c4952c,
+    #2a1f0a,
+  ),
+  'tenne': (
+    #b3632a,
+    #ffffff,
+  ),
+  'sanguine': (
+    #8b2f53,
+    #ffffff,
+  ),
+  'celeste': (
+    #3a88b3,
+    #ffffff,
+  ),
+  'sable': (
+    #353b42,
+    #ffffff,
+  ),
+  'argent': (
+    #ffffff,
+    #38424a,
+  ),
+);
+
+$tinctures-dark: (
+  'azure': (
+    #5a85c6,
+    #0e1622,
+  ),
+  'gules': (
+    #c55f5b,
+    #1c0d0c,
+  ),
+  'vert': (
+    #4f9a71,
+    #0b1a12,
+  ),
+  'purpure': (
+    #9172b6,
+    #160f20,
+  ),
+  'or': (
+    #d6ab48,
+    #1e1608,
+  ),
+  'tenne': (
+    #cd8145,
+    #1f1206,
+  ),
+  'sanguine': (
+    #b0527a,
+    #1d0b13,
+  ),
+  'celeste': (
+    #5eacd4,
+    #0a1820,
+  ),
+  'sable': (
+    #5b636c,
+    #f1ede4,
+  ),
+  'argent': (
+    #2b333a,
+    #d9d4ca,
+  ),
+);
+
+@mixin tokens($colors, $tinctures, $argent-edge) {
+  @each $name, $value in $colors {
+    --t-#{$name}: #{$value};
+  }
+  @each $name, $pair in $tinctures {
+    --tc-#{$name}: #{list.nth($pair, 1)};
+    --tc-#{$name}-ink: #{list.nth($pair, 2)};
+  }
+  --tc-argent-edge: #{$argent-edge};
+}
+
+stemma-chart {
+  @include tokens($light, $tinctures-light, #9aa3a9);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) stemma-chart[data-style='auto'] {
+    @include tokens($dark, $tinctures-dark, #66717a);
+  }
+}
+
+:root[data-theme='dark'] stemma-chart[data-style='auto'],
+stemma-chart[data-style='night'] {
+  @include tokens($dark, $tinctures-dark, #66717a);
+}
+
+stemma-chart[data-style='print'] {
+  @include tokens($print, $tinctures-light, #9aa3a9);
+}

@@ -1,0 +1,14 @@
+<div class="field">
+  <span class="field-label" id="add-rel-label">{{ t('add.parentKind') }}</span>
+  <stemma-segmented labelledBy="add-rel-label" [options]="relations()" [value]="relation()" (valueChange)="relationChange.emit($event)" />
+</div>
+@if (shared(); as s) {
+  @if (relation() === 'biological' && s.optional) {
+    <label class="check">
+      <input type="checkbox" [checked]="withSiblings()" (change)="withSiblingsChange.emit(checked($event))" />
+      {{ t('add.alsoParentOf', { names: s.names }) }}
+    </label>
+  } @else if (relation() === 'biological') {
+    <p class="note">{{ t('add.becomesParentOf', { names: s.names }) }}</p>
+  }
+}

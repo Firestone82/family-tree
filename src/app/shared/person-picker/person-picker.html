@@ -1,0 +1,35 @@
+<input
+  class="input"
+  type="search"
+  autocomplete="off"
+  role="combobox"
+  aria-autocomplete="list"
+  aria-expanded="true"
+  [id]="inputId()"
+  [attr.aria-controls]="listId"
+  [attr.aria-activedescendant]="activeId()"
+  [placeholder]="t('picker.search')"
+  [value]="query()"
+  (input)="onQuery($event)"
+  (keydown)="onKey($event)"
+/>
+<ul class="list" role="listbox" [id]="listId" [attr.aria-label]="t('picker.list')">
+  @for (p of results(); track p.id; let i = $index) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- options are chosen from the keyboard in the search field (arrow keys and Enter) -->
+    <li
+      role="option"
+      [id]="listId + '-' + i"
+      [attr.aria-selected]="p.id === selected()"
+      [class.active]="i === active()"
+      [class.chosen]="p.id === selected()"
+      (click)="choose(p.id)"
+      (pointerenter)="active.set(i)"
+    >
+      <span class="mini-shield" [attr.data-tincture]="p.tincture"></span>
+      <span class="name">{{ p.name }}</span>
+      <span class="dates">{{ p.dates }}</span>
+    </li>
+  } @empty {
+    <li class="empty">{{ query() ? t('picker.noMatch') : t('picker.nobody') }}</li>
+  }
+</ul>

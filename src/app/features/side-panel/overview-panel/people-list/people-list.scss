@@ -1,0 +1,43 @@
+:host {
+  display: grid;
+  gap: 12px;
+}
+
+.search {
+  position: relative;
+
+  stemma-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    translate: 0 -50%;
+    color: var(--ink-3);
+    pointer-events: none;
+  }
+
+  .input {
+    padding-left: 34px;
+  }
+}
+
+.families-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: -6px;
+}
+
+.families-count {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+}
+
+.families {
+  display: grid;
+  max-height: min(52vh, 560px);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}

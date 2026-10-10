@@ -1,0 +1,16 @@
+<div class="stack" aria-live="polite" aria-atomic="false">
+  @for (toast of toasts.toasts(); track toast.id) {
+    <div class="toast" [class.error]="toast.tone === 'error'" role="status">
+      @if (toast.tone === 'error') {
+        <stemma-icon name="warning" [size]="16" />
+      }
+      <span class="text">{{ toast.text }}</span>
+      @if (toast.action; as action) {
+        <button type="button" class="action" (click)="run(toast)">{{ action.label }}</button>
+      }
+      <button type="button" class="dismiss" (click)="toasts.dismiss(toast.id)" [attr.aria-label]="t('common.dismiss')">
+        <stemma-icon name="close" [size]="14" />
+      </button>
+    </div>
+  }
+</div>

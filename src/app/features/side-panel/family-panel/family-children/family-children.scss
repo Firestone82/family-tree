@@ -1,0 +1,78 @@
+:host {
+  display: grid;
+}
+
+/* Arrows to reorder on the left; the child, then how they are related, on two lines. */
+.child-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'order person remove'
+    'order relation relation';
+  align-items: center;
+  column-gap: 2px;
+  padding-bottom: 6px;
+
+  [stemmaPersonRow] {
+    grid-area: person;
+  }
+
+  .select {
+    grid-area: relation;
+    justify-self: start;
+    width: auto;
+    min-width: 168px;
+    max-width: 100%;
+    min-height: 30px;
+    margin-left: 58px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: var(--text-sm);
+  }
+
+  .remove {
+    grid-area: remove;
+  }
+}
+
+.order {
+  display: flex;
+  grid-area: order;
+  flex-direction: column;
+
+  .row-action {
+    height: 18px;
+  }
+}
+
+/*
+ * Between two children: a quiet "born together" link, and when it is on, a
+ * bracket joining the twins' rows with the word for them.
+ */
+.birth-link {
+  display: flex;
+  margin: -8px 0 -2px 58px;
+
+  .link-btn {
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 999px;
+    color: var(--ink-3);
+    font-size: var(--text-xs);
+    text-decoration: none;
+    opacity: 0.75;
+  }
+
+  .link-btn:hover,
+  .link-btn:focus-visible {
+    color: var(--ink);
+    opacity: 1;
+  }
+
+  &.linked .link-btn {
+    background: var(--sheet-2);
+    color: var(--ink);
+    font-weight: 500;
+    opacity: 1;
+  }
+}

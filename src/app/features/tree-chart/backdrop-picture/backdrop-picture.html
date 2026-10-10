@@ -1,0 +1,6 @@
+@let a = area();
+@let b = box();
+<!-- The nested svg clips what a filling picture sticks out of the area. -->
+<svg:svg [attr.x]="a.x" [attr.y]="a.y" [attr.width]="a.w" [attr.height]="a.h" overflow="hidden">
+  <svg:image [attr.href]="picture().href" [attr.x]="b.x - a.x" [attr.y]="b.y - a.y" [attr.width]="b.w" [attr.height]="b.h" [attr.opacity]="picture().opacity" />
+</svg:svg>

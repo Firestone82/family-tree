@@ -1,0 +1,10 @@
+<svg class="mark" viewBox="0 0 26 30" aria-hidden="true">
+  <path d="M0,0H26V12.6C26,22.2 19.5,27.6 13,30C6.5,27.6 0,22.2 0,12.6Z" />
+</svg>
+<h1 id="empty-title">{{ t('empty.title') }}</h1>
+<p>{{ t('empty.text') }}</p>
+<div class="actions">
+  <button type="button" class="btn primary" (click)="addFirst()"><stemma-icon name="plus" [size]="16" />{{ t('empty.addFirst') }}</button>
+  <button type="button" class="btn" (click)="documents.openFile()"><stemma-icon name="folder" [size]="16" />{{ t('empty.open') }}</button>
+</div>
+<button type="button" class="link-btn" (click)="documents.loadSample()">{{ t('empty.sample') }}</button>

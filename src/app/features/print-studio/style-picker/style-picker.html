@@ -1,0 +1,14 @@
+<h3 id="print-g-style">{{ t('print.style') }}</h3>
+<div class="tiles" role="radiogroup" [attr.aria-label]="t('print.style')">
+  @for (th of themes(); track th.id) {
+    <button type="button" role="radio" class="tile" [attr.aria-checked]="current() === th.id" (click)="choose.emit(th.id)">
+      <span class="swatch" aria-hidden="true">
+        <span [style.background]="th.swatch[0]"></span>
+        <span [style.background]="th.swatch[1]"></span>
+        <span [style.background]="th.swatch[2]"></span>
+      </span>
+      <span class="name">{{ th.name }}</span>
+      <span class="text">{{ th.description }}</span>
+    </button>
+  }
+</div>

@@ -1,0 +1,20 @@
+<div class="field">
+  <label for="add-given">{{ t('name.given') }}</label>
+  <input id="add-given" class="input" autocomplete="off" [value]="given()" (input)="givenChange.emit(text($event))" />
+</div>
+<div class="field">
+  <label for="add-surname">{{ t('name.surname') }}</label>
+  <input id="add-surname" class="input" autocomplete="off" [value]="surname()" (input)="surnameChange.emit(text($event))" />
+</div>
+<div class="field">
+  <span class="field-label" id="add-sex-label">{{ t('name.sex') }}</span>
+  <stemma-segmented labelledBy="add-sex-label" [options]="sexes()" [value]="sex()" (valueChange)="sexChange.emit($event)" />
+</div>
+<div class="field">
+  <label for="add-birth">{{ t('life.born') }}</label>
+  <stemma-date-field inputId="add-birth" [value]="birth()" (valueChange)="birthChange.emit($event)" />
+</div>
+<label class="check">
+  <input type="checkbox" [checked]="deceased()" (change)="deceasedChange.emit(checked($event))" />
+  {{ t('life.hasDied') }}
+</label>

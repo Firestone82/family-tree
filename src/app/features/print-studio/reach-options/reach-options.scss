@@ -1,0 +1,38 @@
+:host {
+  display: grid;
+}
+
+.steppers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stepper {
+  display: grid;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--sheet-2);
+
+  output {
+    flex: 1 1 auto;
+    font-size: var(--text-md);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .btn {
+    border-color: transparent;
+    background: var(--sheet);
+  }
+}

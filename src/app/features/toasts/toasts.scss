@@ -1,0 +1,78 @@
+.stack {
+  position: fixed;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  z-index: 60;
+  display: grid;
+  gap: 8px;
+  width: min(440px, calc(100vw - 32px));
+  translate: -50% 0;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 6px 6px 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--ink);
+  color: var(--on-ink);
+  box-shadow: var(--shadow-2);
+  font-size: var(--text-sm);
+  pointer-events: auto;
+  animation: toast-in 180ms ease-out;
+
+  &.error {
+    background: var(--danger);
+    color: #fff;
+  }
+}
+
+.text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.action {
+  flex: none;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--on-ink) 16%, transparent);
+  color: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, var(--on-ink) 26%, transparent);
+  }
+}
+
+.dismiss {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}

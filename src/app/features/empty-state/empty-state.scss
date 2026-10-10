@@ -1,0 +1,43 @@
+:host {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(460px, calc(100% - 32px));
+  translate: -50% -55%;
+  text-align: center;
+}
+
+@media (min-width: 861px) {
+  :host {
+    left: calc((100% - var(--panel-width)) / 2);
+  }
+}
+
+.mark {
+  width: 40px;
+  height: 46px;
+  fill: var(--ink);
+}
+
+h1 {
+  font-size: var(--text-2xl);
+}
+
+p {
+  max-width: 44ch;
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 4px;
+}

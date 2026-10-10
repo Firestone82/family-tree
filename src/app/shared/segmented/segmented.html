@@ -1,0 +1,16 @@
+<div class="seg" role="radiogroup" [attr.aria-label]="label()" [attr.aria-labelledby]="labelledBy()">
+  @for (o of options(); track o.value; let i = $index) {
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="o.value === value()"
+      [attr.tabindex]="o.value === value() ? 0 : -1"
+      [attr.lang]="o.lang"
+      [disabled]="disabled() || o.disabled"
+      (click)="choose(o)"
+      (keydown)="onKey($event, i)"
+    >
+      {{ o.label }}
+    </button>
+  }
+</div>

@@ -1,0 +1,16 @@
+<input
+  class="input"
+  type="text"
+  autocomplete="off"
+  spellcheck="false"
+  [id]="inputId()"
+  [placeholder]="placeholder() ?? t('date.placeholder')"
+  [value]="text()"
+  [attr.aria-describedby]="hint() ? inputId() + '-hint' : null"
+  (input)="onInput($event)"
+  (focus)="focused.set(true)"
+  (blur)="onBlur()"
+/>
+@if (hint(); as h) {
+  <div class="hint" [class.warn]="h.warn" [id]="inputId() + '-hint'">{{ h.text }}</div>
+}

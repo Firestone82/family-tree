@@ -1,0 +1,15 @@
+.band {
+  fill: transparent;
+
+  &.odd {
+    fill: var(--t-band);
+  }
+}
+
+.label {
+  fill: var(--t-faint);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}

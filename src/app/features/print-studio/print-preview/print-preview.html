@@ -1,0 +1,13 @@
+<div class="stage">
+  @if (svg()) {
+    <div #sheet class="sheet" [style.--ratio]="ratio()" role="img" [attr.aria-label]="t('print.previewOf', { summary: summary() })"></div>
+  } @else {
+    <p class="wait">{{ t('print.preparing') }}</p>
+  }
+</div>
+<p class="summary">
+  {{ summary() }}
+  @if (note(); as n) {
+    <span [class.warn]="n.warn">{{ n.text }}</span>
+  }
+</p>

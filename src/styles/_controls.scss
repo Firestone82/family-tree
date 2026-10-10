@@ -1,0 +1,223 @@
+// Buttons, fields and checkboxes used across the app. Segmented controls and
+// switches are components (shared/segmented, shared/switch).
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--rule-2);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--sheet-2);
+  border-color: var(--ink-3);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn.primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--on-ink);
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink) 86%, var(--sheet));
+  border-color: transparent;
+}
+
+.btn.ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-2);
+}
+
+.btn.ghost:hover:not(:disabled) {
+  background: var(--sheet-2);
+  color: var(--ink);
+  border-color: transparent;
+}
+
+.btn.danger {
+  color: var(--danger);
+}
+
+.btn.danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 8%, var(--sheet));
+}
+
+.btn.icon {
+  width: 36px;
+  padding: 0;
+}
+
+.btn.small {
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: var(--text-xs);
+}
+
+.btn.small.icon {
+  width: 30px;
+  padding: 0;
+}
+
+.btn.block {
+  width: 100%;
+}
+
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--rule-2);
+  text-underline-offset: 3px;
+}
+
+.link-btn:hover {
+  color: var(--ink);
+  text-decoration-color: currentColor;
+}
+
+/* Fields */
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field > label,
+.field-label {
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  background: var(--sheet-2);
+  color: var(--ink);
+  font-size: var(--text-md);
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--ink-3);
+}
+
+.input:hover,
+.textarea:hover,
+.select:hover {
+  border-color: var(--rule-2);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--focus);
+  background: var(--sheet);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 18%, transparent);
+}
+
+.textarea {
+  min-height: 84px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.select {
+  appearance: none;
+  padding-right: 30px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-2) 50%), linear-gradient(135deg, var(--ink-2) 50%, transparent 50%);
+  background-position:
+    calc(100% - 15px) 52%,
+    calc(100% - 10px) 52%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
+.hint {
+  color: var(--ink-3);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+}
+
+.hint.warn {
+  color: var(--danger);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 380px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ink);
+}

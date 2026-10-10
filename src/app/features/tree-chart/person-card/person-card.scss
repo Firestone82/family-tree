@@ -1,0 +1,151 @@
+// The card's colours come from the chart style tokens (--t-*) set on <stemma-chart>.
+
+:host {
+  cursor: pointer;
+  outline: none;
+  animation: card-in 420ms ease-out both;
+}
+
+.card-shadow {
+  fill: var(--t-shadow);
+}
+
+.card-shape {
+  fill: var(--t-card);
+  stroke: var(--t-card-edge);
+  stroke-width: 1;
+  transition: stroke 120ms ease;
+}
+
+:host(.tinted[data-sex='male']) .card-shape {
+  fill: var(--t-card-male);
+}
+
+:host(.tinted[data-sex='female']) .card-shape {
+  fill: var(--t-card-female);
+}
+
+:host(:hover) .card-shape {
+  stroke: var(--t-muted);
+}
+
+:host(:focus-visible) .card-shape {
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+
+:host(.focus) .card-shape {
+  stroke: var(--t-ink);
+  stroke-width: 1.6;
+}
+
+:host(.flash) .card-shape {
+  animation: flash 1.3s ease-out;
+}
+
+.given {
+  fill: var(--t-ink);
+  font-family: var(--font-serif);
+  font-weight: 500;
+}
+
+.surname {
+  fill: var(--t-ink);
+  font-family: var(--font-sc);
+  font-weight: 500;
+  letter-spacing: 0.015em;
+}
+
+.dates {
+  fill: var(--t-muted);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+}
+
+.place {
+  fill: var(--t-faint);
+  font-family: var(--font-sans);
+}
+
+/* How the person is related to whoever the tree is centred on. */
+.kin {
+  fill: var(--t-kin);
+  font-family: var(--font-sc);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+.sex-mark {
+  fill: none;
+  stroke: var(--t-faint);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:host([data-sex='male']) .sex-mark {
+  stroke: var(--t-male);
+}
+
+:host([data-sex='female']) .sex-mark {
+  stroke: var(--t-female);
+}
+
+.focus-ring {
+  fill: none;
+  stroke: var(--t-kin);
+  stroke-width: 1.3;
+}
+
+.focus-dot {
+  fill: var(--t-kin);
+}
+
+.shield-field {
+  fill: var(--tc);
+  stroke: var(--tc-edge, none);
+  stroke-width: 1;
+}
+
+.shield-initials {
+  fill: var(--tc-ink);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.photo-ring {
+  fill: var(--tc);
+  stroke: var(--tc-edge, none);
+}
+
+$tinctures: 'azure', 'gules', 'vert', 'purpure', 'or', 'tenne', 'sanguine', 'celeste', 'sable';
+
+@each $name in $tinctures {
+  :host([data-tincture='#{$name}']) {
+    --tc: var(--tc-#{$name});
+    --tc-ink: var(--tc-#{$name}-ink);
+  }
+}
+
+:host([data-tincture='argent']) {
+  --tc: var(--tc-argent);
+  --tc-ink: var(--tc-argent-ink);
+  --tc-edge: var(--tc-argent-edge);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes flash {
+  0% {
+    stroke: var(--t-select);
+    stroke-width: 5;
+  }
+  100% {
+    stroke-width: 1;
+  }
+}

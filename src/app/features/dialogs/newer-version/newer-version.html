@@ -1,0 +1,9 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.newer.title') }}</h2>
+  <p>{{ message() }}</p>
+  <p>{{ t('dialog.newer.text') }}</p>
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn" (click)="done.emit()">{{ t('common.cancel') }}</button>
+  <button type="button" class="btn primary" (click)="openAnyway()">{{ t('dialog.newer.open') }}</button>
+</div>

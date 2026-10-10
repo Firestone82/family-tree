@@ -1,0 +1,22 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.import.title', { title: title() }) }}</h2>
+  @if (upgradeLines().length) {
+    <p>{{ t('dialog.import.upgraded') }}</p>
+    <ul class="notes">
+      @for (u of upgradeLines(); track $index) {
+        <li>{{ u }}</li>
+      }
+    </ul>
+  }
+  @if (noteLines().length) {
+    <p>{{ t('dialog.import.notes') }}</p>
+    <ul class="notes">
+      @for (l of noteLines(); track $index) {
+        <li>{{ l }}</li>
+      }
+    </ul>
+  }
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn primary" (click)="done.emit()">{{ t('common.done') }}</button>
+</div>

@@ -1,0 +1,77 @@
+@let req = request();
+<header class="panel-head">
+  <div class="grow">
+    <h2>{{ title() }}</h2>
+    <p class="panel-sub">{{ t('add.for', { name: name() }) }}</p>
+  </div>
+  <button type="button" class="btn ghost icon" (click)="cancel()" [attr.aria-label]="t('common.cancel')"><stemma-icon name="close" /></button>
+</header>
+
+<form class="panel-body" (submit)="submit($event)">
+  <section class="panel-section">
+    <stemma-segmented [label]="t('add.who')" [options]="modes()" [value]="mode()" (valueChange)="mode.set($event)" />
+    @if (mode() === 'new') {
+      <stemma-new-person-fields
+        [given]="given()"
+        [surname]="surname()"
+        [sex]="sex()"
+        [birth]="birth()"
+        [deceased]="deceased()"
+        (givenChange)="given.set($event)"
+        (surnameChange)="setSurname($event)"
+        (sexChange)="setSex($event)"
+        (birthChange)="birth.set($event)"
+        (deceasedChange)="deceased.set($event)"
+      />
+    } @else {
+      <div class="field">
+        <label for="add-existing">{{ t('add.find') }}</label>
+        <stemma-person-picker inputId="add-existing" [exclude]="exclude()" [(selected)]="existingId" />
+      </div>
+    }
+  </section>
+
+  @switch (req.relation) {
+    @case ('parent') {
+      <stemma-parent-options
+        [relation]="relation()"
+        (relationChange)="relation.set($event)"
+        [shared]="sharedSiblings()"
+        [withSiblings]="withSiblings()"
+        (withSiblingsChange)="withSiblings.set($event)"
+      />
+    }
+    @case ('partner') {
+      <stemma-partner-options
+        [status]="status()"
+        (statusChange)="status.set($event)"
+        [orphans]="orphans()?.names ?? ''"
+        [join]="joinFamily()"
+        (joinChange)="joinFamily.set($event)"
+      />
+    }
+    @case ('child') {
+      <stemma-child-options
+        [partners]="partnerOptions()"
+        [otherParentId]="otherParentId()"
+        (otherParentChange)="setOtherParent($event)"
+        [relation]="relation()"
+        (relationChange)="relation.set($event)"
+      />
+    }
+    @case ('sibling') {
+      <section class="panel-section">
+        <p class="note">{{ siblingNote() }}</p>
+        <label class="check">
+          <input type="checkbox" [checked]="twin()" (change)="twin.set(checked($event))" />
+          {{ twinLabel() }}
+        </label>
+      </section>
+    }
+  }
+
+  <div class="form-actions">
+    <button type="submit" class="btn primary" [disabled]="!canSubmit()"><stemma-icon name="plus" [size]="16" />{{ submitLabel() }}</button>
+    <button type="button" class="btn" (click)="cancel()">{{ t('common.cancel') }}</button>
+  </div>
+</form>

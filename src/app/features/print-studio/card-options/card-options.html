@@ -1,0 +1,16 @@
+<h3 id="print-g-cards">{{ t('print.cards') }}</h3>
+<div class="switches">
+  @for (s of switches(); track s.key) {
+    <stemma-switch [checked]="s.on" (checkedChange)="toggle(s.key, $event)">{{ t(s.label) }}</stemma-switch>
+  }
+</div>
+@if (showTree()) {
+  <div class="background">
+    <span class="field-label">{{ t('background.title') }}</span>
+    <stemma-background-picker idPrefix="print-bg" />
+  </div>
+}
+<div class="field">
+  <span class="field-label" id="print-language">{{ t('print.language') }}</span>
+  <stemma-segmented labelledBy="print-language" [compact]="true" [options]="languages" [value]="language()" (valueChange)="model.setChartLanguage($event)" />
+</div>

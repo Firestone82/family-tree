@@ -1,0 +1,21 @@
+<button type="button" class="btn" (click)="ui.toggleMenu('file')" aria-haspopup="menu" [attr.aria-expanded]="open()">
+  {{ t('file.menu') }} <stemma-icon name="chevronDown" [size]="14" />
+</button>
+@if (open()) {
+  <div class="menu" role="menu" [attr.aria-label]="t('file.menu')">
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.newTree()"><stemma-icon name="file" />{{ t('file.new') }}</button>
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.openFile()">
+      <stemma-icon name="folder" />{{ t('file.open') }}<span class="shortcut">Ctrl O</span>
+    </button>
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.saveXml()">
+      <stemma-icon name="download" />{{ saveLabel() }}<span class="shortcut">Ctrl S</span>
+    </button>
+    <div class="menu-sep" role="separator"></div>
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.openPrint()">
+      <stemma-icon name="printer" />{{ t('file.print') }}<span class="shortcut">Ctrl P</span>
+    </button>
+    <div class="menu-sep" role="separator"></div>
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.loadSample()"><stemma-icon name="people" />{{ t('file.sample') }}</button>
+    <button type="button" class="menu-item" role="menuitem" (click)="documents.showAbout()"><stemma-icon name="info" />{{ t('file.about') }}</button>
+  </div>
+}

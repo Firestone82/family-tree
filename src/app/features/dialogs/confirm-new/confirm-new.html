@@ -1,0 +1,9 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.new.title') }}</h2>
+  <p>{{ t('dialog.new.text') }}</p>
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn" (click)="done.emit()">{{ t('common.cancel') }}</button>
+  <button type="button" class="btn" (click)="saveFirst()"><stemma-icon name="download" [size]="16" />{{ t('dialog.new.saveFirst') }}</button>
+  <button type="button" class="btn primary" (click)="documents.startEmpty()">{{ t('dialog.new.confirm') }}</button>
+</div>

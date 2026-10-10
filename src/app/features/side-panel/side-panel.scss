@@ -1,0 +1,68 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+:host(:not(.narrow)) {
+  flex: none;
+  width: var(--panel-width);
+  border-left: 1px solid var(--rule);
+}
+
+.scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  &.locked {
+    overflow: hidden;
+  }
+}
+
+/* On phones: a sheet that peeks up from the bottom and can be pulled up. */
+:host(.narrow) {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  height: var(--peek);
+  max-height: calc(100% - 48px);
+  border-top: 1px solid var(--rule);
+  border-radius: 16px 16px 0 0;
+  box-shadow: var(--shadow-2);
+  transform: translateY(105%);
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:host(.narrow.open) {
+  transform: none;
+}
+
+:host(.narrow.expanded) {
+  height: 82%;
+}
+
+.handle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  height: 22px;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+  touch-action: none;
+
+  span {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--rule-2);
+  }
+}

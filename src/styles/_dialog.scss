@@ -1,0 +1,32 @@
+// Content of dialogs; each dialog component fills a body and a row of actions.
+
+.dialog-body {
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 8px;
+}
+
+.dialog-body h2 {
+  font-size: var(--text-xl);
+}
+
+.dialog-body p {
+  margin: 0;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 22px 20px;
+}
+
+@keyframes stemma-dialog-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}

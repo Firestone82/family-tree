@@ -1,0 +1,26 @@
+@let r = request();
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the backdrop closes the dialog; Escape does the same from the keyboard -->
+<dialog #dialog class="dialog" [class.wide]="wide()" (close)="onClosed()" (click)="onBackdrop($event)">
+  @if (r) {
+    @switch (r.kind) {
+      @case ('confirm-delete') {
+        <stemma-confirm-delete [personId]="r.personId" (done)="close()" />
+      }
+      @case ('confirm-new') {
+        <stemma-confirm-new (done)="close()" />
+      }
+      @case ('import-report') {
+        <stemma-import-report [title]="r.title" [notes]="r.notes" [upgrades]="r.upgrades" (done)="close()" />
+      }
+      @case ('newer-version') {
+        <stemma-newer-version [notice]="r.notice" [xml]="r.xml" [name]="r.name" (done)="close()" />
+      }
+      @case ('xml') {
+        <stemma-xml-export [xml]="r.xml" [filename]="r.filename" (done)="close()" />
+      }
+      @case ('about') {
+        <stemma-about-format (done)="close()" />
+      }
+    }
+  }
+</dialog>

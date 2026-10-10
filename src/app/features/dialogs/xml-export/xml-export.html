@@ -1,0 +1,16 @@
+<div class="dialog-body">
+  <h2>{{ t('dialog.xml.title') }}</h2>
+  <p>
+    {{ text().before }}<strong>{{ filename() }}</strong
+    >{{ text().after }}
+  </p>
+  <label class="visually-hidden" for="xml-text">{{ t('dialog.xml.label') }}</label>
+  <textarea id="xml-text" #area class="textarea xml" readonly [value]="xml()" (focus)="area.select()"></textarea>
+</div>
+<div class="dialog-actions">
+  <button type="button" class="btn" (click)="done.emit()">{{ t('common.close') }}</button>
+  <button type="button" class="btn" (click)="documents.saveXmlAsText(xml(), filename())">
+    <stemma-icon name="download" [size]="16" />{{ t('dialog.xml.saveText') }}
+  </button>
+  <button type="button" class="btn primary" (click)="copy(area)"><stemma-icon name="copy" [size]="16" />{{ t('dialog.xml.copy') }}</button>
+</div>

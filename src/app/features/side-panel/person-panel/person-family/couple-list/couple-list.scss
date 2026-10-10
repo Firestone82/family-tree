@@ -1,0 +1,68 @@
+// The group sits directly in the family section's grid.
+:host {
+  display: contents;
+}
+
+.couple {
+  display: grid;
+  gap: 2px;
+  padding: 6px 0 8px;
+
+  & + .couple {
+    border-top: 1px dashed var(--rule);
+  }
+}
+
+.children {
+  display: grid;
+  margin-left: 22px;
+  padding-left: 10px;
+  border-left: 1px solid var(--rule);
+}
+
+.relationship {
+  margin: 0 0 4px 34px;
+
+  > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 8px;
+    padding: 2px 0 6px;
+    color: var(--ink-2);
+    font-size: var(--text-sm);
+    list-style: none;
+    cursor: pointer;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &::after {
+      content: attr(data-edit);
+      margin-left: auto;
+      color: var(--ink-3);
+      font-size: var(--text-xs);
+      text-decoration: underline;
+      text-decoration-color: var(--rule-2);
+      text-underline-offset: 3px;
+    }
+  }
+
+  &[open] > summary::after {
+    content: attr(data-done);
+  }
+
+  .status {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .summary.empty {
+    color: var(--ink-3);
+  }
+
+  stemma-relationship-editor {
+    padding: 4px 0 10px;
+  }
+}

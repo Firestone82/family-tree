@@ -1,0 +1,28 @@
+<h3 id="print-g-far">{{ t('print.reach') }}</h3>
+<div class="steppers">
+  @for (s of steppers(); track s.key) {
+    <div class="stepper">
+      <span class="field-label" [id]="s.id">{{ s.label }}</span>
+      <div class="row" role="group" [attr.aria-labelledby]="s.id">
+        <button type="button" class="btn icon small" (click)="step(s.key, -1)" [disabled]="s.atMin" [attr.aria-label]="s.fewer">
+          <stemma-icon name="minus" [size]="16" />
+        </button>
+        <output aria-live="polite">{{ s.text }}</output>
+        <button type="button" class="btn icon small" (click)="step(s.key, 1)" [disabled]="s.atMax" [attr.aria-label]="s.more">
+          <stemma-icon name="plus" [size]="16" />
+        </button>
+      </div>
+    </div>
+  }
+</div>
+<div class="field">
+  <span class="field-label" id="print-branches">{{ t('print.relatives') }}</span>
+  <stemma-segmented
+    labelledBy="print-branches"
+    [compact]="true"
+    [options]="branches()"
+    [value]="branchValue()"
+    (valueChange)="model.set({ branches: $event })"
+  />
+  <span class="hint">{{ branchHint() }}</span>
+</div>

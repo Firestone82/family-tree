@@ -1,0 +1,56 @@
+@let p = person();
+<h3>{{ t('life.title') }}</h3>
+<div class="grid-2">
+  <div class="field">
+    <label for="person-birth-date">{{ t('life.born') }}</label>
+    <stemma-date-field inputId="person-birth-date" [value]="p.birth?.date" (valueChange)="setDate('birth', $event)" />
+  </div>
+  <div class="field">
+    <label for="person-birth-place">{{ t('life.birthPlace') }}</label>
+    <input
+      id="person-birth-place"
+      class="input"
+      autocomplete="off"
+      [value]="p.birth?.place ?? ''"
+      [placeholder]="t('common.placePlaceholder')"
+      (input)="setPlace('birth', $event)"
+    />
+  </div>
+</div>
+<label class="check">
+  <input id="person-deceased" type="checkbox" [checked]="!!p.death" (change)="setDeceased($event)" />
+  {{ t('life.hasDied') }}
+</label>
+@if (p.death) {
+  <div class="grid-2">
+    <div class="field">
+      <label for="person-death-date">{{ t('life.died') }}</label>
+      <stemma-date-field inputId="person-death-date" [value]="p.death.date" (valueChange)="setDate('death', $event)" />
+    </div>
+    <div class="field">
+      <label for="person-death-place">{{ t('life.deathPlace') }}</label>
+      <input id="person-death-place" class="input" autocomplete="off" [value]="p.death.place ?? ''" (input)="setPlace('death', $event)" />
+    </div>
+  </div>
+}
+<div class="field">
+  <label for="person-occupation">{{ t('life.occupation') }}</label>
+  <input id="person-occupation" class="input" autocomplete="off" [value]="p.occupation ?? ''" (input)="setText('occupation', $event)" />
+</div>
+<div class="field">
+  <span class="field-label">{{ t('life.portrait') }}</span>
+  <div class="photo-row">
+    @if (p.photo) {
+      <img [src]="p.photo" [alt]="t('life.portraitOf', { name: name() })" />
+      <button type="button" class="btn small" (click)="pickPhoto()">{{ t('life.replacePhoto') }}</button>
+      <button type="button" class="btn small ghost" (click)="removePhoto()">{{ t('life.removePhoto') }}</button>
+    } @else {
+      <button type="button" class="btn small" (click)="pickPhoto()"><stemma-icon name="image" [size]="15" />{{ t('life.addPhoto') }}</button>
+      <span class="hint">{{ t('life.photoHint') }}</span>
+    }
+  </div>
+</div>
+<div class="field">
+  <label for="person-notes">{{ t('life.notes') }}</label>
+  <textarea id="person-notes" class="textarea" [value]="p.notes ?? ''" [placeholder]="t('life.notesPlaceholder')" (input)="setText('notes', $event)"></textarea>
+</div>

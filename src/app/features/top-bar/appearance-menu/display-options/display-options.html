@@ -1,0 +1,3 @@
+@for (s of switches(); track s.key) {
+  <stemma-switch [checked]="s.on" (checkedChange)="toggle(s.key, $event)">{{ t(s.label) }}</stemma-switch>
+}

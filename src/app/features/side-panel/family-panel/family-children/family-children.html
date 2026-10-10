@@ -1,0 +1,68 @@
+@let f = family();
+<div class="section-head">
+  <h3>{{ t('familyPanel.children') }}</h3>
+  @if (children().length > 1) {
+    <button type="button" class="link-btn" (click)="families.sortChildren(f.id)">{{ t('familyPanel.sortByBirth') }}</button>
+  }
+</div>
+@for (c of children(); track c.id; let first = $first; let last = $last; let i = $index) {
+  <div class="child-row">
+    <span class="order">
+      <button
+        type="button"
+        class="row-action"
+        [disabled]="first"
+        (click)="families.moveChild(f.id, c.id, -1)"
+        [attr.aria-label]="t('familyPanel.moveEarlier')"
+        [title]="t('familyPanel.moveEarlier')"
+      >
+        <stemma-icon name="arrowUp" [size]="13" />
+      </button>
+      <button
+        type="button"
+        class="row-action"
+        [disabled]="last"
+        (click)="families.moveChild(f.id, c.id, 1)"
+        [attr.aria-label]="t('familyPanel.moveLater')"
+        [title]="t('familyPanel.moveLater')"
+      >
+        <stemma-icon name="arrowDown" [size]="13" />
+      </button>
+    </span>
+    <button type="button" stemmaPersonRow [ordinal]="i + 1" [name]="c.name" [dates]="c.dates" [tincture]="c.tincture" (click)="people.select(c.id)"></button>
+    <label class="visually-hidden" [for]="'rel-' + c.id">{{ t('familyPanel.childRelation', { name: c.name }) }}</label>
+    <select class="select" [id]="'rel-' + c.id" (change)="setRelation(c.id, $event)">
+      @for (r of relations(); track r.value) {
+        <option [value]="r.value" [selected]="c.relation === r.value">{{ r.label }}</option>
+      }
+    </select>
+    <button
+      type="button"
+      class="row-action danger remove"
+      (click)="families.removeChild(f.id, c.id)"
+      [title]="t('familyPanel.removeFromFamily')"
+      [attr.aria-label]="t('familyPanel.removeFromFamily')"
+    >
+      <stemma-icon name="unlink" [size]="16" />
+    </button>
+  </div>
+  @if (c.nextId) {
+    <div class="birth-link" [class.linked]="c.withNext">
+      <button
+        type="button"
+        class="link-btn"
+        [attr.aria-pressed]="c.withNext"
+        [title]="c.withNext ? t('births.unlink') : t('births.link')"
+        (click)="toggleBirth(c.id, c.nextId, c.withNext)"
+      >
+        <stemma-icon [name]="c.withNext ? 'link' : 'plus'" [size]="12" />{{ c.withNext ? c.together : t('births.linkShort') }}
+      </button>
+    </div>
+  }
+} @empty {
+  <p class="empty-note">{{ t('familyPanel.noChildren') }}</p>
+}
+<div class="adds">
+  <button type="button" class="link-btn" (click)="families.addChild(f.id)"><stemma-icon name="plus" [size]="14" />{{ t('familyPanel.addChild') }}</button>
+</div>
+<span class="hint">{{ t('familyPanel.orderHint') }}</span>

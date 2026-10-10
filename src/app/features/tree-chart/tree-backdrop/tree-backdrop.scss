@@ -1,0 +1,56 @@
+// Colours: --t-tree-* and --t-leaf-* from the chart style (styles/_chart-themes.scss).
+
+:host {
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 360ms ease-out;
+}
+
+:host(.faded) {
+  opacity: 0;
+  transition-duration: 120ms;
+}
+
+.wood,
+.twigs {
+  fill: var(--t-tree-wood);
+}
+
+.bark {
+  fill: none;
+  stroke: var(--t-tree-bark);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+}
+
+.shade {
+  fill: var(--t-tree-shade);
+}
+
+.body {
+  fill: url(#stemma-tree-crown);
+}
+
+.light {
+  fill: var(--t-tree-light);
+}
+
+.crown-top {
+  stop-color: var(--t-tree-top);
+}
+
+.crown-middle {
+  stop-color: var(--t-tree-body);
+}
+
+.crown-bottom {
+  stop-color: var(--t-tree-shade);
+}
+
+$tones: 0, 1, 2, 3;
+
+@each $tone in $tones {
+  .leaves[data-tone='#{$tone}'] {
+    fill: var(--t-leaf-#{$tone});
+  }
+}

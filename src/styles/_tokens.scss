@@ -1,0 +1,85 @@
+// Design tokens of the app: colours, type scale, sizes. The chart's own
+// tokens per style are in _chart-themes.scss.
+
+:root {
+  --paper: #e9ece6;
+  --sheet: #fbfbf8;
+  --sheet-2: #f1f3ef;
+  --ink: #1d2731;
+  --ink-2: #4b5761;
+  --ink-3: #78838b;
+  --rule: #d3d8d1;
+  --rule-2: #b9c1b8;
+  --focus: #2f5d9e;
+  --danger: #9b3434;
+  /* Relationship names (Mother, Cousin) use a warm bronze, apart from the family colours. */
+  --kin: #8a5524;
+  --kin-ink: #66390f;
+  --on-ink: #fbfbf8;
+  --scrim: rgb(20 26 31 / 0.38);
+  --shadow-1: 0 1px 2px rgb(29 39 49 / 0.06), 0 4px 14px rgb(29 39 49 / 0.08);
+  --shadow-2: 0 2px 6px rgb(29 39 49 / 0.08), 0 18px 44px rgb(29 39 49 / 0.16);
+
+  --font-serif: 'Alegreya Variable', 'Alegreya', Georgia, 'Times New Roman', serif;
+  --font-sc: 'Alegreya SC', 'Alegreya Variable', Georgia, serif;
+  --font-sans: 'Alegreya Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Type scale (perfect fourth, 15px base) */
+  --text-xs: 12px;
+  --text-sm: 13.5px;
+  --text-md: 15px;
+  --text-lg: 18px;
+  --text-xl: 23px;
+  --text-2xl: 30px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --panel-width: 384px;
+  --bar-height: 52px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #13181c;
+    --sheet: #1b2227;
+    --sheet-2: #232b31;
+    --ink: #ebe6db;
+    --ink-2: #b3bbc1;
+    --ink-3: #87929a;
+    --rule: #2d363d;
+    --rule-2: #3e4952;
+    --focus: #84aae2;
+    --danger: #e38b86;
+    --kin: #d6a96d;
+    --kin-ink: #ecc895;
+    --on-ink: #13181c;
+    --scrim: rgb(0 0 0 / 0.55);
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
+    --shadow-2: 0 2px 6px rgb(0 0 0 / 0.4), 0 18px 44px rgb(0 0 0 / 0.5);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --paper: #13181c;
+  --sheet: #1b2227;
+  --sheet-2: #232b31;
+  --ink: #ebe6db;
+  --ink-2: #b3bbc1;
+  --ink-3: #87929a;
+  --rule: #2d363d;
+  --rule-2: #3e4952;
+  --focus: #84aae2;
+  --danger: #e38b86;
+  --kin: #d6a96d;
+  --kin-ink: #ecc895;
+  --on-ink: #13181c;
+  --scrim: rgb(0 0 0 / 0.55);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.35), 0 4px 14px rgb(0 0 0 / 0.3);
+  --shadow-2: 0 2px 6px rgb(0 0 0 / 0.4), 0 18px 44px rgb(0 0 0 / 0.5);
+
+  color-scheme: dark;
+}

@@ -1,0 +1,18 @@
+/*
+ * Stemma: family tree editor.
+ * Layout: a full-bleed chart on archival board, with a ledger-like panel on the
+ * right (a bottom sheet on phones). The chart carries the colour; the interface
+ * around it stays ink on paper.
+ *
+ * Global styles are the design system: tokens, base elements, and the few
+ * classes shared by many components. Everything else lives with its component.
+ */
+@use 'styles/tokens';
+@use 'styles/base';
+@use 'styles/controls';
+@use 'styles/menu';
+@use 'styles/dialog';
+@use 'styles/panel';
+@use 'styles/heraldry';
+@use 'styles/chart-themes';
+@use 'styles/studio';

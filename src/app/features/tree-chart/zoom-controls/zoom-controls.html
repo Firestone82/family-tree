@@ -1,0 +1,4 @@
+<button type="button" (click)="zoomOut.emit()" [attr.aria-label]="t('zoom.out')" [title]="t('zoom.outHint')"><stemma-icon name="minus" /></button>
+<span class="level" aria-live="polite">{{ percent() }}%</span>
+<button type="button" (click)="zoomIn.emit()" [attr.aria-label]="t('zoom.in')" [title]="t('zoom.inHint')"><stemma-icon name="plus" /></button>
+<button type="button" (click)="fit.emit()" [attr.aria-label]="t('zoom.fit')" [title]="t('zoom.fitHint')"><stemma-icon name="fit" /></button>
