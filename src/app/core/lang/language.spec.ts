@@ -1,6 +1,6 @@
 import { relationshipStatus } from '../model/relationship';
-import { Family } from '../model/types';
-import { chartLanguage, LANGUAGES } from './language';
+import { Family, Person, Sex } from '../model/types';
+import { chartLanguage, LANGUAGES, surnameLinesIn } from './language';
 
 function fam(extra: Partial<Family>): Family {
   return { id: 'F1', kind: 'marriage', partners: ['A', 'B'], children: [], ...extra };
@@ -27,24 +27,31 @@ describe('chart languages', () => {
     expect(en.fullDate(undefined)).toBe('');
   });
 
-  it('writes marriage notes', () => {
+  it('notes how a couple stands, without dates or places', () => {
     const married = fam({ start: { date: { value: '1952-07-19' }, place: 'Lyon, France' } });
-    expect(en.union(married, relationshipStatus(married))).toBe('m. 1952, Lyon, France');
-    expect(cs.union(married, relationshipStatus(married))).toBe('sňatek 1952, Lyon, France');
+    expect(en.union(relationshipStatus(married))).toBe('');
+    expect(cs.union(relationshipStatus(married))).toBe('');
 
     const divorced = fam({ start: { date: { value: '1979' } }, end: { reason: 'divorce', date: { value: '1988' } } });
-    expect(en.union(divorced, relationshipStatus(divorced))).toBe('m. 1979, div. 1988');
-    expect(cs.union(divorced, relationshipStatus(divorced))).toBe('sňatek 1979, rozvod 1988');
+    expect(en.union(relationshipStatus(divorced))).toBe('divorced');
+    expect(cs.union(relationshipStatus(divorced))).toBe('rozvedeni');
 
-    const engaged = fam({ kind: 'partnership', engagement: { date: { value: '2024-12-24' } } });
+    const engaged = fam({ kind: 'partnership', engagement: { date: { value: '2024-12-24' }, place: 'Prague, Czechia' } });
     expect(relationshipStatus(engaged)).toBe('engaged');
-    expect(en.union(engaged, 'engaged')).toBe('engaged 2024');
-    expect(cs.union(engaged, 'engaged')).toBe('zasnoubení 2024');
+    expect(en.union('engaged')).toBe('engaged');
+    expect(cs.union('engaged')).toBe('zasnoubení');
+    expect(en.union('partners')).toBe('');
+  });
 
-    const placeOnly = fam({ start: { place: 'Brno' } });
-    expect(en.union(placeOnly, 'married')).toBe('m. in Brno');
-    expect(en.union(fam({}), 'married')).toBe('');
-    expect(en.union(fam({ kind: 'partnership', start: { date: { value: '2019' } } }), 'partners')).toBe('together since 2019');
+  it('puts the surname at birth on a line of its own', () => {
+    const person = (surname: string, birthSurname?: string, sex: Sex = 'female'): Person => ({ id: 'P', sex, name: { given: 'Věra', surname, birthSurname } });
+    expect(surnameLinesIn(en, person('Nováková', 'Dvořáková'))).toEqual({ surname: 'Nováková', birth: 'née Dvořáková' });
+    expect(surnameLinesIn(cs, person('Nováková', 'Dvořáková'))).toEqual({ surname: 'Nováková', birth: 'roz. Dvořáková' });
+    // Known from elsewhere: the father's surname.
+    expect(surnameLinesIn(en, person('Ashworth', undefined, 'male'), 'Moreau')).toEqual({ surname: 'Ashworth', birth: 'né Moreau' });
+    // Nothing under a surname that did not change; only the surname at birth known: that is the surname.
+    expect(surnameLinesIn(en, person('Ashworth', 'Ashworth'))).toEqual({ surname: 'Ashworth', birth: '' });
+    expect(surnameLinesIn(en, person('', 'Barlow'))).toEqual({ surname: 'Barlow', birth: '' });
   });
 
   it('writes lifespans and dates', () => {

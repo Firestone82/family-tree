@@ -19,25 +19,13 @@
     (valueChange)="settingsChange.emit({ colorBy: $event })"
   />
 </div>
-<div class="grid-2">
-  <div class="field">
-    <span class="field-label" id="look-lines">{{ t('look.lines') }}</span>
-    <stemma-segmented
-      labelledBy="look-lines"
-      [compact]="true"
-      [options]="lines()"
-      [value]="view().lines"
-      (valueChange)="settingsChange.emit({ lines: $event })"
-    />
-  </div>
-  <div class="field">
-    <span class="field-label" id="look-spacing">{{ t('look.spacing') }}</span>
-    <stemma-segmented
-      labelledBy="look-spacing"
-      [compact]="true"
-      [options]="densities()"
-      [value]="view().density"
-      (valueChange)="settingsChange.emit({ density: $event })"
-    />
-  </div>
+<div class="field">
+  <span class="field-label" id="look-lines">{{ t('look.lines') }}</span>
+  <stemma-segmented
+    labelledBy="look-lines"
+    [compact]="true"
+    [options]="lines()"
+    [value]="view().lines"
+    (valueChange)="settingsChange.emit({ lines: $event })"
+  />
 </div>

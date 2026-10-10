@@ -65,6 +65,7 @@ export const heirloom: PosterTheme = {
     kin: { family: SMALL_CAPS, size: 10, weight: 500, letterSpacing: 0.07, step: 0 },
     given: { family: SERIF, size: 16, weight: 600, step: 17 },
     surname: { family: SMALL_CAPS, size: 13.5, weight: 500, letterSpacing: 0.02, step: 16.5 },
+    birth: { family: SMALL_CAPS, size: 11.5, weight: 500, letterSpacing: 0.02, step: 14.5 },
     dates: { family: SERIF, size: 12, weight: 400, step: 16 },
     place: { family: SERIF, size: 11.5, weight: 400, style: 'italic', step: 14.5 },
   },

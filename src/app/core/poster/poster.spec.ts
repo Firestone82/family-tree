@@ -56,12 +56,16 @@ describe('printed page', () => {
     }
   });
 
-  it('writes relationship names and marriages in the tree language', () => {
+  it('writes relationship names, couples and surnames at birth in the tree language', () => {
     const cs = { ...doc, view: { ...doc.view, language: 'cs' } };
     const result = renderPoster({ doc: cs, settings: settings(), measure });
     expect(result.svg).toContain('Tchyně');
-    expect(result.svg).toContain('sňatek 1991');
     expect(result.svg).toContain('5 generací, 29 osob');
+    // Under a couple only what their marker does not say; no dates or places of a wedding.
+    expect(result.svg).toContain('rozvedeni');
+    expect(result.svg).not.toContain('sňatek 1991');
+    // The surname at birth on its own line.
+    expect(result.svg).toContain('>roz. Nováková<');
   });
 
   it('can turn a layout upside down for styles that grow upwards', () => {

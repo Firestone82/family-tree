@@ -164,10 +164,10 @@ How the chart is drawn. Every attribute has a default.
 | `style` | `auto` (follows light/dark mode), `archive`, `print`, `night` | `auto` |
 | `colorBy` | `family`, `generation`, `sex`, `none` | `family` |
 | `lines` | `square`, `curved` | `square` |
-| `density` | `comfortable`, `compact` | `comfortable` |
+| `density` | `comfortable`, `compact`. No longer used: the chart always has the same spacing. Kept and written back. | `comfortable` |
 | `showDates`, `showPlaces`, `showPhotos`, `showGenerations` | `true`, `false` | `true`, `false`, `true`, `true` |
 | `showRelationships` (1.1) | Relationship names on the cards. `true`, `false` | `true` |
-| `showUnions` (1.1) | Marriage dates, places and status under each couple. `true`, `false` | `true` |
+| `showUnions` (1.1) | A note under each couple whose marker does not say it all: engaged, divorced, separated, annulled. (Earlier versions also show the dates and places of the wedding.) `true`, `false` | `true` |
 | `language` (1.1) | Language of the words on the chart and in prints, a BCP 47 tag: `en`, `cs`. Languages the app does not have are kept and drawn in English. | `en` |
 | `showSex` (1.2) | A ♂ or ♀ symbol in the top right corner of each card. `true`, `false` | `true` |
 | `sexColors` (1.2) | Cards tinted by sex: blue for men, pink for women. `true`, `false` | `false` |
@@ -185,9 +185,9 @@ of the tree, and is not stored in the file.
 
 | Child | |
 | --- | --- |
-| `name` (required) | Attributes `given`, `surname`, `birthSurname` (the surname at birth, when it differs), `nickname`. |
+| `name` (required) | Attributes `given`, `surname`, `birthSurname` (the surname at birth, when it differs; drawn on a line of its own under the surname), `nickname` (no longer shown or edited; kept and written back). |
 | `birth`, `death` | Events (below). `<death/>` with no attributes means the person has died, details unknown. A person without `<death>` is treated as living. |
-| `occupation` | Text. |
+| `occupation` | Text. No longer shown or edited; kept and written back. |
 | `photo` | Either base64 data with `mediaType` and `encoding="base64"`, or an `href`. |
 | `notes` | Text; line breaks are kept. |
 
@@ -217,7 +217,7 @@ A family joins up to two partners with their children. It can have:
 | Child | |
 | --- | --- |
 | `partner ref` | 0 to 2. |
-| `start`, `end` | The wedding (or the start of a partnership), and when the relationship ended. |
+| `start`, `end` | The wedding (or the start of a partnership), and when the relationship ended. The app no longer shows or edits the dates and places of `start`, `end` and `engagement`; they are kept and written back. |
 | `child ref` | In birth order; the chart draws children in this order. Attribute `relation`: `biological` (default), `adopted`, `foster`, `step`, `unknown`. Attribute `birthGroup` (1.3): children of the family with the same value were born together, as twins, triplets and so on; they stand next to each other and share the date and place of birth. |
 | `notes` | Text. |
 | `engagement` (1.1) | When the couple got engaged. Written after `notes`. |

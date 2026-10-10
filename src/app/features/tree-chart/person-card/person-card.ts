@@ -40,6 +40,8 @@ export class PersonCard {
   readonly focus = input(false);
   /** Whether cards have a relationship line (all cards keep the same layout). */
   readonly kinRow = input(false);
+  /** Whether cards have a line for the surname at birth (likewise on all cards). */
+  readonly birthRow = input(false);
   /** ♂ or ♀ in the top right corner. */
   readonly showSex = input(false);
   /** Blue-grey cards for men, rose for women. */
@@ -47,6 +49,8 @@ export class PersonCard {
   readonly pick = output<Event>();
 
   protected readonly shift = computed(() => (this.kinRow() ? this.metrics().kin.shift : 0));
+  /** Where the dates and the place move to, below the line for the surname at birth. */
+  protected readonly lifeShift = computed(() => this.shift() + (this.birthRow() ? this.metrics().birth.shift : 0));
   protected readonly transform = computed(() => {
     const c = this.card();
     return `translate(${round(c.x)},${round(c.y)})`;

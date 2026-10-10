@@ -25,11 +25,10 @@ keeps working as the app changes.
   Relationship names are available in English and Czech (switchable per tree;
   Czech uses the proper genitive forms, e.g. *sestřenice dědečka*).
 - **Relationships with status**: married, engaged, partners, separated, divorced,
-  widowed or annulled, each with dates and places (engagement, wedding, end),
-  chosen already when a partner is added. The marker between partners shows
-  interlocked rings for a marriage; a couple who broke up have their rings
-  pulled apart, cut with a red slash for a divorce. A note such as
-  *m. 1952, Lyon* sits under each couple.
+  widowed or annulled, chosen already when a partner is added. The marker
+  between partners shows interlocked rings for a marriage; a couple who broke up
+  have their rings pulled apart, cut with a red slash for a divorce. A note such
+  as *divorced* sits under the couple.
 - **Twins, triplets and more**: children of a couple can be marked as born
   together (in the family panel, or when adding a sibling). They stand side by
   side and hang from one point on the chart; a twin of the person in the middle
@@ -95,7 +94,7 @@ The build is a static site; host `dist/stemma/browser` anywhere.
 
 `.github/workflows/ci.yml` runs on every push and pull request: it installs
 with `npm ci`, lints, checks formatting, runs the unit tests, validates the
-example file against the XML schema and builds the site. Pushes to `main` are
+example file against the XML schema and builds the site. Pushes to `master` are
 then published to GitHub Pages, built with the repository's path as base URL
 (or `/` for a `<name>.github.io` repository).
 
@@ -193,7 +192,7 @@ A print style is one file in `src/app/core/poster/themes/` that exports a
   family colours, and the card text (any of the bundled Alegreya faces, which
   exports embed);
 - **card**: width, padding, the badge (`shield`, `seal`, `bar` or `none`) and
-  the lines (relationship, name, surname, dates, place);
+  the lines (relationship, name, surname, surname at birth, dates, place);
 - **spacing and lines**: gaps between cards and rows, and `square`, `curved`
   or `branch` lines; `flow: 'up'` draws the oldest generation at the bottom;
 - **tree**: the colours of the tree behind the chart: `wood`, `bark`, three

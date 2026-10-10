@@ -14,8 +14,8 @@ import {
   wideFamily,
 } from '../testing/fixtures';
 import { computeLayout, isotonic } from './layout';
-import { COMFORTABLE_LAYOUT, COMPACT_LAYOUT, LayoutResult } from './layout-types';
-import { connectorPaths } from './paths';
+import { COMFORTABLE_LAYOUT, LayoutResult, Pt } from './layout-types';
+import { connectorPaths, linkPath } from './paths';
 
 const fixtures: Record<string, () => TreeDocument> = {
   sample: () => sampleDocument(new Date('2026-01-01T00:00:00Z')),
@@ -29,6 +29,42 @@ const fixtures: Record<string, () => TreeDocument> = {
   pedigree: () => pedigree(5),
   random: () => randomFamily(11, 90),
 };
+
+/** Points along a path of absolute M, L, Q and C commands, as the chart draws them. */
+function pathPoints(d: string, steps = 24): Pt[] {
+  const tokens = d.match(/[MLQC]|-?\d+(?:\.\d+)?/g) ?? [];
+  const out: Pt[] = [];
+  let i = 0;
+  let cur: Pt = { x: 0, y: 0 };
+  const pt = (): Pt => ({ x: Number(tokens[i++]), y: Number(tokens[i++]) });
+  const along = (at: (t: number) => Pt) => {
+    for (let s = 1; s <= steps; s++) out.push(at(s / steps));
+  };
+  while (i < tokens.length) {
+    const command = tokens[i++];
+    const from = cur;
+    if (command === 'M') {
+      cur = pt();
+      out.push(cur);
+    } else if (command === 'L') {
+      const to = (cur = pt());
+      along((t) => ({ x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t }));
+    } else if (command === 'Q') {
+      const c = pt();
+      const to = (cur = pt());
+      along((t) => ({ x: (1 - t) ** 2 * from.x + 2 * (1 - t) * t * c.x + t ** 2 * to.x, y: (1 - t) ** 2 * from.y + 2 * (1 - t) * t * c.y + t ** 2 * to.y }));
+    } else if (command === 'C') {
+      const [a, b] = [pt(), pt()];
+      const to = (cur = pt());
+      const at = (p0: number, p1: number, p2: number, p3: number, t: number) =>
+        (1 - t) ** 3 * p0 + 3 * (1 - t) ** 2 * t * p1 + 3 * (1 - t) * t ** 2 * p2 + t ** 3 * p3;
+      along((t) => ({ x: at(from.x, a.x, b.x, to.x, t), y: at(from.y, a.y, b.y, to.y, t) }));
+    } else {
+      throw new Error(`Unexpected path command ${command} in ${d}`);
+    }
+  }
+  return out;
+}
 
 function expectNoOverlaps(result: LayoutResult, gap = 1): void {
   const byRow = new Map<number, LayoutResult['cards']>();
@@ -81,6 +117,19 @@ describe('layout', () => {
         for (const c of result.connectors) {
           for (const style of ['square', 'curved'] as const) {
             for (const p of connectorPaths(c, style)) expect(p.d).toMatch(/^M[-\d.]+,[-\d.]+/);
+          }
+        }
+      });
+
+      it('never runs a line behind a card', () => {
+        const paths = [
+          ...result.connectors.flatMap((c) => (['square', 'curved'] as const).flatMap((style) => connectorPaths(c, style).map((p) => p.d))),
+          ...result.links.map(linkPath),
+        ];
+        for (const d of paths) {
+          for (const pt of pathPoints(d)) {
+            const behind = result.cards.find((c) => pt.x > c.x + 0.5 && pt.x < c.x + c.w - 0.5 && pt.y > c.y + 0.5 && pt.y < c.y + c.h - 0.5);
+            expect(behind?.personId, `${d} at ${pt.x.toFixed(1)},${pt.y.toFixed(1)}`).toBeUndefined();
           }
         }
       });
@@ -164,10 +213,13 @@ describe('layout', () => {
     for (const row of first.rows) expect(order(second, row.y)).toEqual(order(first, row.y));
   });
 
-  it('supports compact spacing', () => {
-    const result = computeLayout(fixtures['sample'](), COMPACT_LAYOUT);
+  it('uses the card size and gaps it is given', () => {
+    // Print styles bring their own spacing.
+    const options = { ...COMFORTABLE_LAYOUT, cardWidth: 156, cardHeight: 56, partnerGap: 36, siblingGap: 16, familyGap: 36, rowGap: 62 };
+    const result = computeLayout(fixtures['sample'](), options);
     expectNoOverlaps(result);
-    expect(result.cards[0].w).toBe(COMPACT_LAYOUT.cardWidth);
+    expect(result.cards[0].w).toBe(156);
+    expect(result.cards[0].h).toBe(56);
   });
 
   it('lays out a few hundred people in reasonable time', () => {

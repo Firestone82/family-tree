@@ -36,8 +36,24 @@ export function roundedPath(points: Pt[], radius: number): string {
 
 /** A smooth vertical S-curve between two points. */
 export function sCurve(a: Pt, b: Pt): string {
+  return `M${r1(a.x)},${r1(a.y)}${sCurveTo(a, b)}`;
+}
+
+/** The curve command of an S-curve from a (the current point) to b. */
+function sCurveTo(a: Pt, b: Pt): string {
   const my = (a.y + b.y) / 2;
-  return `M${r1(a.x)},${r1(a.y)}C${r1(a.x)},${r1(my)} ${r1(b.x)},${r1(my)} ${r1(b.x)},${r1(b.y)}`;
+  return `C${r1(a.x)},${r1(my)} ${r1(b.x)},${r1(my)} ${r1(b.x)},${r1(b.y)}`;
+}
+
+/**
+ * An S-curve from a family's stem that runs straight down to `clearY`, the
+ * edge of the parents' row, before it turns. A stem starts between the
+ * partners' cards, and a curve that turned there would pass behind them.
+ */
+export function stemCurve(stem: Pt, clearY: number, to: Pt): string {
+  if ((clearY - stem.y) * (to.y - clearY) <= 0) return sCurve(stem, to);
+  const turn: Pt = { x: stem.x, y: clearY };
+  return `M${r1(stem.x)},${r1(stem.y)}L${r1(turn.x)},${r1(turn.y)}${sCurveTo(turn, to)}`;
 }
 
 /** A smooth horizontal curve between two points (for partners in different rows). */
@@ -79,7 +95,7 @@ export function connectorPaths(c: LayoutConnector, style: LineStyle, radius = 10
     if (fork) {
       const head =
         style === 'curved'
-          ? sCurve(c.stem, fork)
+          ? stemCurve(c.stem, c.clearY, fork)
           : roundedPath(Math.abs(fork.x - c.stem.x) > 0.5 ? [c.stem, { x: c.stem.x, y: c.barY }, fork] : [c.stem, fork], radius);
       return { childId: drop.childId, relation: drop.relation, d: `${head}L${r1(target.x)},${r1(target.y)}` };
     }
@@ -87,7 +103,7 @@ export function connectorPaths(c: LayoutConnector, style: LineStyle, radius = 10
       if (Math.abs(target.x - c.stem.x) <= SNAP) {
         return { childId: drop.childId, relation: drop.relation, d: roundedPath([{ x: target.x, y: c.stem.y }, target], radius) };
       }
-      return { childId: drop.childId, relation: drop.relation, d: sCurve(c.stem, target) };
+      return { childId: drop.childId, relation: drop.relation, d: stemCurve(c.stem, c.clearY, target) };
     }
     // A single child almost straight below its parents gets a straight line.
     const stem = single && Math.abs(drop.x - c.stem.x) <= SNAP ? { x: drop.x, y: c.stem.y } : c.stem;
@@ -128,7 +144,7 @@ function twinForks(c: LayoutConnector, together: ReadonlyMap<string, string> | u
 }
 
 export function linkPath(link: LayoutLink): string {
-  return sCurve(link.from, link.to);
+  return stemCurve(link.from, link.clearY, link.to);
 }
 
 function dist(a: Pt, b: Pt): number {

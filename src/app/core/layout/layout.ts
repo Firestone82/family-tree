@@ -1394,7 +1394,7 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
 
   for (const part of parts) {
     const bridgesInBlock = new Map<Item, number>();
-    const stemOf = new Map<string, Pt>();
+    const stemOf = new Map<string, { stem: Pt; clearY: number }>();
     for (const f of part.families) {
       const union = buildUnion(part, f, cardOf, o, bridgesInBlock, rowY, rowH);
       if (!union) continue;
@@ -1405,7 +1405,9 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
           : union.mode === 'none'
             ? { x: union.cx, y: union.cy + o.placeholderRadius }
             : { x: union.cx, y: union.cy };
-      stemOf.set(f.id, stem);
+      // The stem of a couple starts between their cards; lines turn towards the children only below the row.
+      const clearY = rowY[union.rank] + rowH[union.rank];
+      stemOf.set(f.id, { stem, clearY });
       const primary = part.primaryByFamily.get(f.id);
       if (!primary?.length) continue;
       const drops: LayoutDrop[] = [];
@@ -1432,14 +1434,21 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions): LayoutResult {
         drops.push({ childId: link.childId, relation: link.relation, x: startX, points });
       }
       if (drops.length) {
-        connectors.push({ familyId: f.id, stem, barY: lineY(union.rank, `bar:${f.id}`), drops });
+        connectors.push({ familyId: f.id, stem, clearY, barY: lineY(union.rank, `bar:${f.id}`), drops });
       }
     }
     for (const link of part.secondary) {
       const from = stemOf.get(link.family.id);
       const card = cardOf.get(link.childId);
       if (!from || !card) continue;
-      links.push({ familyId: link.family.id, childId: link.childId, relation: link.relation, from, to: { x: card.x + W / 2, y: card.y } });
+      links.push({
+        familyId: link.family.id,
+        childId: link.childId,
+        relation: link.relation,
+        from: from.stem,
+        clearY: from.clearY,
+        to: { x: card.x + W / 2, y: card.y },
+      });
     }
   }
 

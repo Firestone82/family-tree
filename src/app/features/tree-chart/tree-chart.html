@@ -44,6 +44,7 @@
           [selected]="c.personId === selectedId()"
           [focus]="c.personId === model.focusId()"
           [kinRow]="view.showRelationships"
+          [birthRow]="model.birthRow()"
           [showSex]="view.showSex"
           [sexColors]="view.sexColors"
           [class.flash]="flashId() === c.personId"

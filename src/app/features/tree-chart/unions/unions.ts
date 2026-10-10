@@ -22,11 +22,14 @@ const STATUS_TITLE: Record<RelationshipStatus, MessageKey> = {
   unknown: 'chart.union.unknown',
 };
 
+/** Size of the rings in the marker between partners. */
+const RING_RADIUS = 4.6;
+
 /**
  * Couples: the line between partners, the marker on it (interlocked rings for
  * a marriage, one ring for partners, a ring with a stone for an engagement;
- * rings apart, with a slash for a divorce, when the couple broke up), and the
- * marriage date under them. The shapes come from core/layout/union-marks.
+ * rings apart, with a slash for a divorce, when the couple broke up), and a
+ * note such as "divorced" under them. The shapes come from core/layout/union-marks.
  */
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector -- drawn inside an <svg> (or on a <button>), so an attribute selector
@@ -46,7 +49,6 @@ export class Unions {
   readonly pick = output<string>();
 
   protected readonly unions = computed(() => {
-    const r = this.model.view().density === 'compact' ? 4 : 4.6;
     const index = this.store.index();
     const t = this.i18n.t;
     return this.layout().unions.map((u) => {
@@ -56,13 +58,13 @@ export class Unions {
         familyId: u.familyId,
         d: unionLinePath(u),
         at: unionMarkerPoint(u),
-        mark: unionMark(fam?.kind ?? 'unknown', status, r),
+        mark: unionMark(fam?.kind ?? 'unknown', status, RING_RADIUS),
         title: `${t(STATUS_TITLE[status])} ${t('chart.union.select')}`,
       };
     });
   });
 
-  /** Marriage dates and places, under the couple on the line that leads to their children. */
+  /** A note such as "divorced", under the couple on the line that leads to their children. */
   protected readonly labels = computed(() => {
     this.measure.fontsVersion();
     if (!this.model.view().showUnions) return [];
@@ -74,7 +76,7 @@ export class Unions {
     for (const u of this.layout().unions) {
       if (u.mode !== 'gap' && u.mode !== 'bridge') continue;
       const fam = index.family(u.familyId);
-      const text = fam ? lang.union(fam, relationshipStatus(fam)) : '';
+      const text = fam ? lang.union(relationshipStatus(fam)) : '';
       if (text) out.push({ familyId: u.familyId, x: u.cx, y: u.cy + o.cardHeight / 2 + 14, text: this.measure.fit(text, UNION_LABEL_FONT, max) });
     }
     return out;

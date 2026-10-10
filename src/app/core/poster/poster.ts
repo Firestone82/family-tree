@@ -5,7 +5,7 @@
  */
 import { LegendEntry, Tincture, assignColors } from '../colors/tinctures';
 import { Kin, kinship } from '../kinship/kinship';
-import { ChartLanguage, chartLanguage, kinLabel, surnameLineIn } from '../lang/language';
+import { ChartLanguage, chartLanguage, kinLabel, surnameLinesIn } from '../lang/language';
 import { computeLayout } from '../layout/layout';
 import { COMFORTABLE_LAYOUT, LayoutCard, LayoutOptions, LayoutResult, LayoutUnion, Pt } from '../layout/layout-types';
 import { bornTogether, connectorPaths, linkPath, unionLinePath, unionMarkerPoint } from '../layout/paths';
@@ -22,7 +22,7 @@ import { TreeIndex } from '../model/tree-index';
 import { BackgroundImage, ColorBy, DEFAULT_PRINT, PrintSettings, Sex, TreeDocument, effectivePrint } from '../model/types';
 import { drawMark } from './marks';
 import { PX_PER_MM, paperSize } from './paper';
-import { CardLine, CardLook, CardText, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from './poster-types';
+import { CardLine, CardLines, CardLook, CardText, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from './poster-types';
 import { scopeDocument } from './scope';
 import { cssFont, el, fontAttrs, mixHex, n, shieldPath, text } from './svg';
 import { posterTheme } from './themes';
@@ -83,10 +83,17 @@ export function renderPoster(input: PosterInput): PosterResult {
       }).doc
     : { ...input.doc, people: [], families: [] };
   const index = new TreeIndex(doc);
+  // Surnames at birth come from the whole tree: a father may be outside the part that is printed.
+  const births = new Map(doc.people.map((p) => [p.id, birthSurname(fullIndex, p, language.surnameFor)]));
+  const surnames = new Map(doc.people.map((p) => [p.id, surnameLinesIn(language, p, births.get(p.id))]));
 
   // Cards: every card has the same lines, so rows line up.
   const card = theme.card;
-  const lines = presentLines(theme, settings);
+  const lines = presentLines(
+    theme,
+    settings,
+    [...surnames.values()].some((s) => !!s.birth),
+  );
   const cardHeight = cardHeightFor(theme, lines);
   let options: LayoutOptions = { ...COMFORTABLE_LAYOUT, ...theme.spacing, cardWidth: card.width, cardHeight };
   const layoutWith = (o: LayoutOptions) => {
@@ -105,15 +112,15 @@ export function renderPoster(input: PosterInput): PosterResult {
   // Twins of the person in the middle are named as such.
   const twins = centerId ? birthGroupOf(input.doc, centerId) : undefined;
   const bornWith = new Map(twins ? twins.memberIds.filter((m) => m !== centerId).map((m) => [m, twins.memberIds.length]) : []);
-  // Surnames at birth come from the whole tree: a father may be outside the part that is printed.
-  const births = new Map(doc.people.map((p) => [p.id, birthSurname(fullIndex, p, language.surnameFor)]));
   const texts = new Map<string, CardText>();
   for (const p of doc.people) {
     const place = p.birth?.place ?? p.death?.place ?? '';
+    const names = surnames.get(p.id) ?? { surname: p.name.surname.trim(), birth: '' };
     texts.set(p.id, {
       kin: settings.showRelationships ? fit(kinLabel(language, kin.get(p.id), p.sex, bornWith.get(p.id)), card.kin, textWidth - symbolRoom) : '',
       given: fit(p.name.given.trim() || language.unnamed, card.given, textWidth - (settings.showRelationships ? 0 : symbolRoom)),
-      surname: fit(surnameLineIn(language, p, births.get(p.id)), card.surname, textWidth),
+      surname: fit(names.surname, card.surname, textWidth),
+      birth: fit(names.birth, card.birth, textWidth),
       dates: settings.showDates ? fit(language.lifespan(p), card.dates, textWidth) : '',
       place: settings.showPlaces ? fit(place, card.place, textWidth) : '',
       initials: initials(p),
@@ -145,6 +152,7 @@ export function renderPoster(input: PosterInput): PosterResult {
     legend: colors.legend.map((l) => ({ ...l, label: legendLabel(l, input.doc.view.colorBy, language) })),
     kin,
     texts,
+    lines,
     focusIds,
     rootIds,
     title,
@@ -257,7 +265,7 @@ export function renderPoster(input: PosterInput): PosterResult {
     title,
     ctx.subtitle,
     language.drawn(now),
-    ...[...texts.values()].flatMap((t) => [t.kin, t.given, t.surname, t.dates, t.place, t.initials]),
+    ...[...texts.values()].flatMap((t) => [t.kin, t.given, t.surname, t.birth, t.dates, t.place, t.initials]),
     ...ctx.legend.map((l) => l.label),
     'IVXLCDM0123456789–·,. ?',
   ].join('');
@@ -338,7 +346,7 @@ function drawChart(ctx: PosterContext, gutter: number, room: TreeRoom): string {
       if (u.mode !== 'gap' && u.mode !== 'bridge') continue;
       const fam = ctx.index.family(u.familyId);
       if (!fam) continue;
-      const label = ctx.fit(ctx.language.union(fam, relationshipStatus(fam)), theme.unionFont, max);
+      const label = ctx.fit(ctx.language.union(relationshipStatus(fam)), theme.unionFont, max);
       if (!label) continue;
       // Under the couple in the middle, clear of the frame around them.
       const isFocus = fam.partners.every((p) => ctx.focusIds.includes(p));
@@ -455,10 +463,11 @@ function drawCard(ctx: PosterContext, c: LayoutCard): string {
     first = false;
     if (value) parts.push(el('text', { x: card.textX, y, ...fontAttrs(spec), fill }, text(value)));
   };
-  const lines = presentLines(theme, settings);
+  const lines = ctx.lines;
   line(t.kin, card.kin, pal.kin, lines.kin);
   line(t.given, card.given, pal.ink, true);
   line(t.surname, card.surname, pal.ink, true);
+  line(t.birth, card.birth, pal.muted, lines.birth);
   line(t.dates, card.dates, pal.muted, lines.dates);
   line(t.place, card.place, pal.faint, lines.place);
 
@@ -577,17 +586,18 @@ function defaultGenerationLabel(ctx: PosterContext, label: string, x: number, y:
 // ---------------------------------------------------------------------------
 // helpers
 
-/** Which optional lines the cards have. */
-export function presentLines(theme: PosterTheme, settings: PrintSettings): { kin: boolean; dates: boolean; place: boolean } {
+/** Which optional lines the cards have. `birth`: someone on the page was born with another surname. */
+export function presentLines(theme: PosterTheme, settings: PrintSettings, birth = false): CardLines {
   void theme;
-  return { kin: settings.showRelationships, dates: settings.showDates, place: settings.showPlaces };
+  return { kin: settings.showRelationships, birth, dates: settings.showDates, place: settings.showPlaces };
 }
 
-export function cardHeightFor(theme: PosterTheme, lines: { kin: boolean; dates: boolean; place: boolean }): number {
+export function cardHeightFor(theme: PosterTheme, lines: CardLines): number {
   const c = theme.card;
   const specs: CardLine[] = [];
   if (lines.kin) specs.push(c.kin);
   specs.push(c.given, c.surname);
+  if (lines.birth) specs.push(c.birth);
   if (lines.dates) specs.push(c.dates);
   if (lines.place) specs.push(c.place);
   let y = c.top + specs[0].size * 0.74;
@@ -684,10 +694,11 @@ export function flipLayout(L: LayoutResult): LayoutResult {
     connectors: L.connectors.map((c) => ({
       ...c,
       stem: fp(c.stem),
+      clearY: fy(c.clearY),
       barY: fy(c.barY),
       drops: c.drops.map((d) => ({ ...d, points: d.points.map(fp) })),
     })),
-    links: L.links.map((l) => ({ ...l, from: fp(l.from), to: fp(l.to) })),
+    links: L.links.map((l) => ({ ...l, from: fp(l.from), clearY: fy(l.clearY), to: fp(l.to) })),
     rows: L.rows.map((r) => ({ ...r, y: fy(r.y + r.h) })),
   };
 }

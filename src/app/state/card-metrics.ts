@@ -1,5 +1,3 @@
-import { Density } from '../core/model/types';
-
 /** Positions and font sizes inside a person card, shared by drawing and measuring. */
 export interface CardMetrics {
   /** Where the text column starts. */
@@ -10,6 +8,8 @@ export interface CardMetrics {
   photo: { r: number };
   given: { size: number; y: number };
   surname: { size: number; y: number };
+  /** The surname at birth under the surname ("née Barlow"); `shift` moves the dates and place down to make room. */
+  birth: { size: number; y: number; shift: number };
   dates: { size: number; y: number };
   place: { size: number; y: number };
   /** The relationship line at the top; `shift` moves the other lines down to make room. */
@@ -17,31 +17,18 @@ export interface CardMetrics {
   radius: number;
 }
 
-export const CARD_METRICS: Record<Density, CardMetrics> = {
-  comfortable: {
-    textX: 50,
-    padRight: 10,
-    shield: { x: 14, w: 24, h: 28, initials: 10.5 },
-    photo: { r: 17 },
-    given: { size: 15.5, y: 25 },
-    surname: { size: 13.5, y: 42 },
-    dates: { size: 11.5, y: 58 },
-    place: { size: 11, y: 72 },
-    kin: { size: 10.5, y: 18, shift: 12 },
-    radius: 5,
-  },
-  compact: {
-    textX: 40,
-    padRight: 8,
-    shield: { x: 11, w: 20, h: 24, initials: 9 },
-    photo: { r: 14 },
-    given: { size: 13.5, y: 20 },
-    surname: { size: 12, y: 34 },
-    dates: { size: 10.5, y: 47 },
-    place: { size: 10, y: 60 },
-    kin: { size: 9.5, y: 15, shift: 10 },
-    radius: 4,
-  },
+export const CARD_METRICS: CardMetrics = {
+  textX: 50,
+  padRight: 10,
+  shield: { x: 14, w: 24, h: 28, initials: 10.5 },
+  photo: { r: 17 },
+  given: { size: 15.5, y: 25 },
+  surname: { size: 13.5, y: 42 },
+  birth: { size: 11.5, y: 57, shift: 14 },
+  dates: { size: 11.5, y: 58 },
+  place: { size: 11, y: 72 },
+  kin: { size: 10.5, y: 18, shift: 12 },
+  radius: 5,
 };
 
 export const FONT_SERIF = '"Alegreya Variable", "Alegreya", Georgia, "Times New Roman", serif';
@@ -52,6 +39,7 @@ export function cardFonts(m: CardMetrics) {
   return {
     given: `500 ${m.given.size}px ${FONT_SERIF}`,
     surname: `500 ${m.surname.size}px ${FONT_SMALL_CAPS}`,
+    birth: `500 ${m.birth.size}px ${FONT_SMALL_CAPS}`,
     dates: `400 ${m.dates.size}px ${FONT_SANS}`,
     place: `400 ${m.place.size}px ${FONT_SANS}`,
     kin: `500 ${m.kin.size}px ${FONT_SMALL_CAPS}`,

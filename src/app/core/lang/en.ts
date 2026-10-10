@@ -1,7 +1,7 @@
 import type { Kin } from '../kinship/kinship';
 import type { RelationshipStatus } from '../model/relationship';
 import { SAME_SURNAME } from '../model/surnames';
-import type { DateQualifier, Family, GenDate, Person, Sex } from '../model/types';
+import type { DateQualifier, GenDate, Person, Sex } from '../model/types';
 import { bySex, capitalize, fullDateWith, lifespanWith, shortDateWith } from './common';
 import type { ChartLanguage } from './language';
 
@@ -138,37 +138,15 @@ function shortDate(date: GenDate | undefined): string {
   return shortDateWith(date, QUALIFIERS);
 }
 
-function union(f: Family, status: RelationshipStatus): string {
-  const start = shortDate(f.start?.date);
-  const place = f.start?.place?.trim() ?? '';
-  const end = shortDate(f.end?.date);
-  const married = (withPlace: boolean) => {
-    if (start && place && withPlace) return `m. ${start}, ${place}`;
-    if (start) return `m. ${start}`;
-    if (place && withPlace) return `m. in ${place}`;
-    return '';
-  };
-  switch (status) {
-    case 'married':
-    case 'widowed':
-      return married(true);
-    case 'engaged': {
-      const when = shortDate(f.engagement?.date);
-      return when ? `engaged ${when}` : 'engaged';
-    }
-    case 'partners':
-      return start ? `together since ${start}` : '';
-    case 'divorced':
-      return [married(false), end ? `div. ${end}` : 'divorced'].filter(Boolean).join(', ');
-    case 'separated':
-      return [f.kind === 'marriage' ? married(false) : start ? `since ${start}` : '', end ? `sep. ${end}` : 'separated'].filter(Boolean).join(', ');
-    case 'annulled':
-      return end ? `annulled ${end}` : 'annulled';
-    case 'ended':
-      return start && end ? `${start}–${end}` : end ? `until ${end}` : '';
-    case 'unknown':
-      return '';
-  }
+const UNION_NOTES: Partial<Record<RelationshipStatus, string>> = {
+  engaged: 'engaged',
+  divorced: 'divorced',
+  separated: 'separated',
+  annulled: 'annulled',
+};
+
+function union(status: RelationshipStatus): string {
+  return UNION_NOTES[status] ?? '';
 }
 
 function longDate(date: Date): string {
@@ -190,7 +168,7 @@ export const english: ChartLanguage = {
   shortDate,
   fullDate,
   longDate,
-  maidenName: (surname, birth, sex) => `${surname} ${sex === 'male' ? 'né' : 'née'} ${birth}`,
+  bornAs: (birth, sex) => `${sex === 'male' ? 'né' : 'née'} ${birth}`,
   surnameFor: SAME_SURNAME,
   unnamed: 'Unnamed',
   summary(generations, people) {

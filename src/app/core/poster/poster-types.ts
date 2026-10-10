@@ -84,8 +84,18 @@ export interface PosterCardStyle {
   kin: CardLine;
   given: CardLine;
   surname: CardLine;
+  /** The surname at birth, under the surname: "née Barlow". */
+  birth: CardLine;
   dates: CardLine;
   place: CardLine;
+}
+
+/** Which optional lines the cards have. Every card has the same lines, so rows line up. */
+export interface CardLines {
+  kin: boolean;
+  birth: boolean;
+  dates: boolean;
+  place: boolean;
 }
 
 export interface Rect {
@@ -106,6 +116,7 @@ export interface CardText {
   kin: string;
   given: string;
   surname: string;
+  birth: string;
   dates: string;
   place: string;
   initials: string;
@@ -135,6 +146,8 @@ export interface PosterContext {
   legend: readonly LegendEntry[];
   kin: ReadonlyMap<string, Kin>;
   texts: ReadonlyMap<string, CardText>;
+  /** Which optional lines the cards have. */
+  lines: CardLines;
   /** The person in the middle and their partner. */
   focusIds: readonly string[];
   /** The couple in the middle and all their ancestors (the roots, in a tree that grows upwards). */

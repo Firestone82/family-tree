@@ -1,9 +1,9 @@
-import { Injectable, computed, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { ColorAssignment, assignColors } from '../core/colors/tinctures';
 import { Kin, kinship } from '../core/kinship/kinship';
-import { ChartLanguage, chartLanguage, kinLabel, surnameLineIn } from '../core/lang/language';
+import { ChartLanguage, chartLanguage, kinLabel, surnameLinesIn } from '../core/lang/language';
 import { computeLayout } from '../core/layout/layout';
-import { COMFORTABLE_LAYOUT, COMPACT_LAYOUT, LayoutOptions, LayoutResult, PLACE_LINE_HEIGHT } from '../core/layout/layout-types';
+import { COMFORTABLE_LAYOUT, LayoutOptions, LayoutResult, PLACE_LINE_HEIGHT } from '../core/layout/layout-types';
 import { displayName, initials } from '../core/model/names';
 import { isBrokenUp, relationshipStatus } from '../core/model/relationship';
 import { birthGroupOf } from '../core/model/births';
@@ -17,6 +17,8 @@ import { CARD_METRICS, cardFonts } from './card-metrics';
 export interface CardLabel {
   given: string;
   surname: string;
+  /** The surname at birth when it differs from the surname: "née Barlow". */
+  birth: string;
   dates: string;
   place: string;
   /** How the person is related to the person the tree is centred on. */
@@ -46,13 +48,18 @@ export class ChartModel {
   readonly view = computed<ViewSettings>(() => this.store.doc().view, { equal: shallowEqual });
   readonly language = computed<ChartLanguage>(() => chartLanguage(this.view().language));
 
-  readonly metrics = computed(() => CARD_METRICS[this.view().density]);
+  /**
+   * Positions and font sizes inside a card. The `density` a file may carry is
+   * no longer used: every tree is drawn with the same spacing.
+   */
+  readonly metrics = signal(CARD_METRICS).asReadonly();
 
   readonly options = computed<LayoutOptions>(
     () => {
       const v = this.view();
-      const base = v.density === 'compact' ? COMPACT_LAYOUT : COMFORTABLE_LAYOUT;
-      const extra = (v.showPlaces ? PLACE_LINE_HEIGHT : 0) + (v.showRelationships ? this.metrics().kin.shift : 0);
+      const m = this.metrics();
+      const base = COMFORTABLE_LAYOUT;
+      const extra = (v.showPlaces ? PLACE_LINE_HEIGHT : 0) + (v.showRelationships ? m.kin.shift : 0) + (this.birthRow() ? m.birth.shift : 0);
       return extra ? { ...base, cardHeight: base.cardHeight + extra } : base;
     },
     { equal: (a, b) => a.cardWidth === b.cardWidth && a.cardHeight === b.cardHeight },
@@ -105,6 +112,16 @@ export class ChartModel {
     return new Map(this.store.doc().people.map((p) => [p.id, birthSurname(index, p, form)]));
   });
 
+  /** Each person's surname line, and the line under it when they were born with another surname. */
+  private readonly surnameLines = computed(() => {
+    const lang = this.language();
+    const births = this.birthSurnames();
+    return new Map(this.store.doc().people.map((p) => [p.id, surnameLinesIn(lang, p, births.get(p.id))]));
+  });
+
+  /** Whether any card has a line for a surname at birth: all cards then make room for one, so rows line up. */
+  readonly birthRow = computed(() => [...this.surnameLines().values()].some((l) => !!l.birth));
+
   readonly colors = computed<ColorAssignment>(() => this.colorsBy(this.view().colorBy));
 
   /** Family colours, whatever the chart is coloured by: for the family groups of the people list. */
@@ -121,7 +138,8 @@ export class ChartModel {
     const view = this.view();
     const lang = this.language();
     const kin = this.kin();
-    const births = this.birthSurnames();
+    const surnames = this.surnameLines();
+    const birthRow = this.birthRow();
     const bornWith = this.focusBornWith();
     const focusId = this.focusId();
     const m = this.metrics();
@@ -136,10 +154,12 @@ export class ChartModel {
       const relation = view.showRelationships ? kinLabel(lang, kin.get(p.id), p.sex, bornWith.get(p.id)) : '';
       const title = [displayName(p), relation, dates].filter(Boolean).join(', ');
       const bottom = p.id === focusId ? CORNER_ROOM : 0;
-      const last = view.showPlaces ? 'place' : view.showDates ? 'dates' : 'surname';
+      const last = view.showPlaces ? 'place' : view.showDates ? 'dates' : birthRow ? 'birth' : 'surname';
+      const names = surnames.get(p.id) ?? { surname: p.name.surname.trim(), birth: '' };
       out.set(p.id, {
         given: this.measure.fit(p.name.given.trim() || lang.unnamed, fonts.given, width - (view.showRelationships ? 0 : top)),
-        surname: this.measure.fit(surnameLineIn(lang, p, births.get(p.id)), fonts.surname, width - (last === 'surname' ? bottom : 0)),
+        surname: this.measure.fit(names.surname, fonts.surname, width - (last === 'surname' ? bottom : 0)),
+        birth: this.measure.fit(names.birth, fonts.birth, width - (last === 'birth' ? bottom : 0)),
         dates: view.showDates ? this.measure.fit(dates, fonts.dates, width - (last === 'dates' ? bottom : 0)) : '',
         place: view.showPlaces ? this.measure.fit(place, fonts.place, width - bottom) : '',
         kin: relation ? this.measure.fit(relation, fonts.kin, width - top) : '',

@@ -38,18 +38,6 @@
   </div>
 </div>
 <div class="field">
-  <label for="person-nickname">{{ t('name.nickname') }}</label>
-  <input
-    id="person-nickname"
-    class="input"
-    autocomplete="off"
-    [value]="p.name.nickname ?? ''"
-    [placeholder]="t('name.nicknamePlaceholder')"
-    (input)="setName('nickname', $event)"
-    (change)="trimName('nickname', $event)"
-  />
-</div>
-<div class="field">
   <span class="field-label" id="person-sex-label">{{ t('name.sex') }}</span>
   <stemma-segmented labelledBy="person-sex-label" [options]="sexes()" [value]="p.sex" (valueChange)="setSex($event)" />
 </div>

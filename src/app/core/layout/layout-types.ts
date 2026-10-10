@@ -39,19 +39,6 @@ export const COMFORTABLE_LAYOUT: LayoutOptions = {
   junctionRadius: 7,
 };
 
-export const COMPACT_LAYOUT: LayoutOptions = {
-  cardWidth: 156,
-  cardHeight: 56,
-  partnerGap: 36,
-  siblingGap: 16,
-  familyGap: 36,
-  componentGap: 110,
-  rowGap: 62,
-  trackGap: 9,
-  placeholderRadius: 10,
-  junctionRadius: 6,
-};
-
 /** Extra card height when places are shown. */
 export const PLACE_LINE_HEIGHT = 14;
 
@@ -111,6 +98,8 @@ export interface LayoutDrop {
 export interface LayoutConnector {
   familyId: string;
   stem: Pt;
+  /** Where the parents' row ends below the stem. A line that turns only past it cannot run behind a card in that row. */
+  clearY: number;
   barY: number;
   drops: LayoutDrop[];
 }
@@ -121,6 +110,8 @@ export interface LayoutLink {
   childId: string;
   relation: ChildRelation;
   from: Pt;
+  /** Where the parents' row ends below `from` (see LayoutConnector). */
+  clearY: number;
   to: Pt;
 }
 

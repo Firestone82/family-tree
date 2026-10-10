@@ -41,6 +41,7 @@ export interface PersonName {
   surname: string;
   /** Surname at birth, when different from the current surname ("née"). */
   birthSurname?: string;
+  /** "Known as". No longer shown or edited; kept from files and saved back. */
   nickname?: string;
   ext?: Extensions;
 }
@@ -63,6 +64,7 @@ export interface Person {
   birth?: LifeEvent;
   /** Present when the person has died, even if no date or place is known. */
   death?: LifeEvent;
+  /** No longer shown or edited; kept from files and saved back. */
   occupation?: string;
   notes?: string;
   /** Portrait as a data: URL (kept small, see photo resizing in the editor). */
@@ -100,6 +102,7 @@ export interface Family {
   /** The wedding, or the start of the partnership. */
   start?: LifeEvent;
   end?: FamilyEnd;
+  // The dates and places of these three events are no longer shown or edited; they are kept from files and saved back.
   notes?: string;
   ext?: Extensions;
 }

@@ -51,7 +51,7 @@ export function lerpLayout(a: LayoutResult, b: LayoutResult, t: number): LayoutR
     connectors: b.connectors.map((c) => lerpConnector(connA.get(c.familyId), c, t)),
     links: b.links.map((l) => {
       const p = linksA.get(`${l.familyId}|${l.childId}`);
-      return p ? { ...l, from: lerpPt(p.from, l.from, t), to: lerpPt(p.to, l.to, t) } : l;
+      return p ? { ...l, from: lerpPt(p.from, l.from, t), clearY: lerp(p.clearY, l.clearY, t), to: lerpPt(p.to, l.to, t) } : l;
     }),
     rows: b.rows.map((r) => {
       const p = rowsA.get(r.rank);
@@ -73,6 +73,7 @@ function lerpConnector(a: LayoutConnector | undefined, b: LayoutConnector, t: nu
   return {
     ...b,
     stem,
+    clearY: lerp(a.clearY, b.clearY, t),
     barY: lerp(a.barY, b.barY, t),
     drops: b.drops.map((d) => {
       const p = dropsA.get(d.childId);

@@ -48,10 +48,13 @@
 @if (l.surname) {
   <svg:text class="surname" [attr.font-size]="m.surname.size" [attr.x]="m.textX" [attr.y]="m.surname.y + shift()">{{ l.surname }}</svg:text>
 }
+@if (l.birth) {
+  <svg:text class="birth" [attr.font-size]="m.birth.size" [attr.x]="m.textX" [attr.y]="m.birth.y + shift()">{{ l.birth }}</svg:text>
+}
 @if (l.dates) {
-  <svg:text class="dates" [attr.font-size]="m.dates.size" [attr.x]="m.textX" [attr.y]="m.dates.y + shift()">{{ l.dates }}</svg:text>
+  <svg:text class="dates" [attr.font-size]="m.dates.size" [attr.x]="m.textX" [attr.y]="m.dates.y + lifeShift()">{{ l.dates }}</svg:text>
 }
 @if (l.place) {
-  <svg:text class="place" [attr.font-size]="m.place.size" [attr.x]="m.textX" [attr.y]="m.place.y + shift()">{{ l.place }}</svg:text>
+  <svg:text class="place" [attr.font-size]="m.place.size" [attr.x]="m.textX" [attr.y]="m.place.y + lifeShift()">{{ l.place }}</svg:text>
 }
 <svg:title>{{ l.title }}</svg:title>

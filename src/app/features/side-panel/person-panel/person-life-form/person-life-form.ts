@@ -12,7 +12,7 @@ import { PersonActions } from '../../../../state/person-actions';
 
 type EventKey = 'birth' | 'death';
 
-/** Birth and death, occupation, portrait and notes. */
+/** Birth and death, portrait and notes. */
 @Component({
   selector: 'stemma-person-life-form',
   imports: [Icon, DateField],
@@ -49,9 +49,9 @@ export class PersonLifeForm {
     this.patch({ death: died ? (this.person().death ?? {}) : undefined }, 'deceased');
   }
 
-  protected setText(field: 'occupation' | 'notes', event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
-    this.patch({ [field]: value.trim() ? value : undefined }, field);
+  protected setNotes(event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value;
+    this.patch({ notes: value.trim() ? value : undefined }, 'notes');
   }
 
   protected async pickPhoto(): Promise<void> {

@@ -34,10 +34,6 @@
   </div>
 }
 <div class="field">
-  <label for="person-occupation">{{ t('life.occupation') }}</label>
-  <input id="person-occupation" class="input" autocomplete="off" [value]="p.occupation ?? ''" (input)="setText('occupation', $event)" />
-</div>
-<div class="field">
   <span class="field-label">{{ t('life.portrait') }}</span>
   <div class="photo-row">
     @if (p.photo) {
@@ -52,5 +48,5 @@
 </div>
 <div class="field">
   <label for="person-notes">{{ t('life.notes') }}</label>
-  <textarea id="person-notes" class="textarea" [value]="p.notes ?? ''" [placeholder]="t('life.notesPlaceholder')" (input)="setText('notes', $event)"></textarea>
+  <textarea id="person-notes" class="textarea" [value]="p.notes ?? ''" [placeholder]="t('life.notesPlaceholder')" (input)="setNotes($event)"></textarea>
 </div>

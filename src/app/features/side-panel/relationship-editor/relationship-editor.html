@@ -1,5 +1,4 @@
-@let f = family();
-@let id = f.id;
+@let id = family().id;
 <div class="field">
   <label [for]="'status-' + id">{{ t('rel.status') }}</label>
   <select class="select" [id]="'status-' + id" (change)="setStatus($event)">
@@ -8,51 +7,3 @@
     }
   </select>
 </div>
-@if (status() === 'engaged' || f.engagement) {
-  <div class="grid-2">
-    <div class="field">
-      <label [for]="'engaged-' + id">{{ t('rel.engaged') }}</label>
-      <stemma-date-field [inputId]="'engaged-' + id" [value]="f.engagement?.date" (valueChange)="setDate('engagement', $event)" />
-    </div>
-    <div class="field">
-      <label [for]="'engaged-place-' + id">{{ t('rel.place') }}</label>
-      <input
-        class="input"
-        autocomplete="off"
-        [id]="'engaged-place-' + id"
-        [value]="f.engagement?.place ?? ''"
-        [placeholder]="t('common.placePlaceholder')"
-        (input)="setPlace('engagement', $event)"
-      />
-    </div>
-  </div>
-}
-<div class="grid-2">
-  <div class="field">
-    <label [for]="'start-' + id">{{ f.kind === 'marriage' ? t('rel.married') : t('rel.together') }}</label>
-    <stemma-date-field [inputId]="'start-' + id" [value]="f.start?.date" (valueChange)="setDate('start', $event)" />
-  </div>
-  <div class="field">
-    <label [for]="'start-place-' + id">{{ f.kind === 'marriage' ? t('rel.marriagePlace') : t('rel.place') }}</label>
-    <input
-      class="input"
-      autocomplete="off"
-      [id]="'start-place-' + id"
-      [value]="f.start?.place ?? ''"
-      [placeholder]="t('common.placePlaceholder')"
-      (input)="setPlace('start', $event)"
-    />
-  </div>
-</div>
-@if (endLabel(); as label) {
-  <div class="grid-2">
-    <div class="field">
-      <label [for]="'end-' + id">{{ t(label) }}</label>
-      <stemma-date-field [inputId]="'end-' + id" [value]="f.end?.date" (valueChange)="setDate('end', $event)" />
-    </div>
-    <div class="field">
-      <label [for]="'end-place-' + id">{{ t('rel.place') }}</label>
-      <input class="input" autocomplete="off" [id]="'end-place-' + id" [value]="f.end?.place ?? ''" (input)="setPlace('end', $event)" />
-    </div>
-  </div>
-}

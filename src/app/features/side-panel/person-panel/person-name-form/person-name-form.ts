@@ -8,9 +8,9 @@ import { SegmentOption, Segmented } from '../../../../shared/segmented/segmented
 import { PersonActions } from '../../../../state/person-actions';
 import { UiState } from '../../../../state/ui-state';
 
-type NameField = 'given' | 'surname' | 'birthSurname' | 'nickname';
+type NameField = 'given' | 'surname' | 'birthSurname';
 
-/** Given names, surnames, nickname and sex. */
+/** Given names, surnames and sex. */
 @Component({
   selector: 'stemma-person-name-form',
   imports: [Segmented],
@@ -63,7 +63,7 @@ export class PersonNameForm {
 
   protected setName(field: NameField, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
-    const optional = field === 'birthSurname' || field === 'nickname';
+    const optional = field === 'birthSurname';
     this.people.update(this.person().id, { name: { [field]: optional && !value.trim() ? undefined : value } as Partial<PersonName> }, field);
   }
 

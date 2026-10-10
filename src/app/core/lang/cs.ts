@@ -1,6 +1,6 @@
 import type { Kin } from '../kinship/kinship';
 import type { RelationshipStatus } from '../model/relationship';
-import type { DateQualifier, Family, GenDate, Person, Sex } from '../model/types';
+import type { DateQualifier, GenDate, Person, Sex } from '../model/types';
 import { fullDateWith, lifespanWith, shortDateWith } from './common';
 import { czechSurnameFor } from './cs-surnames';
 import type { ChartLanguage } from './language';
@@ -245,35 +245,15 @@ function shortDate(date: GenDate | undefined): string {
   return shortDateWith(date, QUALIFIERS);
 }
 
-function union(f: Family, status: RelationshipStatus): string {
-  const start = shortDate(f.start?.date);
-  const place = f.start?.place?.trim() ?? '';
-  const end = shortDate(f.end?.date);
-  const wedding = (withPlace: boolean) => {
-    const parts = [start ? `sňatek ${start}` : place && withPlace ? 'sňatek' : '', withPlace ? place : ''];
-    return parts.filter(Boolean).join(', ');
-  };
-  switch (status) {
-    case 'married':
-    case 'widowed':
-      return wedding(true);
-    case 'engaged': {
-      const when = shortDate(f.engagement?.date);
-      return when ? `zasnoubení ${when}` : 'zasnoubení';
-    }
-    case 'partners':
-      return start ? `spolu od ${start}` : '';
-    case 'divorced':
-      return [wedding(false), end ? `rozvod ${end}` : 'rozvedeni'].filter(Boolean).join(', ');
-    case 'separated':
-      return [f.kind === 'marriage' ? wedding(false) : start ? `od ${start}` : '', end ? `rozchod ${end}` : 'odloučeni'].filter(Boolean).join(', ');
-    case 'annulled':
-      return end ? `sňatek zrušen ${end}` : 'sňatek zrušen';
-    case 'ended':
-      return start && end ? `${start}–${end}` : end ? `do ${end}` : '';
-    case 'unknown':
-      return '';
-  }
+const UNION_NOTES: Partial<Record<RelationshipStatus, string>> = {
+  engaged: 'zasnoubení',
+  divorced: 'rozvedeni',
+  separated: 'odloučeni',
+  annulled: 'sňatek zrušen',
+};
+
+function union(status: RelationshipStatus): string {
+  return UNION_NOTES[status] ?? '';
 }
 
 function longDate(date: Date): string {
@@ -306,7 +286,7 @@ export const czech: ChartLanguage = {
   shortDate,
   fullDate,
   longDate,
-  maidenName: (surname, birth) => `${surname}, roz. ${birth}`,
+  bornAs: (birth) => `roz. ${birth}`,
   surnameFor: czechSurnameFor,
   unnamed: 'Bez jména',
   summary: (generations, people) =>

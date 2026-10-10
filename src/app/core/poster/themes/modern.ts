@@ -58,6 +58,7 @@ export const modern: PosterTheme = {
     kin: { family: SANS, size: 10.5, weight: 500, step: 0 },
     given: { family: SANS, size: 15, weight: 700, step: 17 },
     surname: { family: SANS, size: 13, weight: 400, step: 16 },
+    birth: { family: SANS, size: 11.5, weight: 400, step: 14.5 },
     dates: { family: SANS, size: 11.5, weight: 400, step: 15.5 },
     place: { family: SANS, size: 11, weight: 400, step: 14 },
   },

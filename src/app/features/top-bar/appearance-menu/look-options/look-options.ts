@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { ColorBy, Density, LineStyle, TreeStyle, ViewSettings } from '../../../../core/model/types';
+import { ColorBy, LineStyle, TreeStyle, ViewSettings } from '../../../../core/model/types';
 import { I18n } from '../../../../i18n/i18n';
 import { SegmentOption, Segmented } from '../../../../shared/segmented/segmented';
 
-/** The chart's style, what colours the name shields, the lines and the spacing. */
+/** The chart's style, what colours the name shields, and the lines. */
 @Component({
   selector: 'stemma-look-options',
   imports: [Segmented],
@@ -47,10 +47,5 @@ export class LookOptions {
   protected readonly lines = computed<SegmentOption<LineStyle>[]>(() => [
     { value: 'square', label: this.t('look.lines.square') },
     { value: 'curved', label: this.t('look.lines.curved') },
-  ]);
-
-  protected readonly densities = computed<SegmentOption<Density>[]>(() => [
-    { value: 'comfortable', label: this.t('look.spacing.comfortable') },
-    { value: 'compact', label: this.t('look.spacing.compact') },
   ]);
 }

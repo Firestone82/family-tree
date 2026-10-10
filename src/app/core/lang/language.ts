@@ -9,7 +9,7 @@
 import { Kin } from '../kinship/kinship';
 import { RelationshipStatus } from '../model/relationship';
 import { SurnameForm } from '../model/surnames';
-import { Family, GenDate, Person, Sex } from '../model/types';
+import { GenDate, Person, Sex } from '../model/types';
 import { capitalize } from './common';
 import { czech } from './cs';
 import { english } from './en';
@@ -23,8 +23,11 @@ export interface ChartLanguage {
   name: string;
   /** How someone is related, in lower case: "mother", "wife's cousin". */
   kin(kin: Kin, sex: Sex): string;
-  /** A short note for the line between partners: "m. 1952, Lyon", "div. 1988". */
-  union(family: Family, status: RelationshipStatus): string;
+  /**
+   * A short note under a couple, for a status their marker does not spell out:
+   * "engaged", "divorced". Dates and places of a wedding are not shown.
+   */
+  union(status: RelationshipStatus): string;
   /** "1898 – 1971", "b. 1993", "† 1971". */
   lifespan(person: Pick<Person, 'birth' | 'death'>): string;
   /** "c. 1923", "1923". */
@@ -33,8 +36,8 @@ export interface ChartLanguage {
   fullDate(date: GenDate | undefined): string;
   /** "10 October 2026". */
   longDate(date: Date): string;
-  /** "Ashworth née Barlow". */
-  maidenName(surname: string, birthSurname: string, sex: Sex): string;
+  /** The line under a surname that changed: "née Barlow". */
+  bornAs(birthSurname: string, sex: Sex): string;
   /** A surname in the form for someone's sex: Novák and Nováková in Czech, unchanged in English. */
   surnameFor: SurnameForm;
   /** Shown instead of a missing given name. */
@@ -74,11 +77,12 @@ export function kinLabel(language: ChartLanguage, kin: Kin | undefined, sex: Sex
 }
 
 /**
- * "Ashworth née Barlow" in the tree's language, or just the surname. `birth`
- * is the surname at birth when it is known from elsewhere (the father's).
+ * The surname for a card, and the line under it when the surname at birth was
+ * different: "Ashworth" and "née Barlow" in the tree's language. `birth` is the
+ * surname at birth when it is known from elsewhere (the father's).
  */
-export function surnameLineIn(language: ChartLanguage, person: Person, birth = person.name.birthSurname?.trim() ?? ''): string {
+export function surnameLinesIn(language: ChartLanguage, person: Person, birth = person.name.birthSurname?.trim() ?? ''): { surname: string; birth: string } {
   const surname = person.name.surname.trim();
-  if (birth && birth !== surname) return surname ? language.maidenName(surname, birth, person.sex) : birth;
-  return surname;
+  if (!birth || birth === surname) return { surname, birth: '' };
+  return surname ? { surname, birth: language.bornAs(birth, person.sex) } : { surname: birth, birth: '' };
 }

@@ -64,6 +64,7 @@ export const botanical: PosterTheme = {
     kin: { family: SERIF, size: 11, weight: 500, style: 'italic', step: 0 },
     given: { family: SERIF, size: 15.5, weight: 600, step: 17 },
     surname: { family: SMALL_CAPS, size: 13, weight: 500, letterSpacing: 0.02, step: 16 },
+    birth: { family: SMALL_CAPS, size: 11, weight: 500, letterSpacing: 0.02, step: 14 },
     dates: { family: SANS, size: 11.5, weight: 400, step: 15.5 },
     place: { family: SANS, size: 11, weight: 400, step: 14 },
   },

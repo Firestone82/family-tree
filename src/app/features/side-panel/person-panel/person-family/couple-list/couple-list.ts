@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { displayName } from '../../../../../core/model/names';
 import { relationshipStatus } from '../../../../../core/model/relationship';
-import { ChildRelation, Family, Person } from '../../../../../core/model/types';
+import { ChildRelation, Person } from '../../../../../core/model/types';
 import { TreeStore } from '../../../../../core/store/tree-store';
 import { I18n } from '../../../../../i18n/i18n';
 import { STATUS_LABEL, bornTogetherTag } from '../../../../../i18n/labels';
@@ -46,7 +46,6 @@ export class CoupleList {
         family: f,
         partner: partner ? { ...this.rows.row(partner), given: partner.name.given || displayName(partner) } : undefined,
         status: STATUS_LABEL[relationshipStatus(f)],
-        summary: this.summary(f),
         children: f.children
           .map((c) => {
             const child = index.person(c.personId);
@@ -59,15 +58,6 @@ export class CoupleList {
       };
     });
   });
-
-  /** "18 May 1991, Brno" for the relationship line; the status is shown beside it. */
-  private summary(f: Family): string {
-    const dates = this.i18n.dates();
-    const event = relationshipStatus(f) === 'engaged' ? f.engagement : f.start;
-    const parts = [dates.fullDate(event?.date), event?.place ?? ''].filter(Boolean);
-    if (f.end?.date) parts.push(this.t('couples.until', { date: dates.shortDate(f.end.date) }));
-    return parts.join(', ');
-  }
 
   protected addChild(partnerId: string | null): void {
     this.people.startAdd('child', this.person().id, partnerId);
