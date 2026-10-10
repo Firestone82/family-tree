@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { displayName } from '../../../../core/model/names';
 import { ChildRelation, Family, Person } from '../../../../core/model/types';
 import { TreeStore } from '../../../../core/store/tree-store';
 import { I18n } from '../../../../i18n/i18n';
@@ -43,7 +42,7 @@ export class FamilyChildren {
       const withNext = !!c.group && next?.group === c.group;
       return {
         id: c.person.id,
-        name: displayName(c.person),
+        name: this.i18n.name(c.person),
         dates: this.i18n.lifespan(c.person),
         tincture: this.model.colors().byPerson.get(c.person.id) ?? 'argent',
         relation: c.relation,

@@ -1,12 +1,12 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { bloodRelatives } from '../../core/kinship/kinship';
-import { displayName, sortName } from '../../core/model/names';
 import { updatePrint, updateView } from '../../core/model/operations';
 import { relationshipStatus } from '../../core/model/relationship';
 import { DEFAULT_PRINT, PrintSettings, effectivePrint } from '../../core/model/types';
 import { PAPERS, PX_PER_MM } from '../../core/poster/paper';
 import { pdfFromJpeg } from '../../core/poster/pdf';
 import { PosterResult, renderPoster } from '../../core/poster/poster';
+import { RELATIVES, Relatives, relativesSettings, scopeDocument } from '../../core/poster/scope';
 import { POSTER_THEMES } from '../../core/poster/themes';
 import { FileIo, safeFilename } from '../../core/services/file-io';
 import { ImageExporter } from '../../core/services/image-export';
@@ -59,7 +59,7 @@ export class PrintModel {
   readonly people = computed(() =>
     this.store
       .doc()
-      .people.map((p) => ({ id: p.id, name: sortName(p) }))
+      .people.map((p) => ({ id: p.id, name: this.i18n.sortName(p) }))
       .sort((a, b) => this.i18n.compare(a.name, b.name)),
   );
 
@@ -74,7 +74,7 @@ export class PrintModel {
       .map((f) => {
         const other = f.partners.find((p) => p !== id)!;
         const status = this.i18n.t(STATUS_LABEL[relationshipStatus(f)]).toLocaleLowerCase(this.i18n.locale().intl);
-        return { id: other, label: `${displayName(index.person(other))} (${status})` };
+        return { id: other, label: `${this.i18n.name(index.person(other))} (${status})` };
       });
   });
 
@@ -93,6 +93,17 @@ export class PrintModel {
       }
     }
     return { up, down };
+  });
+
+  /** How many people each step of the Relatives setting puts on the page, with the generations chosen. */
+  readonly relativesCounts = computed<Readonly<Record<Relatives, number>> | null>(() => {
+    const p = this.poster();
+    if (!p?.centerId) return null;
+    const s = this.settings();
+    const around = { centerId: p.centerId, partnerId: p.partnerId, ancestors: s.ancestors, descendants: s.descendants };
+    const counts = {} as Record<Relatives, number>;
+    for (const r of RELATIVES) counts[r] = scopeDocument(this.store.doc(), this.store.index(), { ...around, ...relativesSettings(r) }).people.size;
+    return counts;
   });
 
   /** "A3 landscape, 420 × 297 mm. 29 people." */

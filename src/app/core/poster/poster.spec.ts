@@ -1,10 +1,11 @@
+import { moveCards } from '../model/arrangement';
 import { sampleDocument } from '../model/sample';
 import { TreeIndex } from '../model/tree-index';
-import { DEFAULT_PRINT, PrintSettings } from '../model/types';
+import { DEFAULT_PRINT, Person, PrintSettings, TreeDocument } from '../model/types';
 import { computeLayout } from '../layout/layout';
 import { pdfFromJpeg } from './pdf';
 import { flipLayout, renderPoster } from './poster';
-import { scopeDocument } from './scope';
+import { RELATIVES, relativesOf, relativesSettings, scopeDocument } from './scope';
 import { POSTER_THEMES, posterTheme } from './themes';
 
 const measure = (text: string, font: string) => text.length * Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 12) * 0.5;
@@ -35,6 +36,37 @@ describe('print scope', () => {
   it('takes everyone when nothing is limited', () => {
     const s = scopeDocument(doc, index, { centerId: 'I11', ancestors: 'all', descendants: 'all', branches: 'all' });
     expect(s.people.size).toBe(doc.people.length);
+  });
+
+  it('leaves out the families of those who married in, but not their partners', () => {
+    // Marco's parents, and a later wife of his.
+    const person = (id: string, sex: Person['sex']): Person => ({ id, sex, name: { given: id, surname: 'Ferri' } });
+    const married: TreeDocument = {
+      ...doc,
+      people: [...doc.people, person('P1', 'male'), person('P2', 'female'), person('P3', 'female')],
+      families: [
+        ...doc.families,
+        { id: 'F90', kind: 'marriage', partners: ['P1', 'P2'], children: [{ personId: 'I18', relation: 'biological' }] },
+        { id: 'F91', kind: 'marriage', partners: ['I18', 'P3'], children: [] },
+      ],
+    };
+    const options = { centerId: 'I11', partnerId: 'I15', ancestors: 'all', descendants: 'all' } as const;
+    const all = scopeDocument(married, new TreeIndex(married), { ...options, ...relativesSettings('everyone') });
+    const kin = scopeDocument(married, new TreeIndex(married), { ...options, ...relativesSettings('relatives') });
+    expect(all.people.size).toBe(32);
+    // Everyone else has a relationship name as seen from Simon: Marco is his brother-in-law.
+    expect([...all.people].filter((id) => !kin.people.has(id)).sort()).toEqual(['P1', 'P2']);
+    expect(kin.people.has('P3')).toBe(true);
+    expect(kin.doc.families.some((f) => f.id === 'F90')).toBe(false);
+    // Nearer steps leave them out anyway.
+    const cousins = scopeDocument(married, new TreeIndex(married), { ...options, ...relativesSettings('cousins') });
+    expect(cousins.people.has('P1')).toBe(false);
+  });
+
+  it('saves each step of Relatives as side branches and in-law families', () => {
+    for (const r of RELATIVES) expect(relativesOf(relativesSettings(r))).toBe(r);
+    expect(relativesOf({ branches: 3, inLawFamilies: true })).toBe('everyone');
+    expect(relativesSettings('relatives')).toEqual({ branches: 'all', inLawFamilies: false });
   });
 });
 
@@ -118,6 +150,27 @@ describe('printed page', () => {
     expect(unknown.theme.id).toBe('heirloom');
     expect(Math.round(unknown.paper!.widthMm)).toBe(420);
     expect(posterTheme('modern').id).toBe('modern');
+  });
+
+  it('prints someone whose name nobody knows as Unknown, on a dashed card', () => {
+    const unknown = { ...doc, people: doc.people.map((p) => (p.id === 'I16' ? { ...p, name: { ...p.name, given: '' } } : p)) };
+    for (const theme of POSTER_THEMES) {
+      const known = renderPoster({ doc, settings: settings({ theme: theme.id }), measure });
+      const printed = renderPoster({ doc: unknown, settings: settings({ theme: theme.id }), measure });
+      expect(printed.svg).toContain('>Unknown<');
+      expect(printed.svg).toContain('stroke-dasharray="4 2.6"');
+      expect(known.svg).not.toContain('stroke-dasharray="4 2.6"');
+    }
+    const cs = renderPoster({ doc: { ...unknown, view: { ...unknown.view, language: 'cs' } }, settings: settings(), measure });
+    expect(cs.svg).toContain('>Neznámý<');
+  });
+
+  it('prints the changes made by hand to the layout', () => {
+    const plain = renderPoster({ doc, settings: settings(), measure });
+    const arranged = moveCards(doc, ['I18', 'I12'], 200);
+    expect(renderPoster({ doc: arranged, settings: settings(), measure }).svg).not.toBe(plain.svg);
+    const part = scopeDocument(arranged, new TreeIndex(arranged), { centerId: 'I11', ancestors: 1, descendants: 1, branches: 1 });
+    expect(part.doc.arrangement?.moves).toEqual({ I18: 200, I12: 200 });
   });
 
   it('prints a smaller part of the tree bigger', () => {

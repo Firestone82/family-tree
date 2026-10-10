@@ -7,6 +7,8 @@ export interface FamilyRow {
   name: string;
   dates: string;
   tincture: string;
+  /** Left out of the chart by the Relatives setting. */
+  offChart?: boolean;
 }
 
 /** One family in the people list: its name, which opens and closes the list of its members. */
@@ -25,6 +27,8 @@ export class FamilyGroupItem {
   readonly open = input(false);
   /** Accessible name of the member count, such as "5 people". */
   readonly countLabel = input('');
+  /** Says why a member is greyed out: the chart leaves them out. */
+  readonly offChartHint = input('');
   readonly toggleOpen = output<void>();
   readonly pick = output<string>();
 }

@@ -1,4 +1,4 @@
-import { displayName, initials, surnameKey, surnameLine } from './names';
+import { displayName, initials, nameUnknown, sortName, surnameKey, surnameLine } from './names';
 import { Person } from './types';
 
 const p = (given: string, surname: string, birthSurname?: string): Person => ({
@@ -26,7 +26,14 @@ describe('names', () => {
 
   it('formats names', () => {
     expect(displayName(p('Anna Marie', 'Hartmann'))).toBe('Anna Marie Hartmann');
-    expect(displayName(p('', ''))).toBe('Unnamed person');
+    expect(displayName(p('', ''))).toBe('Unknown');
+    expect(displayName(p('', 'Farník'))).toBe('Unknown Farník');
+    expect(displayName(p('', 'Farník'), 'Neznámý')).toBe('Neznámý Farník');
+    expect(sortName(p('Anna', 'Hartmann'))).toBe('Hartmann, Anna');
+    expect(sortName(p('', 'Farník'), 'Neznámý')).toBe('Farník, Neznámý');
+    expect(sortName(p('', ''), 'Neznámá')).toBe('Neznámá');
+    expect(nameUnknown(p('', 'Farník'))).toBe(true);
+    expect(nameUnknown(p('X', 'Farník'))).toBe(false);
     expect(surnameLine(p('Hélène', 'Ashworth', 'Moreau'))).toBe('Ashworth née Moreau');
     expect(surnameLine(p('Hélène', 'Ashworth', 'Ashworth'))).toBe('Ashworth');
   });

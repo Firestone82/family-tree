@@ -4,7 +4,7 @@
  */
 import { LayoutCard, LayoutUnion } from '../../layout/layout-types';
 import { yearSpan } from '../../lang/language';
-import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from '../poster-types';
+import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from '../poster-types';
 import { unionMark } from '../../layout/union-marks';
 import { drawMark } from '../marks';
 import { el, fontAttrs, n, text } from '../svg';
@@ -62,7 +62,7 @@ export const modern: PosterTheme = {
     dates: { family: SANS, size: 11.5, weight: 400, step: 15.5 },
     place: { family: SANS, size: 11, weight: 400, step: 14 },
   },
-  spacing: { partnerGap: 44, siblingGap: 22, familyGap: 48, rowGap: 82 },
+  spacing: { partnerGap: 44, siblingGap: 22, familyGap: 64, rowGap: 82 },
   line: { style: 'square', width: 1.15, radius: 0 },
   tree: { wood: '#d4c9bb', bark: '#c2b4a4', canopy: ['#d3e9ce', '#e0f0dc', '#edf6ea'], leaves: ['#98c78b', '#acd4a0', '#c0dfb6', '#d2e8ca'], opacity: 1 },
   unionFont: { family: SANS, size: 10.5 },
@@ -154,6 +154,7 @@ export const modern: PosterTheme = {
       fill: look.fill,
       stroke: look.focus ? palette.accent : palette.cardEdge,
       'stroke-width': look.focus ? 2 : 1,
+      'stroke-dasharray': look.unknown ? UNKNOWN_DASH : undefined,
     });
   },
 

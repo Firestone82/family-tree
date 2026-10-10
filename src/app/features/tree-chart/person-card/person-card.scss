@@ -25,6 +25,16 @@
   fill: var(--t-card-female);
 }
 
+/* Someone whose name nobody knows: a dashed outline and a quieter "Unknown". */
+:host(.unknown) .card-shape {
+  stroke: var(--t-muted);
+  stroke-dasharray: 5 3.5;
+}
+
+:host(.unknown) .given {
+  fill: var(--t-muted);
+}
+
 :host(:hover) .card-shape {
   stroke: var(--t-muted);
 }

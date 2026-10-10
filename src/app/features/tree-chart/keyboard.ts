@@ -23,7 +23,8 @@ export function chartKey(e: KeyboardEvent): ChartKey {
 export function neighbour(index: TreeIndex, cards: readonly LayoutCard[], id: string, direction: Direction): string | undefined {
   const me = cards.find((c) => c.personId === id);
   if (!me) return undefined;
-  if (direction === 'up') return index.parents(id)[0]?.id;
+  // Only people on the chart: the Relatives setting may leave a parent out.
+  if (direction === 'up') return index.parents(id).find((p) => cards.some((c) => c.personId === p.id))?.id;
   if (direction === 'down') {
     const kids = index
       .children(id)

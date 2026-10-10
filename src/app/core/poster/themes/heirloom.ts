@@ -5,7 +5,7 @@
  */
 import { LayoutCard, LayoutUnion } from '../../layout/layout-types';
 import { yearSpan } from '../../lang/language';
-import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from '../poster-types';
+import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from '../poster-types';
 import { unionMark } from '../../layout/union-marks';
 import { drawMark } from '../marks';
 import { el, fontAttrs, n, shieldPath, specklePattern, text } from '../svg';
@@ -69,7 +69,7 @@ export const heirloom: PosterTheme = {
     dates: { family: SERIF, size: 12, weight: 400, step: 16 },
     place: { family: SERIF, size: 11.5, weight: 400, style: 'italic', step: 14.5 },
   },
-  spacing: { partnerGap: 48, siblingGap: 24, familyGap: 52, rowGap: 86 },
+  spacing: { partnerGap: 48, siblingGap: 24, familyGap: 68, rowGap: 86 },
   line: { style: 'square', width: 1.3, radius: 9 },
   tree: { wood: '#ac8d61', bark: '#86683f', canopy: ['#c6cf9a', '#d5dbae', '#e3e6c3'], leaves: ['#7c9750', '#91a961', '#a5b974', '#b9c889'], opacity: 1 },
   unionFont: { family: SERIF, size: 11.5, style: 'italic' },
@@ -183,8 +183,15 @@ export const heirloom: PosterTheme = {
       return `M${n(inset + kk)},${n(inset)}H${n(inset + w - kk)}L${n(inset + w)},${n(inset + kk)}V${n(inset + h - kk)}L${n(inset + w - kk)},${n(inset + h)}H${n(inset + kk)}L${n(inset)},${n(inset + h - kk)}V${n(inset + kk)}Z`;
     };
     return (
-      el('path', { d: plate(0), fill: look.fill, stroke: focus ? palette.accent : palette.cardEdge, 'stroke-width': focus ? 1.5 : 0.9 }) +
-      el('path', { d: plate(3), fill: 'none', stroke: palette.cardEdge, 'stroke-width': 0.4, opacity: 0.85 })
+      el('path', {
+        d: plate(0),
+        fill: look.fill,
+        stroke: focus ? palette.accent : palette.cardEdge,
+        'stroke-width': focus ? 1.5 : 0.9,
+        'stroke-dasharray': look.unknown ? UNKNOWN_DASH : undefined,
+      }) +
+      // Someone whose name nobody knows has no inner rule, only the dashed edge.
+      (look.unknown ? '' : el('path', { d: plate(3), fill: 'none', stroke: palette.cardEdge, 'stroke-width': 0.4, opacity: 0.85 }))
     );
   },
 

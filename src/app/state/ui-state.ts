@@ -19,7 +19,7 @@ export type DialogRequest =
   | { kind: 'xml'; xml: string; filename: string }
   | { kind: 'about' };
 
-export type MenuName = 'file' | 'appearance';
+export type MenuName = 'file' | 'appearance' | 'relatives';
 
 /** Peek height of the bottom sheet on phones, in pixels. */
 export const SHEET_PEEK = 196;
@@ -54,6 +54,8 @@ export class UiState {
   readonly flash = signal<{ personId: string; seq: number } | null>(null);
   /** The field to focus when the person panel opens next. */
   readonly focusField = signal<string | null>(null);
+  /** The chart is being arranged by hand: cards and family lines can be dragged. */
+  readonly arranging = signal(false);
   /** Phone-sized screen: the panel becomes a bottom sheet. */
   readonly narrow = signal(false);
   readonly viewportHeight = signal(typeof innerHeight === 'number' ? innerHeight : 800);

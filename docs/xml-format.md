@@ -2,11 +2,11 @@
 
 Stemma saves a family tree as one XML file. The file holds everyone in the tree,
 how they are related, how the chart should look and how it is printed, so a
-tree reopens exactly as it was saved. This page describes **format 1.3** and the
+tree reopens exactly as it was saved. This page describes **format 1.4** and the
 rules that keep files working between versions of the app.
 
 - Namespace: `urn:stemma:family-tree` (never changes between versions)
-- Root element: `<familyTree formatVersion="1.3">`
+- Root element: `<familyTree formatVersion="1.4">`
 - Encoding: UTF-8
 - Schema: [`schema/stemma-1.xsd`](../schema/stemma-1.xsd)
 - Example: [`samples/ashworth-family.xml`](../samples/ashworth-family.xml)
@@ -25,12 +25,14 @@ xmllint --noout --schema schema/stemma-1.xsd my-tree.xml
 | 1.1 | Stemma 1.1 | `<engagement>` in `<family>`; `showRelationships`, `showUnions` and `language` on `<view>`; `<print>` with print settings. |
 | 1.2 | Stemma 1.2 | `showSex`, `sexColors` and `showTree` on `<view>` and `<print>`. |
 | 1.3 | Stemma 1.3 | `<background>`, a picture behind the chart; `birthGroup` on `<child>` for twins and triplets. |
+| 1.4 | Stemma 1.4 | `branches` and `inLawFamilies` on `<view>`, and `inLawFamilies` on `<print>`: who the chart and prints show. `<arrangement>`: changes made by hand to the layout. |
 
-Files of an older minor version open in Stemma 1.3 as they are. A 1.3 file
-opens in Stemma 1.0 to 1.2, which say it comes from a newer version, show
-everything they know, and write the 1.3 additions back unchanged when they
-save (an older app shows its drawn tree instead of the picture, and twins as
-ordinary siblings).
+Files of an older minor version open in Stemma 1.4 as they are, showing the
+whole tree. A 1.4 file opens in Stemma 1.0 to 1.3, which say it comes from a
+newer version, show everything they know, and write the newer additions back
+unchanged when they save (an older app shows the whole tree on the chart in its
+automatic layout, its drawn tree instead of a picture, and twins as ordinary
+siblings).
 
 | The file is… | What the app does |
 | --- | --- |
@@ -97,7 +99,7 @@ is reported to the user after opening:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<familyTree xmlns="urn:stemma:family-tree" formatVersion="1.3" generator="Stemma 1.3.0">
+<familyTree xmlns="urn:stemma:family-tree" formatVersion="1.4" generator="Stemma 1.4.0">
   <meta>
     <title>The Ashworth family</title>
     <description>An example tree.</description>
@@ -108,7 +110,8 @@ is reported to the user after opening:
   <view style="auto" colorBy="family" lines="square" density="comfortable"
         showDates="true" showPlaces="true" showPhotos="true" showGenerations="true"
         showRelationships="true" showUnions="true" language="en"
-        showSex="true" sexColors="true" showTree="true"/>
+        showSex="true" sexColors="true" showTree="true"
+        branches="all" inLawFamilies="false"/>
   <people>
     <person id="I1" sex="male">
       <name given="Thomas" surname="Ashworth"/>
@@ -141,6 +144,12 @@ is reported to the user after opening:
          ancestors="all" descendants="2" branches="1" showTree="true"/>
   <background mediaType="image/svg+xml" encoding="base64" width="1600" height="1100"
               fit="cover" opacity="0.6" name="oak.svg">PHN2ZyB4bWxucz0i…</background>
+  <arrangement>
+    <move person="I18" dx="40"/>
+    <move person="I12" dx="40"/>
+    <line family="F4" dy="-12"/>
+    <couple family="F8" left="I12"/>
+  </arrangement>
 </familyTree>
 ```
 
@@ -172,6 +181,19 @@ How the chart is drawn. Every attribute has a default.
 | `showSex` (1.2) | A ♂ or ♀ symbol in the top right corner of each card. `true`, `false` | `true` |
 | `sexColors` (1.2) | Cards tinted by sex: blue for men, pink for women. `true`, `false` | `false` |
 | `showTree` (1.2) | A drawn tree behind the chart: its crown over the ancestors, its trunk at the person in the middle, its roots down to the descendants. When the file has a `<background>` (1.3), that picture is shown instead. `true`, `false` | `true` |
+| `branches` (1.4) | How far out to the sides the chart reaches from the direct line of the home person and their partner, as on `<print>`: `0` the direct line, `1` adds siblings, aunts, uncles, nieces and nephews, `2` first cousins, `all` everyone. A number above 2 is kept and shown as `all`. | `all` |
+| `inLawFamilies` (1.4) | With `branches="all"`: `false` leaves out everyone who has no relationship name as seen from the home person, such as the parents of a sister-in-law or a fiancé's family; the partners of everyone shown stay. `true`, `false` | `true` |
+
+People the chart leaves out are still in the file and in the people list. The
+app's *Who is shown* setting has five steps, stored as these two attributes:
+
+| Step | `branches` | `inLawFamilies` |
+| --- | --- | --- |
+| Direct line | `0` | `true` |
+| Siblings | `1` | `true` |
+| Cousins | `2` | `true` |
+| Relatives | `all` | `false` |
+| Everyone | `all` | `true` |
 
 The language of the app's own menus and panels is a setting of the browser, not
 of the tree, and is not stored in the file.
@@ -265,6 +287,7 @@ How the tree is printed and exported. Every attribute is optional.
 | `ancestors` | Generations above the couple: a number or `all`. | `all` |
 | `descendants` | Generations below the couple: a number or `all`. | `all` |
 | `branches` | Side branches: `0` the direct line, `1` adds siblings, aunts, uncles, nieces and nephews, `2` first cousins, `all` everyone. Partners of everyone included are always included. | `all` |
+| `inLawFamilies` (1.4) | With `branches="all"`: `false` prints only the people with a relationship name as seen from the person in the middle, and their partners, as on `<view>`. | `true` |
 | `title`, `subtitle` | Text for the page, instead of the tree's title and the generated summary. | |
 | `showDates`, `showPlaces`, `showPhotos`, `showUnions`, `showRelationships`, `showGenerations` | What the printed cards and page show. | `true` |
 | `showSex`, `sexColors`, `showTree` (1.2) | Sex symbols, cards tinted by sex, and the tree behind the chart, as on `<view>`. | `true`, `false`, `true` |
@@ -286,3 +309,15 @@ An SVG stays a drawing and prints sharply at any size. The app turns a PDF into
 a picture of its first page, about 6000 pixels on the long side, when it is
 chosen; the file stores that picture.
 
+### `<arrangement>` (1.4)
+
+Changes made by hand to the automatic layout (Arrange, on the chart). They are
+applied on top of the layout, which still places everything else, so they keep
+working as the tree changes; prints use them too. Entries for people or
+families that are not in the file are left out when it is read.
+
+| Element | Attributes |
+| --- | --- |
+| `move` | `person` and `dx`: that person's card moved sideways by `dx` chart units, to the right when positive. Partners standing side by side move together (each of them has a `move`); moved far enough, they pass their neighbours, who otherwise make room. |
+| `line` | `family` and `dy`: the family's line (the bar its children hang from) moved down by `dy`, up when negative. It stays clear of the row above; moved further down, the space between the rows grows. |
+| `couple` | `family` and `left`: which partner is drawn on the left. |

@@ -8,3 +8,23 @@
   justify-content: space-between;
   gap: 8px;
 }
+
+/* Someone the Relatives setting leaves out of the chart. */
+.hidden-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 12px 0 0;
+  padding: 9px 12px;
+  border: 1px dashed var(--rule-2);
+  border-radius: var(--radius-sm);
+  background: var(--sheet-2);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+
+  span {
+    flex: 1 1 180px;
+  }
+}

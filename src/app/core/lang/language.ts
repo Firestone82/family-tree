@@ -40,8 +40,8 @@ export interface ChartLanguage {
   bornAs(birthSurname: string, sex: Sex): string;
   /** A surname in the form for someone's sex: Novák and Nováková in Czech, unchanged in English. */
   surnameFor: SurnameForm;
-  /** Shown instead of a missing given name. */
-  unnamed: string;
+  /** Shown instead of a given name nobody knows: "Unknown", "Neznámá". */
+  unknown(sex: Sex): string;
   /** "Five generations, 29 people". */
   summary(generations: number, people: number): string;
   /** "Drawn 10 October 2026". */

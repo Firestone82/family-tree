@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { kinLabel } from '../../../../core/lang/language';
-import { displayName, initials } from '../../../../core/model/names';
+import { initials } from '../../../../core/model/names';
 import { Person } from '../../../../core/model/types';
 import { TreeStore } from '../../../../core/store/tree-store';
 import { I18n } from '../../../../i18n/i18n';
@@ -25,7 +25,7 @@ export class PersonHeader {
   readonly person = input.required<Person>();
   readonly closePanel = output<void>();
 
-  protected readonly name = computed(() => displayName(this.person()) || this.t('person.unnamed'));
+  protected readonly name = computed(() => this.i18n.name(this.person()));
   protected readonly initials = computed(() => initials(this.person()));
   protected readonly tincture = computed(() => this.model.colors().byPerson.get(this.person().id) ?? 'argent');
   protected readonly isFocus = computed(() => this.model.focusId() === this.person().id);
@@ -44,5 +44,5 @@ export class PersonHeader {
     kinLabel(this.model.language(), this.model.kin().get(this.person().id), this.person().sex, this.model.focusBornWith().get(this.person().id)),
   );
   protected readonly kinLang = computed(() => this.model.language().code);
-  protected readonly focusName = computed(() => displayName(this.store.index().person(this.model.focusId())));
+  protected readonly focusName = computed(() => this.i18n.name(this.store.index().person(this.model.focusId())));
 }

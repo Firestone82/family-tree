@@ -12,7 +12,7 @@ import { bornTogether, connectorPaths, linkPath, unionLinePath, unionMarkerPoint
 import { pictureBox } from '../layout/picture';
 import { unionMark } from '../layout/union-marks';
 import { dateYear } from '../model/dates';
-import { initials } from '../model/names';
+import { initials, nameUnknown } from '../model/names';
 import { RelationshipStatus, isBrokenUp, relationshipStatus } from '../model/relationship';
 import { birthGroupOf } from '../model/births';
 import { birthSurname } from '../model/surnames';
@@ -22,7 +22,7 @@ import { TreeIndex } from '../model/tree-index';
 import { BackgroundImage, ColorBy, DEFAULT_PRINT, PrintSettings, Sex, TreeDocument, effectivePrint } from '../model/types';
 import { drawMark } from './marks';
 import { PX_PER_MM, paperSize } from './paper';
-import { CardLine, CardLines, CardLook, CardText, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from './poster-types';
+import { CardLine, CardLines, CardLook, CardText, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from './poster-types';
 import { scopeDocument } from './scope';
 import { cssFont, el, fontAttrs, mixHex, n, shieldPath, text } from './svg';
 import { posterTheme } from './themes';
@@ -82,11 +82,13 @@ export function renderPoster(input: PosterInput): PosterResult {
         ancestors: settings.ancestors,
         descendants: settings.descendants,
         branches: settings.branches,
+        inLawFamilies: settings.inLawFamilies,
       }).doc
     : { ...input.doc, people: [], families: [] };
   const index = new TreeIndex(doc);
   // Surnames at birth come from the whole tree: a father may be outside the part that is printed.
-  const births = new Map(doc.people.map((p) => [p.id, birthSurname(fullIndex, p, language.surnameFor)]));
+  // Everyone's is needed, so that families get the colours they have on the chart.
+  const births = new Map(input.doc.people.map((p) => [p.id, birthSurname(fullIndex, p, language.surnameFor)]));
   const surnames = new Map(doc.people.map((p) => [p.id, surnameLinesIn(language, p, births.get(p.id))]));
 
   const measure = (t: string, f: FontSpec) => input.measure(t, cssFont(f)) + (f.letterSpacing ?? 0) * f.size * Math.max(0, Array.from(t).length - 1);
@@ -129,7 +131,7 @@ export function renderPoster(input: PosterInput): PosterResult {
     const relation = relations.get(p.id) ?? '';
     texts.set(p.id, {
       kin: relation ? fit(relation, card.kin, textWidth - symbolRoom) : '',
-      given: fit(p.name.given.trim() || language.unnamed, card.given, textWidth - (settings.showRelationships ? 0 : symbolRoom)),
+      given: fit(nameUnknown(p) ? language.unknown(p.sex) : p.name.given.trim(), card.given, textWidth - (settings.showRelationships ? 0 : symbolRoom)),
       surname: fit(names.surname, card.surname, textWidth),
       birth: fit(names.birth, card.birth, textWidth),
       dates: settings.showDates ? fit(language.lifespan(p), card.dates, textWidth) : '',
@@ -138,7 +140,7 @@ export function renderPoster(input: PosterInput): PosterResult {
     });
   }
 
-  const colors = assignColors(doc, input.doc.view.colorBy, layout.ranks, (p) => births.get(p.id) || p.name.surname.trim());
+  const colors = assignColors(doc, input.doc.view.colorBy, layout.ranks, (p) => births.get(p.id) || p.name.surname.trim(), input.doc);
   const focusIds = [centerId, partnerId].filter((id): id is string => !!id && !!index.person(id));
   const rootIds = new Set<string>(focusIds);
   for (const id of focusIds) for (const a of index.ancestors(id)) rootIds.add(a);
@@ -413,6 +415,7 @@ function drawCard(ctx: PosterContext, c: LayoutCard): string {
   const look: CardLook = {
     focus: ctx.focusIds.includes(c.personId),
     fill: settings.sexColors && person.sex === 'male' ? pal.cardMale : settings.sexColors && person.sex === 'female' ? pal.cardFemale : pal.card,
+    unknown: nameUnknown(person),
   };
   const tincture = theme.tinctures[ctx.colors.get(c.personId) ?? 'argent'];
   const parts: string[] = [theme.cardShape ? theme.cardShape(ctx, c, look) : defaultCardShape(ctx, c, look)];
@@ -476,7 +479,7 @@ function drawCard(ctx: PosterContext, c: LayoutCard): string {
   };
   const lines = ctx.lines;
   line(t.kin, card.kin, pal.kin, lines.kin);
-  line(t.given, card.given, pal.ink, true);
+  line(t.given, card.given, look.unknown ? pal.muted : pal.ink, true);
   line(t.surname, card.surname, pal.ink, true);
   line(t.birth, card.birth, pal.muted, lines.birth);
   line(t.dates, card.dates, pal.muted, lines.dates);
@@ -496,6 +499,7 @@ function defaultCardShape(ctx: PosterContext, c: LayoutCard, look: CardLook): st
     fill: look.fill,
     stroke: look.focus ? pal.ink : pal.cardEdge,
     'stroke-width': look.focus ? 1.5 : 0.9,
+    'stroke-dasharray': look.unknown ? UNKNOWN_DASH : undefined,
   });
 }
 
@@ -711,6 +715,7 @@ export function flipLayout(L: LayoutResult): LayoutResult {
     })),
     links: L.links.map((l) => ({ ...l, from: fp(l.from), clearY: fy(l.clearY), to: fp(l.to) })),
     rows: L.rows.map((r) => ({ ...r, y: fy(r.y + r.h) })),
+    lanes: L.lanes.map((r) => ({ ...r, y: fy(r.y + r.h) })),
   };
 }
 

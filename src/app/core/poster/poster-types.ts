@@ -68,7 +68,12 @@ export interface CardLook {
   focus: boolean;
   /** Background colour (tinted by sex when that is on). */
   fill: string;
+  /** Nobody knows the person's given name: the edge is dashed (UNKNOWN_DASH). */
+  unknown: boolean;
 }
+
+/** The dash of the edge of a card for someone whose name nobody knows. */
+export const UNKNOWN_DASH = '4 2.6';
 
 export interface PosterCardStyle {
   width: number;

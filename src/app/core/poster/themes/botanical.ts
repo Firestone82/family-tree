@@ -6,7 +6,7 @@
 import { LayoutCard, LayoutUnion, Pt } from '../../layout/layout-types';
 import { yearSpan } from '../../lang/language';
 import { centerline, leaves, sprig, taperedPath } from '../branches';
-import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect } from '../poster-types';
+import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from '../poster-types';
 import { unionMark } from '../../layout/union-marks';
 import { el, fontAttrs, hash, n, seededRandom, text } from '../svg';
 import { SANS, SERIF, SMALL_CAPS } from './fonts';
@@ -68,7 +68,7 @@ export const botanical: PosterTheme = {
     dates: { family: SANS, size: 11.5, weight: 400, step: 15.5 },
     place: { family: SANS, size: 11, weight: 400, step: 14 },
   },
-  spacing: { partnerGap: 50, siblingGap: 26, familyGap: 56, rowGap: 104 },
+  spacing: { partnerGap: 50, siblingGap: 26, familyGap: 74, rowGap: 104 },
   line: { style: 'branch', width: 1.2, radius: 10 },
   tree: { wood: '#a8977a', bark: '#87765a', canopy: ['#c5d8b3', '#d4e3c5', '#e2ebd6'], leaves: ['#759d5b', '#8cb170', '#a3c388', '#b9d3a0'], opacity: 1 },
   unionFont: { family: SERIF, size: 11.5, style: 'italic' },
@@ -208,6 +208,7 @@ export const botanical: PosterTheme = {
         fill: look.fill,
         stroke: focus ? palette.kin : palette.cardEdge,
         'stroke-width': focus ? 1.6 : 0.9,
+        'stroke-dasharray': look.unknown ? UNKNOWN_DASH : undefined,
       }) + leaf
     );
   },

@@ -142,6 +142,13 @@
   color: var(--ink-3);
 }
 
+/* A field that does not apply, such as the given name of someone whose name nobody knows. */
+.input:disabled {
+  border-style: dashed;
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
 .input:hover,
 .textarea:hover,
 .select:hover {

@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { displayName } from '../../../../../core/model/names';
 import { relationshipStatus } from '../../../../../core/model/relationship';
 import { ChildRelation, Person } from '../../../../../core/model/types';
 import { TreeStore } from '../../../../../core/store/tree-store';
@@ -44,7 +43,7 @@ export class CoupleList {
       const partner = index.person(f.partners.find((p) => p !== id));
       return {
         family: f,
-        partner: partner ? { ...this.rows.row(partner), given: partner.name.given || displayName(partner) } : undefined,
+        partner: partner ? { ...this.rows.row(partner), given: partner.name.given || this.i18n.name(partner) } : undefined,
         status: STATUS_LABEL[relationshipStatus(f)],
         children: f.children
           .map((c) => {

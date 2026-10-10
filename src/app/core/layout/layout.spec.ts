@@ -1,3 +1,4 @@
+import { moveCards, moveLine, setLeftPartner } from '../model/arrangement';
 import { sampleDocument } from '../model/sample';
 import { TreeIndex } from '../model/tree-index';
 import { emptyDocument, TreeDocument } from '../model/types';
@@ -13,8 +14,9 @@ import {
   threeSpouses,
   wideFamily,
 } from '../testing/fixtures';
-import { computeLayout, isotonic } from './layout';
+import { assignTracks, computeLayout, gapBetweenFamilies, isotonic } from './layout';
 import { COMFORTABLE_LAYOUT, LayoutResult, Pt } from './layout-types';
+import { lineProblems, partnersIn } from './line-check';
 import { connectorPaths, linkPath } from './paths';
 
 const fixtures: Record<string, () => TreeDocument> = {
@@ -79,6 +81,87 @@ function expectLinesClearOfCards(result: LayoutResult): void {
   }
 }
 
+/**
+ * Home: H. His brother M's daughter T is engaged to R; R's parents P1 and P2
+ * are related to the rest only through R. The wives' sisters' families fill
+ * the row on both sides, so R's parents cannot stand above him there.
+ */
+function marriedIn(childrenOfH = ['S1', 'S2']): TreeDocument {
+  const b = new DocBuilder();
+  const people: [string, string][] = [
+    ['G1', 'male'],
+    ['G2', 'female'],
+    ['H', 'male'],
+    ['W', 'female'],
+    ['M', 'male'],
+    ['K', 'female'],
+    ['T', 'female'],
+    ['R', 'male'],
+    ['Q', 'female'],
+    ['P1', 'male'],
+    ['P2', 'female'],
+    ['WP1', 'male'],
+    ['WP2', 'female'],
+    ['W2', 'female'],
+    ['W2h', 'male'],
+    ['W2k', 'female'],
+    ['KP1', 'male'],
+    ['KP2', 'female'],
+    ['K2', 'female'],
+    ['K2h', 'male'],
+    ['K2k1', 'male'],
+    ['K2k2', 'female'],
+  ];
+  for (const [id, sex] of people) b.person(id, id, id, sex as 'male' | 'female');
+  for (const id of childrenOfH) b.person(id, id, id, 'unknown');
+  b.family('FG', ['G1', 'G2'], ['H', 'M']);
+  b.family('FH', ['H', 'W'], childrenOfH);
+  b.family('FM', ['M', 'K'], ['T']);
+  b.family('FTR', ['T', 'R'], [], { kind: 'partnership', engagement: {} });
+  b.family('FP', ['P1', 'P2'], ['R', 'Q']);
+  b.family('FWP', ['WP1', 'WP2'], ['W', 'W2']);
+  b.family('FW2', ['W2', 'W2h'], ['W2k']);
+  b.family('FKP', ['KP1', 'KP2'], ['K', 'K2']);
+  b.family('FK2', ['K2', 'K2h'], ['K2k1', 'K2k2']);
+  const doc = b.build();
+  doc.meta.homePersonId = 'H';
+  return doc;
+}
+
+/**
+ * Home: R, engaged to T. R has a brother and a sister; T's mother K has a
+ * sister H with children of her own, and T's father M a brother Ro who married
+ * S, from a third family. Everyone's grandparents are in the tree.
+ */
+function engagedCousins(): TreeDocument {
+  const b = new DocBuilder();
+  const men = 'R R2 RF RFF RMF M Ro E1 TM1 VE1 St Vl Le W1 X1 A1 Hh V1 V2 B1 N1 Jn BP1 O Jh P D Pa'.split(' ');
+  const women = 'T R3 RM RFM RMM K S E2 TM2 VE2 W2 X2 A2 H B2 N2 BP2 J Op A'.split(' ');
+  for (const id of men) b.person(id, id, id, 'male');
+  for (const id of women) b.person(id, id, id, 'female');
+  b.family('FR', ['RF', 'RM'], ['R', 'R2', 'R3']);
+  b.family('FRF', ['RFF', 'RFM'], ['RF']);
+  b.family('FRM', ['RMF', 'RMM'], ['RM']);
+  b.family('FRT', ['T', 'R'], [], { kind: 'partnership', engagement: {} });
+  b.family('FT', ['M', 'K'], ['T']);
+  b.family('FE', ['E1', 'E2'], ['Ro', 'M']);
+  b.family('FTM', ['TM1', 'TM2'], ['E1', 'St', 'Vl']);
+  b.family('FVE', ['VE1', 'VE2'], ['E2', 'Le']);
+  b.family('FRo', ['Ro', 'S'], ['P', 'D']);
+  b.family('FB', ['B1', 'B2'], ['S', 'O', 'J']);
+  b.family('FN', ['N1', 'N2'], ['B1', 'Jn']);
+  b.family('FBP', ['BP1', 'BP2'], ['B2']);
+  b.family('FO', ['O', 'Op'], ['A']);
+  b.family('FJ', ['J', 'Jh'], ['Pa']);
+  b.family('FW', ['W1', 'W2'], ['K', 'H']);
+  b.family('FX', ['X1', 'X2'], ['W1']);
+  b.family('FA', ['A1', 'A2'], ['W2']);
+  b.family('FH', ['H', 'Hh'], ['V1', 'V2']);
+  const doc = b.build();
+  doc.meta.homePersonId = 'R';
+  return doc;
+}
+
 function expectNoOverlaps(result: LayoutResult, gap = 1): void {
   const byRow = new Map<number, LayoutResult['cards']>();
   for (const c of result.cards) byRow.set(c.y, [...(byRow.get(c.y) ?? []), c]);
@@ -136,6 +219,12 @@ describe('layout', () => {
 
       it('never runs a line behind a card', () => {
         expectLinesClearOfCards(result);
+      });
+
+      it("never draws two families' lines on top of each other", () => {
+        const problems = lineProblems(result, partnersIn(doc), true);
+        expect(problems.overlaps, problems.details.join('; ')).toBe(0);
+        expect(problems.hidden, problems.details.join('; ')).toBe(0);
       });
     });
   }
@@ -215,6 +304,226 @@ describe('layout', () => {
         .sort((a, b) => a.x - b.x)
         .map((c) => c.personId);
     for (const row of first.rows) expect(order(second, row.y)).toEqual(order(first, row.y));
+  });
+
+  it('keeps families further apart the further back they are related', () => {
+    expect(gapBetweenFamilies(COMFORTABLE_LAYOUT, 1)).toBe(COMFORTABLE_LAYOUT.siblingGap);
+    expect(gapBetweenFamilies(COMFORTABLE_LAYOUT, 2)).toBe(COMFORTABLE_LAYOUT.familyGap);
+    expect(gapBetweenFamilies(COMFORTABLE_LAYOUT, 3)).toBe(COMFORTABLE_LAYOUT.familyGap * 1.5);
+    expect(gapBetweenFamilies(COMFORTABLE_LAYOUT, Infinity)).toBe(COMFORTABLE_LAYOUT.familyGap * 2);
+
+    // Four generations from one couple: the youngest are siblings, first and second cousins.
+    const b = new DocBuilder();
+    b.person('A', 'A', 'Root', 'male');
+    b.person('B', 'B', 'Root', 'female');
+    b.family('F', ['A', 'B'], ['C1', 'C2']);
+    let n = 0;
+    const couple = (child: string, kids: string[]) => {
+      b.person(child, child, 'Root', 'male');
+      b.person(`${child}w`, `${child}w`, `Wife${n++}`, 'female');
+      b.family(`F${child}`, [child, `${child}w`], kids);
+    };
+    couple('C1', ['D1', 'D2']);
+    couple('C2', ['D3', 'D4']);
+    couple('D1', ['E1', 'E2']);
+    couple('D2', ['E3', 'E4']);
+    couple('D3', ['E5', 'E6']);
+    couple('D4', ['E7', 'E8']);
+    for (let i = 1; i <= 8; i++) b.person(`E${i}`, `E${i}`, 'Root', 'unknown');
+    const result = computeLayout(b.build());
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+    const gap = (a: string, z: string) => Math.abs(card(z).x - card(a).x) - card(a).w;
+    expect(gap('E1', 'E2')).toBeCloseTo(COMFORTABLE_LAYOUT.siblingGap, 0);
+    // First cousins (shared grandparents) stand further apart, second cousins further still.
+    expect(gap('E2', 'E3')).toBeGreaterThanOrEqual(COMFORTABLE_LAYOUT.familyGap - 0.5);
+    expect(gap('E4', 'E5')).toBeGreaterThanOrEqual(COMFORTABLE_LAYOUT.familyGap * 1.5 - 0.5);
+    expectNoOverlaps(result);
+  });
+
+  it('gives the family of someone who married in a row of its own when theirs has no room', () => {
+    const result = computeLayout(marriedIn());
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+
+    // R's parents have a row between their generation and R's, right above R.
+    expect(result.lanes).toHaveLength(1);
+    expect(card('P1').y).toBe(result.lanes[0].y);
+    expect(card('P1').y).toBeGreaterThan(card('M').y);
+    expect(card('P1').y).toBeLessThan(card('R').y);
+    // Everyone else keeps their generation's row; the extra row has no number and counts with its generation.
+    expect(card('K2').y).toBe(card('M').y);
+    expect(result.rows.map((r) => r.label)).toEqual(['I', 'II', 'III']);
+    expect(result.ranks.get('P1')).toBe(result.ranks.get('M'));
+    // Nothing crosses, nobody stands under a family that is not theirs, and no line runs behind a card.
+    expect(result.crossings).toBe(0);
+    expectNoOverlaps(result);
+    expectLinesClearOfCards(result);
+    // The home couple's side never moves into an extra row, however crowded.
+    for (const id of ['H', 'W', 'WP1', 'WP2', 'G1', 'G2']) expect(result.lanes.some((l) => l.y === card(id).y)).toBe(false);
+  });
+
+  it('keeps children in birth order, on straight lines, when the lines pass through an extra row', () => {
+    const result = computeLayout(marriedIn(['S1', 'S2', 'S3']));
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+    const centre = (id: string) => card(id).x + card(id).w / 2;
+    expect(result.lanes).toHaveLength(1);
+    expect(card('H').y).toBeLessThan(result.lanes[0].y);
+    expect(card('S1').y).toBeGreaterThan(result.lanes[0].y);
+    // Eldest to youngest, read one way or the other.
+    const [a, b, c] = ['S1', 'S2', 'S3'].map(centre);
+    expect(a < b).toBe(b < c);
+    // Each line turns only at the family's bar, then runs straight down into the child.
+    const connector = result.connectors.find((x) => x.familyId === 'FH')!;
+    expect(connector.drops).toHaveLength(3);
+    for (const drop of connector.drops) {
+      expect(drop.x).toBeCloseTo(centre(drop.childId), 1);
+      for (const pt of drop.points) expect(pt.x).toBeCloseTo(centre(drop.childId), 1);
+    }
+    expect(result.crossings).toBe(0);
+    expectNoOverlaps(result);
+    expectLinesClearOfCards(result);
+  });
+
+  it('keeps brothers and sisters together, moving whole branches of the family past each other', () => {
+    const doc = engagedCousins();
+    const result = computeLayout(doc);
+    const problems = lineProblems(result, partnersIn(doc), true);
+    // Nobody stands between brothers and sisters who are not theirs, and no lines cross.
+    expect(problems.under, problems.details.join('; ')).toBe(0);
+    expect(problems.crossings, problems.details.join('; ')).toBe(0);
+    expect(result.crossings).toBe(0);
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+    const between = (a: string, z: string) => {
+      const [lo, hi] = [card(a).x, card(z).x].sort((p, q) => p - q);
+      return result.cards.filter((c) => c.y === card(a).y && c.x > lo && c.x < hi).map((c) => c.personId);
+    };
+    // M's brother stands right by him, and so does K's sister by her, each on their own side of the couple.
+    for (const [a, z] of [
+      ['Ro', 'M'],
+      ['K', 'H'],
+      ['S', 'O'],
+    ]) {
+      expect(between(a, z).filter((id) => !['M', 'K', 'S', 'Ro', 'O', 'Op'].includes(id))).toEqual([]);
+    }
+    expectNoOverlaps(result);
+    expectLinesClearOfCards(result);
+  });
+
+  it('gives a couple from two families a row of their own when a family stands between theirs', () => {
+    const result = computeLayout(engagedCousins());
+    const card = (id: string) => result.cards.find((c) => c.personId === id)!;
+    // R and T stand together in a row of their own, below his brother and her cousins.
+    const lane = result.lanes.find((l) => l.y === card('R').y);
+    expect(lane).toBeDefined();
+    expect(card('T').y).toBe(card('R').y);
+    expect(card('R').y).toBeGreaterThan(card('R2').y);
+    expect(card('R2').y).toBe(card('V1').y);
+    // The extra row has no number: R and T still count with their generation.
+    expect(result.ranks.get('R')).toBe(result.ranks.get('R2'));
+    // Both families' lines come down past that generation without crossing anyone's.
+    for (const familyId of ['FR', 'FT']) {
+      const drop = result.connectors.find((c) => c.familyId === familyId)!.drops.find((d) => d.childId === 'R' || d.childId === 'T')!;
+      expect(drop.points.length).toBeGreaterThan(1);
+    }
+    expect(lineProblems(result, partnersIn(engagedCousins())).crossings).toBe(0);
+  });
+
+  it('lays out the same again when given its own hint', () => {
+    const doc = engagedCousins();
+    const first = computeLayout(doc);
+    const second = computeLayout(doc, COMFORTABLE_LAYOUT, first.hint);
+    expect(second.cards).toEqual(first.cards);
+    expect(second.lanes).toEqual(first.lanes);
+    expect(second.connectors).toEqual(first.connectors);
+  });
+
+  it('stacks lines in a gap so that stems and drops cross as few other lines as possible', () => {
+    // B starts further left, but on top its drop would cross A's bar and A's stem B's.
+    const a = { lo: 100, hi: 300, key: 'A', up: [150], down: [300] };
+    const b = { lo: 0, hi: 200, key: 'B', up: [0], down: [200] };
+    const { track, count } = assignTracks([b, a]);
+    expect(count).toBe(2);
+    expect(track.get('A')).toBeLessThan(track.get('B')!);
+    // Lines that do not share any of the gap share a track.
+    expect(assignTracks([a, { lo: 400, hi: 600, key: 'C', up: [500], down: [400, 600] }]).count).toBe(1);
+    // A stem coming down right where another family's line turns down to a child
+    // would run along that line, so it ends higher, before reaching it.
+    const d = { lo: 100, hi: 300, key: 'D', up: [200], down: [100, 300] };
+    const e = { lo: 300.4, hi: 500, key: 'E', up: [300.4], down: [500] };
+    expect(assignTracks([d, e]).track.get('E')).toBeLessThan(assignTracks([d, e]).track.get('D')!);
+  });
+
+  it('lets children leave birth order where that saves lines from crossing', () => {
+    // Two brothers marry two sisters, and the middle brother marries a girl from
+    // the other side. In birth order three lines would cross.
+    const b = new DocBuilder();
+    for (const id of ['X1', 'P', 'Y1', 'C1', 'C2', 'C3', 'D2']) b.person(id, id, id, 'male');
+    for (const id of ['X2', 'Q', 'Y2', 'D1', 'D3']) b.person(id, id, id, 'female');
+    b.family('FX', ['X1', 'X2'], ['D2']);
+    b.family('FP', ['P', 'Q'], ['C1', 'C2', 'C3']);
+    b.family('FY', ['Y1', 'Y2'], ['D1', 'D3']);
+    b.family('F1', ['C1', 'D1']);
+    b.family('F2', ['C2', 'D2']);
+    b.family('F3', ['C3', 'D3']);
+    const doc = b.build();
+    doc.meta.homePersonId = 'P';
+    const result = computeLayout(doc);
+    const x = (id: string) => result.cards.find((c) => c.personId === id)!.x;
+    expect(result.crossings).toBeLessThanOrEqual(1);
+    expect(lineProblems(result, partnersIn(doc)).crossings).toBeLessThanOrEqual(1);
+    // The middle brother stands at the end, next to his wife's family.
+    expect(x('C2') < x('C1') === x('C2') < x('C3')).toBe(true);
+    expectNoOverlaps(result);
+    expectLinesClearOfCards(result);
+  });
+
+  describe('changes made by hand', () => {
+    const doc = fixtures['sample']();
+    const auto = computeLayout(doc);
+    const card = (r: LayoutResult, id: string) => r.cards.find((c) => c.personId === id)!;
+    const barY = (r: LayoutResult, familyId: string) => r.connectors.find((c) => c.familyId === familyId)!.barY;
+
+    it('moves a couple sideways, and the neighbours make room', () => {
+      const moved = computeLayout(moveCards(doc, ['I18', 'I12'], 120));
+      const dx = card(moved, 'I18').x - card(auto, 'I18').x;
+      expect(dx).toBeGreaterThan(110);
+      expect(dx).toBeLessThan(120.5);
+      expect(card(moved, 'I12').x - card(moved, 'I18').x).toBeCloseTo(card(auto, 'I12').x - card(auto, 'I18').x, 1);
+      // The rest of the row stays put or makes room; nothing overlaps and no line runs behind a card.
+      expect(card(moved, 'I11').x).toBeCloseTo(card(auto, 'I11').x, 0);
+      expectNoOverlaps(moved);
+      expectLinesClearOfCards(moved);
+    });
+
+    it('moves a couple past its neighbours when moved far enough', () => {
+      expect(card(auto, 'I12').x).toBeGreaterThan(card(auto, 'I11').x);
+      const moved = computeLayout(moveCards(doc, ['I18', 'I12'], -1200));
+      expect(card(moved, 'I12').x).toBeLessThan(card(moved, 'I11').x);
+      expectNoOverlaps(moved);
+      expectLinesClearOfCards(moved);
+    });
+
+    it('turns a couple round', () => {
+      const [left, right] = [card(auto, 'I18'), card(auto, 'I12')].sort((a, b) => a.x - b.x);
+      const turned = computeLayout(setLeftPartner(doc, 'F8', right.personId));
+      expect(card(turned, right.personId).x).toBeLessThan(card(turned, left.personId).x);
+      expectNoOverlaps(turned);
+      expectLinesClearOfCards(turned);
+    });
+
+    it('moves a family line down, and its gap grows to make room', () => {
+      const moved = computeLayout(moveLine(doc, 'F4', 60));
+      expect(barY(moved, 'F4') - barY(auto, 'F4')).toBeCloseTo(60, 1);
+      // The children's row moves down with it, and the line stays clear of their cards.
+      expect(card(moved, 'I11').y).toBeGreaterThan(card(auto, 'I11').y);
+      expect(card(moved, 'I11').y - barY(moved, 'F4')).toBeGreaterThanOrEqual(10);
+      expectLinesClearOfCards(moved);
+    });
+
+    it('keeps a line moved up clear of the row above', () => {
+      const moved = computeLayout(moveLine(doc, 'F4', -500));
+      expect(barY(moved, 'F4') - (card(moved, 'I6').y + card(moved, 'I6').h)).toBeCloseTo(10, 1);
+      expect(card(moved, 'I11').y).toBe(card(auto, 'I11').y);
+    });
   });
 
   it('makes room for a card made wider', () => {

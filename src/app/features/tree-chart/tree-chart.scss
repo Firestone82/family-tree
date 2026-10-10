@@ -30,6 +30,64 @@
   fill: var(--t-dots);
 }
 
+/* Zoom and who is shown, in the bottom left corner. */
+.tools {
+  position: absolute;
+  left: 16px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+}
+
+/* Arranging by hand: cards can be grabbed. */
+:host(.arranging) .cards {
+  cursor: grab;
+}
+
+:host(.is-dragging) .canvas,
+:host(.is-dragging) .cards {
+  cursor: grabbing;
+}
+
+.arrange-pill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 42px;
+  padding: 0 14px 0 13px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--sheet);
+  box-shadow: var(--shadow-1);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ink);
+  }
+
+  &[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--sheet);
+  }
+}
+
+/* On a phone the button keeps its icon; its label says the rest. */
+@media (max-width: 520px) {
+  .arrange-pill .label {
+    display: none;
+  }
+
+  .arrange-pill {
+    padding: 0 12px;
+  }
+}
+
 .selection-ring {
   fill: none;
   stroke: var(--t-select);

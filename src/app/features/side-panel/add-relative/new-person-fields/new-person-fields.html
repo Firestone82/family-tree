@@ -1,7 +1,19 @@
 <div class="field">
   <label for="add-given">{{ t('name.given') }}</label>
-  <input id="add-given" class="input" autocomplete="off" [value]="given()" (input)="givenChange.emit(text($event))" />
+  <input
+    id="add-given"
+    class="input"
+    autocomplete="off"
+    [value]="unknown() ? '' : given()"
+    [disabled]="unknown()"
+    [placeholder]="unknown() ? t('name.givenUnknown') : ''"
+    (input)="givenChange.emit(text($event))"
+  />
 </div>
+<label class="check unknown">
+  <input type="checkbox" [checked]="unknown()" (change)="setUnknown(checked($event))" />
+  {{ t('name.unknown') }}
+</label>
 <div class="field">
   <label for="add-surname">{{ t('name.surname') }}</label>
   <input id="add-surname" class="input" autocomplete="off" [value]="surname()" (input)="surnameChange.emit(text($event))" />

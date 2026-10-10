@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { displayName } from '../../../core/model/names';
 import { relationshipStatus } from '../../../core/model/relationship';
 import { Family, Person } from '../../../core/model/types';
 import { TreeStore } from '../../../core/store/tree-store';
@@ -35,7 +34,7 @@ export class FamilyPanel {
     this.family()
       .partners.map((id) => this.store.index().person(id))
       .filter((p): p is Person => !!p)
-      .map((p) => ({ id: p.id, name: displayName(p), dates: this.i18n.lifespan(p), tincture: this.model.colors().byPerson.get(p.id) ?? 'argent' })),
+      .map((p) => ({ id: p.id, name: this.i18n.name(p), dates: this.i18n.lifespan(p), tincture: this.model.colors().byPerson.get(p.id) ?? 'argent' })),
   );
 
   protected readonly title = computed(() => this.t(titleKey(this.family())));

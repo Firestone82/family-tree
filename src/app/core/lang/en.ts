@@ -170,7 +170,7 @@ export const english: ChartLanguage = {
   longDate,
   bornAs: (birth, sex) => `${sex === 'male' ? 'né' : 'née'} ${birth}`,
   surnameFor: SAME_SURNAME,
-  unnamed: 'Unnamed',
+  unknown: () => 'Unknown',
   summary(generations, people) {
     const g = generations === 1 ? 'One generation' : `${NUMBERS[generations] ?? generations} generations`;
     const p = people === 1 ? '1 person' : `${people} people`;

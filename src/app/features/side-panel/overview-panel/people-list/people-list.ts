@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
-import { normalizeQuery, searchText, sortName } from '../../../../core/model/names';
+import { normalizeQuery, searchText } from '../../../../core/model/names';
 import { Person } from '../../../../core/model/types';
+import { relativesOf } from '../../../../core/poster/scope';
 import { TreeStore } from '../../../../core/store/tree-store';
 import { I18n } from '../../../../i18n/i18n';
 import { Icon } from '../../../../shared/icon/icon';
@@ -42,12 +43,14 @@ export class PeopleList {
     const colors = this.model.colors().byPerson;
     const familyColors = new Map(this.model.familyColors().legend.map((e) => [e.key, e.tincture]));
     const chosen = this.ui.familyOpen();
+    const hidden = this.model.hidden();
     const people = this.store.doc().people.filter((p) => !q || searchText(p).includes(q));
     const row = (p: Person): FamilyRow => ({
       id: p.id,
-      name: sortName(p) || this.t('person.unnamed'),
+      name: this.i18n.sortName(p),
       dates: this.i18n.lifespan(p),
       tincture: colors.get(p.id) ?? 'argent',
+      offChart: hidden.has(p.id),
     });
     return groupByFamily(people, this.i18n.compare).map((g) => ({
       key: g.key,
@@ -58,6 +61,8 @@ export class PeopleList {
       open: !!q || (chosen.get(g.key) ?? this.openByDefault()),
     }));
   });
+
+  protected readonly offChartHint = computed(() => this.t('relatives.hiddenNote', { level: this.t(`relatives.${relativesOf(this.model.view())}`) }));
 
   /** Whether the button offers to open every family (some are closed) or to close them. */
   protected readonly canOpenAll = computed(() => this.families().some((f) => !f.open));

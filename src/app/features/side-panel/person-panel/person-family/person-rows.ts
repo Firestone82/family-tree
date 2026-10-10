@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { displayName } from '../../../../core/model/names';
 import { Person } from '../../../../core/model/types';
 import { I18n } from '../../../../i18n/i18n';
 import { ChartModel } from '../../../../state/chart-model';
@@ -21,7 +20,7 @@ export class PersonRows {
   row(p: Person): Row {
     return {
       id: p.id,
-      name: displayName(p) || this.i18n.t('person.unnamed'),
+      name: this.i18n.name(p),
       dates: this.i18n.lifespan(p),
       tincture: this.model.colors().byPerson.get(p.id) ?? 'argent',
     };

@@ -288,7 +288,7 @@ export const czech: ChartLanguage = {
   longDate,
   bornAs: (birth) => `roz. ${birth}`,
   surnameFor: czechSurnameFor,
-  unnamed: 'Bez jména',
+  unknown: (sex) => (sex === 'female' ? 'Neznámá' : 'Neznámý'),
   summary: (generations, people) =>
     `${generations} ${plural(generations, 'generace', 'generace', 'generací')}, ${people} ${plural(people, 'osoba', 'osoby', 'osob')}`,
   drawn: (date) => `Nakresleno ${longDate(date)}`,

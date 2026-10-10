@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { displayName } from '../core/model/names';
 import {
   FamilyPatch,
   deleteFamily,
@@ -60,13 +59,13 @@ export class FamilyActions {
   }
 
   removeChild(familyId: string, childId: string): void {
-    const name = displayName(this.store.index().person(childId));
+    const name = this.i18n.name(this.store.index().person(childId));
     this.store.update((doc) => removeChild(doc, familyId, childId));
     this.toast.show(this.i18n.t('family.childRemoved', { name }), this.undoAction());
   }
 
   removePartner(familyId: string, personId: string): void {
-    const name = displayName(this.store.index().person(personId));
+    const name = this.i18n.name(this.store.index().person(personId));
     this.store.update((doc) => removePartner(doc, familyId, personId));
     this.toast.show(this.i18n.t('family.partnerRemoved', { name }), this.undoAction());
   }

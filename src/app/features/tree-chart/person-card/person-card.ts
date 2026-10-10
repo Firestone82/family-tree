@@ -23,6 +23,7 @@ import { CardLabel } from '../../../state/chart-model';
     '[attr.aria-label]': 'label().title',
     '[attr.aria-pressed]': 'selected()',
     '[class.deceased]': 'label().deceased',
+    '[class.unknown]': 'label().unknown',
     '[class.focus]': 'focus()',
     '[class.tinted]': 'sexColors()',
     '(click)': 'pick.emit($event)',

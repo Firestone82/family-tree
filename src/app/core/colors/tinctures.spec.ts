@@ -29,6 +29,23 @@ describe('family colours', () => {
     expect(legend.map((l) => l.label)).toEqual(['I', 'II']);
   });
 
+  it('leaves people who are not on the chart out of the generations', () => {
+    const ranks = new Map(doc.people.slice(0, 5).map((p) => [p.id, 1]));
+    const { byPerson, legend } = assignColors(doc, 'generation', ranks);
+    expect(legend).toEqual([{ key: '1', label: 'I', tincture: 'azure', count: 5 }]);
+    expect(byPerson.get(doc.people[5].id)).toBe('argent');
+  });
+
+  it('keeps the colours of the whole tree in a part of it, and counts the part', () => {
+    const all = assignColors(doc, 'family', new Map());
+    // Only the Moreaus and one Ashworth.
+    const part = { ...doc, people: doc.people.filter((p) => p.name.surname === 'Moreau' || p.id === 'I1') };
+    const { byPerson, legend } = assignColors(part, 'family', new Map(), undefined, doc);
+    for (const p of part.people) expect(byPerson.get(p.id)).toBe(all.byPerson.get(p.id));
+    expect(legend.find((l) => l.label === 'Ashworth')).toMatchObject({ tincture: 'azure', count: 1 });
+    expect(legend.some((l) => l.label === 'Novák')).toBe(false);
+  });
+
   it('colours by sex', () => {
     const { byPerson } = assignColors(doc, 'sex', new Map());
     expect(byPerson.get('I1')).toBe('azure');

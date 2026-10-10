@@ -57,6 +57,49 @@ describe('XML format', () => {
     expect(parseTree(xml).doc.people[0].photo).toBe(doc.people[0].photo);
   });
 
+  describe('format 1.4', () => {
+    it('round-trips who the chart and the print show', () => {
+      const doc = sampleDocument(new Date('2026-01-01T00:00:00Z'));
+      doc.view = { ...doc.view, branches: 'all', inLawFamilies: false };
+      doc.print = { ...DEFAULT_PRINT, branches: 2, inLawFamilies: false };
+      const xml = serializeTree(doc);
+      expect(xml).toMatch(/<view [^>]*branches="all" inLawFamilies="false"/);
+      expect(xml).toMatch(/<print [^>]*branches="2" [^>]*inLawFamilies="false"/);
+      expect(roundTrip(doc)).toEqual(doc);
+    });
+
+    it('round-trips changes made by hand to the layout, for people and families in the tree', () => {
+      const doc = sampleDocument(new Date('2026-01-01T00:00:00Z'));
+      doc.arrangement = { moves: { I18: 40, I12: 40, I99: 5 }, lines: { F4: -12.5 }, left: { F8: 'I12' } };
+      const xml = serializeTree(doc);
+      expect(xml).toContain('<move person="I18" dx="40"/>');
+      expect(xml).toContain('<line family="F4" dy="-12.5"/>');
+      expect(xml).toContain('<couple family="F8" left="I12"/>');
+      expect(xml).not.toContain('I99');
+      const { doc: back, warnings } = parseTree(xml);
+      expect(warnings).toEqual([]);
+      expect(back.arrangement).toEqual({ moves: { I18: 40, I12: 40 }, lines: { F4: -12.5 }, left: { F8: 'I12' } });
+    });
+
+    it('leaves out changes by hand for people who are not in the file', () => {
+      const xml = `<familyTree xmlns="${NS}" formatVersion="1.4"><meta><title>T</title></meta><people><person id="I1"><name given="A"/></person></people><families/>
+  <arrangement><move person="I1" dx="7"/><move person="I2" dx="9"/><line family="F1" dy="3"/><move person="I1" dx="oops"/></arrangement>
+</familyTree>`;
+      const { doc } = parseTree(xml);
+      expect(doc.arrangement).toEqual({ moves: { I1: 7 }, lines: {}, left: {} });
+    });
+
+    it('shows the whole tree for files from before 1.4', () => {
+      const xml = `<familyTree xmlns="${NS}" formatVersion="1.3"><meta><title>T</title></meta><view style="night"/><people/><families/>
+  <print branches="1"/>
+</familyTree>`;
+      const { doc, warnings } = parseTree(xml);
+      expect(warnings).toEqual([]);
+      expect(doc.view).toMatchObject({ branches: 'all', inLawFamilies: true });
+      expect(doc.print).toMatchObject({ branches: 1, inLawFamilies: true });
+    });
+  });
+
   describe('format 1.3', () => {
     it('round-trips a background picture and twins', () => {
       const doc = sampleDocument(new Date('2026-01-01T00:00:00Z'));

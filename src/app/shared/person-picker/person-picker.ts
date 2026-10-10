@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, model, signal } from '@angular/core';
-import { normalizeQuery, searchText, sortName } from '../../core/model/names';
+import { normalizeQuery, searchText } from '../../core/model/names';
 import { TreeStore } from '../../core/store/tree-store';
 import { I18n } from '../../i18n/i18n';
 import { ChartModel } from '../../state/chart-model';
@@ -35,7 +35,7 @@ export class PersonPicker {
     return this.store
       .doc()
       .people.filter((p) => !exclude.has(p.id) && (!q || searchText(p).includes(q)))
-      .map((p) => ({ id: p.id, name: sortName(p), dates: this.i18n.lifespan(p), tincture: colors.get(p.id) ?? 'argent' }))
+      .map((p) => ({ id: p.id, name: this.i18n.sortName(p), dates: this.i18n.lifespan(p), tincture: colors.get(p.id) ?? 'argent' }))
       .sort((a, b) => this.i18n.compare(a.name, b.name))
       .slice(0, 60);
   });

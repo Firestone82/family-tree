@@ -1,5 +1,4 @@
 import { Injectable, inject } from '@angular/core';
-import { displayName } from '../core/model/names';
 import {
   AddChildOptions,
   AddPartnerOptions,
@@ -18,12 +17,15 @@ import {
   removePartner,
   updateMeta,
   updatePerson,
+  updateView,
 } from '../core/model/operations';
 import { linkBirth, shareBirth } from '../core/model/births';
-import { ChildRelation } from '../core/model/types';
+import { ChildRelation, Person } from '../core/model/types';
+import { relativesOf, relativesSettings } from '../core/poster/scope';
 import { ToastService } from '../core/services/toast';
 import { TreeStore } from '../core/store/tree-store';
 import { I18n } from '../i18n/i18n';
+import { ChartModel } from './chart-model';
 import { Relation, UiState } from './ui-state';
 
 export interface AddRelativeOptions {
@@ -42,6 +44,7 @@ export class PersonActions {
   private readonly ui = inject(UiState);
   private readonly toast = inject(ToastService);
   private readonly i18n = inject(I18n);
+  private readonly model = inject(ChartModel);
 
   addLoosePerson(draft: PersonDraft = {}): string {
     const { personId } = this.store.apply((doc) => addPerson(doc, draft));
@@ -84,15 +87,29 @@ export class PersonActions {
       // On a phone, drop the sheet back down so the new person can be seen arriving.
       if (this.ui.narrow()) this.ui.sheetExpanded.set(false);
       this.ui.highlight(result.personId);
-      this.toast.show(this.i18n.t('person.added', { name: this.name(added) }), {
-        action: { label: this.i18n.t('common.open'), run: () => this.select(result.personId) },
-      });
+      if (this.model.hidden().has(result.personId)) {
+        // The Relatives setting leaves the new person out of the chart: say so, and offer everyone.
+        const level = this.i18n.t(`relatives.${relativesOf(this.model.view())}`);
+        this.toast.show(this.i18n.t('person.addedHidden', { name: this.name(added), level }), {
+          action: { label: this.i18n.t('relatives.showEveryone'), run: () => this.showEveryone(result.personId) },
+        });
+      } else {
+        this.toast.show(this.i18n.t('person.added', { name: this.name(added) }), {
+          action: { label: this.i18n.t('common.open'), run: () => this.select(result.personId) },
+        });
+      }
       return result;
     } catch (e) {
       if (e instanceof TreeOperationError) this.toast.error(this.i18n.notice(e, 'op.'));
       else throw e;
       return null;
     }
+  }
+
+  /** Shows the whole tree on the chart (the Relatives setting at Everyone), and opens `personId`. */
+  showEveryone(personId?: string): void {
+    this.store.update((doc) => updateView(doc, relativesSettings('everyone')));
+    if (personId) this.select(personId);
   }
 
   select(personId: string): void {
@@ -173,8 +190,8 @@ export class PersonActions {
     if (this.store.canRedo()) this.store.redo();
   }
 
-  private name(person: Parameters<typeof displayName>[0]): string {
-    return displayName(person) || this.i18n.t('person.unnamed');
+  private name(person: Person | undefined): string {
+    return this.i18n.name(person);
   }
 
   private undoAction() {

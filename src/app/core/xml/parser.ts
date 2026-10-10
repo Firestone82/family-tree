@@ -1,7 +1,9 @@
+import { arrangementOf } from '../model/arrangement';
 import { isValidDateValue } from '../model/dates';
 import { ID_PATTERN, newId } from '../model/ids';
 import {
   BACKGROUND_FIT_VALUES,
+  Arrangement,
   BackgroundFit,
   BackgroundImage,
   CHILD_RELATION_VALUES,
@@ -77,9 +79,9 @@ export interface ParseResult {
 const SHOW_ATTRS = ['showDates', 'showPlaces', 'showPhotos', 'showGenerations', 'showRelationships', 'showUnions', 'showSex', 'sexColors', 'showTree'];
 
 const KNOWN = {
-  root: { attrs: ['formatVersion', 'generator'], elements: ['meta', 'view', 'people', 'families', 'print', 'background'] },
+  root: { attrs: ['formatVersion', 'generator'], elements: ['meta', 'view', 'people', 'families', 'print', 'background', 'arrangement'] },
   meta: { attrs: [], elements: ['title', 'description', 'created', 'modified', 'homePerson'] },
-  view: { attrs: ['style', 'colorBy', 'lines', 'density', ...SHOW_ATTRS, 'language'], elements: [] },
+  view: { attrs: ['style', 'colorBy', 'lines', 'density', ...SHOW_ATTRS, 'language', 'branches', 'inLawFamilies'], elements: [] },
   print: {
     attrs: [
       'theme',
@@ -92,6 +94,7 @@ const KNOWN = {
       'ancestors',
       'descendants',
       'branches',
+      'inLawFamilies',
       'title',
       'subtitle',
       ...SHOW_ATTRS,
@@ -107,6 +110,7 @@ const KNOWN = {
   family: { attrs: ['id', 'type'], elements: ['partner', 'engagement', 'start', 'end', 'child', 'notes'] },
   child: { attrs: ['ref', 'relation', 'birthGroup'], elements: [] },
   background: { attrs: ['mediaType', 'encoding', 'href', 'width', 'height', 'fit', 'opacity', 'name'], elements: [] },
+  arrangement: { attrs: [], elements: ['move', 'line', 'couple'] },
 } satisfies Record<string, { attrs: string[]; elements: string[] }>;
 
 type Known = (typeof KNOWN)[keyof typeof KNOWN];
@@ -212,6 +216,8 @@ class Reader {
     if (printEl) doc.print = this.readPrint(printEl);
     const background = this.readBackground(first(root, 'background'));
     if (background) doc.background = background;
+    const arrangementEl = first(root, 'arrangement');
+    if (arrangementEl) doc.arrangement = this.readArrangement(arrangementEl);
     setExt(doc, captureExt(root, KNOWN.root, ['xmlns']));
     const sectionExt: TreeDocument['sectionExt'] = {};
     const pe = peopleEl ? captureExt(peopleEl, KNOWN.people) : undefined;
@@ -254,6 +260,8 @@ class Reader {
     view.showSex = boolAttr(el, 'showSex', DEFAULT_VIEW.showSex);
     view.sexColors = boolAttr(el, 'sexColors', DEFAULT_VIEW.sexColors);
     view.showTree = boolAttr(el, 'showTree', DEFAULT_VIEW.showTree);
+    view.branches = this.reachAttr(el, 'branches', DEFAULT_VIEW.branches);
+    view.inLawFamilies = boolAttr(el, 'inLawFamilies', DEFAULT_VIEW.inLawFamilies);
     const language = el.getAttribute('language')?.trim();
     if (language) {
       if (LANGUAGE_TAG.test(language)) view.language = language;
@@ -281,6 +289,7 @@ class Reader {
     print.ancestors = this.reachAttr(el, 'ancestors', DEFAULT_PRINT.ancestors);
     print.descendants = this.reachAttr(el, 'descendants', DEFAULT_PRINT.descendants);
     print.branches = this.reachAttr(el, 'branches', DEFAULT_PRINT.branches);
+    print.inLawFamilies = boolAttr(el, 'inLawFamilies', DEFAULT_PRINT.inLawFamilies);
     const title = el.getAttribute('title');
     if (title?.trim()) print.title = title;
     const subtitle = el.getAttribute('subtitle');
@@ -364,6 +373,35 @@ class Reader {
     if (name) background.name = name;
     setExt(background, captureExt(el, KNOWN.background));
     return background;
+  }
+
+  /** Changes made by hand to the layout; entries that cannot be read are left out. */
+  readArrangement(el: Element): Arrangement {
+    const moves: Record<string, number> = {};
+    const lines: Record<string, number> = {};
+    const left: Record<string, string> = {};
+    const num = (e: Element, name: string) => {
+      const v = Number(e.getAttribute(name));
+      return e.hasAttribute(name) && Number.isFinite(v) ? v : undefined;
+    };
+    for (const m of elements(el, 'move')) {
+      const person = m.getAttribute('person');
+      const dx = num(m, 'dx');
+      if (person && dx !== undefined) moves[person] = dx;
+    }
+    for (const l of elements(el, 'line')) {
+      const family = l.getAttribute('family');
+      const dy = num(l, 'dy');
+      if (family && dy !== undefined) lines[family] = dy;
+    }
+    for (const c of elements(el, 'couple')) {
+      const family = c.getAttribute('family');
+      const person = c.getAttribute('left');
+      if (family && person) left[family] = person;
+    }
+    const arrangement: Arrangement = { moves, lines, left };
+    setExt(arrangement, captureExt(el, KNOWN.arrangement));
+    return arrangement;
   }
 
   readFamily(el: Element): Family {
@@ -572,6 +610,17 @@ function repair(doc: TreeDocument, warnings: Notice[]): void {
 
   const empty = doc.families.filter((f) => f.partners.length + f.children.length === 0).length;
   if (empty) doc.families = doc.families.filter((f) => f.partners.length + f.children.length > 0);
+
+  // Changes made by hand to the layout follow renamed people; those for anyone or any family not in the file go.
+  if (doc.arrangement) {
+    const a = doc.arrangement;
+    const moves: Record<string, number> = {};
+    for (const [ref, dx] of Object.entries(a.moves)) {
+      const id = personIdMap.get(ref);
+      if (id) moves[id] = dx;
+    }
+    doc.arrangement = { ...arrangementOf({ ...doc, arrangement: { ...a, moves } }) };
+  }
 
   const cycle = findAncestryCycle(doc);
   if (cycle) {

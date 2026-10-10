@@ -62,6 +62,13 @@ describe('chart languages', () => {
     expect(cs.longDate(new Date(2026, 9, 10))).toBe('10. října 2026');
   });
 
+  it('calls someone whose name nobody knows Unknown', () => {
+    expect(en.unknown('female')).toBe('Unknown');
+    expect(cs.unknown('female')).toBe('Neznámá');
+    expect(cs.unknown('male')).toBe('Neznámý');
+    expect(cs.unknown('unknown')).toBe('Neznámý');
+  });
+
   it('counts in each language', () => {
     expect(en.summary(5, 29)).toBe('Five generations, 29 people');
     expect(en.summary(1, 1)).toBe('One generation, 1 person');

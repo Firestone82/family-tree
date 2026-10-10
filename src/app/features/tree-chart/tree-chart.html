@@ -5,10 +5,10 @@
   class="canvas"
   role="group"
   [attr.aria-label]="t('chart.label')"
-  (pointerdown)="gestures.down($event)"
-  (pointermove)="gestures.move($event)"
-  (pointerup)="gestures.up($event)"
-  (pointercancel)="gestures.up($event)"
+  (pointerdown)="onPointerDown($event)"
+  (pointermove)="onPointerMove($event)"
+  (pointerup)="onPointerUp($event)"
+  (pointercancel)="onPointerUp($event)"
   (click)="onBackgroundClick()"
 >
   <defs>
@@ -29,12 +29,12 @@
     @if (view.showGenerations) {
       <g stemmaBands [layout]="displayed()"></g>
     }
-    <g stemmaFamilyLines [layout]="displayed()"></g>
-    <g stemmaUnions [layout]="displayed()" (pick)="onUnionPick($event)"></g>
-    <g stemmaPlaceholders [layout]="displayed()" (pick)="onPlaceholderPick($event)"></g>
+    <g stemmaFamilyLines [layout]="shown()"></g>
+    <g stemmaUnions [layout]="shown()" (pick)="onUnionPick($event)"></g>
+    <g stemmaPlaceholders [layout]="shown()" (pick)="onPlaceholderPick($event)"></g>
 
     <g class="cards">
-      @for (c of displayed().cards; track c.personId) {
+      @for (c of shown().cards; track c.personId) {
         <g
           stemmaCard
           [card]="c"
@@ -53,6 +53,17 @@
         ></g>
       }
     </g>
+
+    @if (ui.arranging()) {
+      <g
+        stemmaArrangeHandles
+        [layout]="shown()"
+        [dragging]="drag()?.kind === 'line' ? $any(drag()).familyId : null"
+        (turn)="onTurn($event)"
+        (putBack)="arrange.putBackCouple($event)"
+        (putBackLine)="arrange.putBackLine($event)"
+      ></g>
+    }
 
     <g class="selection">
       @if (selectedCard(); as c) {
@@ -86,5 +97,22 @@
 }
 
 @if (!isEmpty()) {
-  <stemma-zoom-controls [style.bottom.px]="insetBottom() + 14" [percent]="zoomPercent()" (zoomIn)="zoom(1.25)" (zoomOut)="zoom(0.8)" (fit)="fit(true)" />
+  <div class="tools" [style.bottom.px]="insetBottom() + 14">
+    <stemma-zoom-controls [percent]="zoomPercent()" (zoomIn)="zoom(1.25)" (zoomOut)="zoom(0.8)" (fit)="fit(true)" />
+    <stemma-relatives-filter />
+    <button
+      type="button"
+      class="arrange-pill"
+      [attr.aria-pressed]="ui.arranging()"
+      [attr.aria-label]="t('arrange.title')"
+      [title]="t('arrange.title')"
+      (click)="toggleArrange()"
+    >
+      <stemma-icon name="move" [size]="17" />
+      <span class="label">{{ t('arrange.button') }}</span>
+    </button>
+  </div>
+  @if (ui.arranging()) {
+    <stemma-arrange-bar />
+  }
 }

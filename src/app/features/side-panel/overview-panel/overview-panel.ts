@@ -13,6 +13,8 @@ import { PeopleList } from './people-list/people-list';
 const TIPS: readonly MessageKey[] = [
   'overview.tip.select',
   'overview.tip.centre',
+  'overview.tip.relatives',
+  'overview.tip.arrange',
   'overview.tip.print',
   'overview.tip.move',
   'overview.tip.keys',

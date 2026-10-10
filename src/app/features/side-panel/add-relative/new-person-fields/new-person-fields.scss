@@ -2,3 +2,8 @@
   display: grid;
   gap: 12px;
 }
+
+/* "Name not known" belongs to the given name above it. */
+.unknown {
+  margin-top: -5px;
+}

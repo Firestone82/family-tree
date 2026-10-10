@@ -14,12 +14,16 @@ import {
 } from '@angular/core';
 import { LayoutCard } from '../../core/layout/layout-types';
 import { unionMarkerPoint } from '../../core/layout/paths';
-import { displayName } from '../../core/model/names';
 import { TreeStore } from '../../core/store/tree-store';
 import { I18n } from '../../i18n/i18n';
+import { Icon } from '../../shared/icon/icon';
+import { ArrangeActions } from '../../state/arrange-actions';
 import { ChartModel } from '../../state/chart-model';
 import { PersonActions } from '../../state/person-actions';
 import { Relation, UiState } from '../../state/ui-state';
+import { ArrangeDrag, DRAG_START, blockOf, lowestLineMove, previewLayout } from './arrange';
+import { ArrangeBar } from './arrange-bar/arrange-bar';
+import { ArrangeHandles } from './arrange-handles/arrange-handles';
 import { BackdropPicture } from './backdrop-picture/backdrop-picture';
 import { FamilyLines } from './family-lines/family-lines';
 import { Screen, coupleCentre, fitView, floatOver, revealView } from './framing';
@@ -30,6 +34,7 @@ import { LayoutMotion } from './layout-motion';
 import { PersonCard } from './person-card/person-card';
 import { Placeholders } from './placeholders/placeholders';
 import { QuickAdd } from './quick-add/quick-add';
+import { RelativesFilter } from './relatives-filter/relatives-filter';
 import { TreeBackdrop } from './tree-backdrop/tree-backdrop';
 import { Unions } from './unions/unions';
 import { ChartViewport, clampZoom } from './viewport';
@@ -43,13 +48,29 @@ import { ZoomControls } from './zoom-controls/zoom-controls';
  */
 @Component({
   selector: 'stemma-chart',
-  imports: [TreeBackdrop, BackdropPicture, GenerationBands, FamilyLines, Unions, Placeholders, PersonCard, QuickAdd, ZoomControls],
+  imports: [
+    TreeBackdrop,
+    BackdropPicture,
+    GenerationBands,
+    FamilyLines,
+    Unions,
+    Placeholders,
+    PersonCard,
+    QuickAdd,
+    ZoomControls,
+    RelativesFilter,
+    ArrangeHandles,
+    ArrangeBar,
+    Icon,
+  ],
   templateUrl: './tree-chart.html',
   styleUrl: './tree-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[attr.data-style]': 'model.view().style',
     '[class.is-panning]': 'gestures.panning()',
+    '[class.arranging]': 'ui.arranging()',
+    '[class.is-dragging]': '!!drag()',
     '(keydown)': 'onKey($event)',
   },
 })
@@ -58,8 +79,10 @@ export class TreeChart {
   protected readonly model = inject(ChartModel);
   protected readonly ui = inject(UiState);
   private readonly people = inject(PersonActions);
+  protected readonly arrange = inject(ArrangeActions);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  protected readonly t = inject(I18n).t;
+  private readonly i18n = inject(I18n);
+  protected readonly t = this.i18n.t;
 
   /** Space covered by overlays (the bottom sheet on phones), kept clear when fitting. */
   readonly insetBottom = input(0);
@@ -80,6 +103,15 @@ export class TreeChart {
   protected readonly gliding = this.motion.gliding;
   protected readonly flashId = signal<string | null>(null);
 
+  /** What is being dragged by hand while arranging, and how far. */
+  protected readonly drag = signal<ArrangeDrag | null>(null);
+  /** The layout on screen with whatever is being dragged where the pointer has it. */
+  protected readonly shown = computed(() => previewLayout(this.displayed(), this.drag()));
+  /** A press on a card or a line while arranging; it becomes a drag once the pointer moves. */
+  private press: { pointerId: number; x: number; y: number; card?: string; line?: string; started: boolean } | null = null;
+  /** The click that ends a drag is not a click on the chart. */
+  private swallowArrangeClick = false;
+
   protected readonly worldTransform = computed(() => {
     const { x, y, k } = this.viewport.view();
     return `translate(${x.toFixed(2)},${y.toFixed(2)}) scale(${k.toFixed(4)})`;
@@ -98,13 +130,13 @@ export class TreeChart {
 
   protected readonly selectedCard = computed<LayoutCard | undefined>(() => {
     const id = this.selectedId();
-    return id ? this.displayed().cards.find((c) => c.personId === id) : undefined;
+    return id ? this.shown().cards.find((c) => c.personId === id) : undefined;
   });
 
   protected readonly selectedUnion = computed(() => {
     const s = this.store.selection();
     if (s?.kind !== 'family') return null;
-    const u = this.displayed().unions.find((x) => x.familyId === s.id);
+    const u = this.shown().unions.find((x) => x.familyId === s.id);
     return u ? unionMarkerPoint(u) : null;
   });
 
@@ -112,7 +144,7 @@ export class TreeChart {
   protected readonly quickAdd = computed(() => {
     const c = this.selectedCard();
     const person = this.store.selectedPerson();
-    if (!c || !person || this.gestures.panning() || this.ui.adding() || this.ui.narrow()) return null;
+    if (!c || !person || this.gestures.panning() || this.ui.adding() || this.ui.narrow() || this.ui.arranging()) return null;
     const view = this.viewport.view();
     // Zoomed far out the buttons would cover the neighbours; the panel has the same actions.
     if (view.k < 0.5) return null;
@@ -120,7 +152,7 @@ export class TreeChart {
       ...floatOver(c, view),
       parentsFull: (this.store.index().primaryParentFamily(person.id)?.partners.length ?? 0) >= 2,
       isFocus: person.id === this.model.focusId(),
-      name: displayName(person),
+      name: this.i18n.name(person),
     };
   });
 
@@ -258,9 +290,95 @@ export class TreeChart {
     });
   }
 
+  // -- pointer ----------------------------------------------------------------
+
+  protected onPointerDown(e: PointerEvent): void {
+    if (this.ui.arranging() && this.pressToArrange(e)) return;
+    this.gestures.down(e);
+  }
+
+  protected onPointerMove(e: PointerEvent): void {
+    if (this.press?.pointerId === e.pointerId) this.dragToArrange(e);
+    else this.gestures.move(e);
+  }
+
+  protected onPointerUp(e: PointerEvent): void {
+    if (this.press?.pointerId === e.pointerId) this.releaseToArrange(e);
+    else this.gestures.up(e);
+  }
+
+  /** While arranging, a press on a card or on a family's line may become a drag of it. */
+  private pressToArrange(e: PointerEvent): boolean {
+    if (this.press || (e.pointerType === 'mouse' && e.button !== 0)) return false;
+    const target = e.target as Element | null;
+    const line = target?.closest('[data-line]')?.getAttribute('data-line') ?? undefined;
+    const card = line ? undefined : (target?.closest('[data-person]')?.getAttribute('data-person') ?? undefined);
+    if (!line && !card) return false;
+    this.press = { pointerId: e.pointerId, x: e.clientX, y: e.clientY, card, line, started: false };
+    try {
+      this.svgRef().nativeElement.setPointerCapture(e.pointerId);
+    } catch {
+      // Dragging works without capture, only less well outside the chart.
+    }
+    return true;
+  }
+
+  private dragToArrange(e: PointerEvent): void {
+    const p = this.press!;
+    const sx = e.clientX - p.x;
+    const sy = e.clientY - p.y;
+    if (!p.started && Math.hypot(sx, sy) < DRAG_START) return;
+    const k = this.viewport.view().k;
+    const layout = this.displayed();
+    if (p.card) {
+      if (!p.started) this.motion.stop();
+      const drag = this.drag();
+      const block = drag?.kind === 'card' ? drag : blockOf(layout, this.store.index(), p.card);
+      this.drag.set({ kind: 'card', members: block.members, families: block.families, dx: sx / k });
+    } else if (p.line) {
+      this.drag.set({ kind: 'line', familyId: p.line, dy: Math.max(lowestLineMove(layout, p.line), sy / k) });
+    }
+    p.started = true;
+  }
+
+  private releaseToArrange(e: PointerEvent): void {
+    const p = this.press!;
+    this.press = null;
+    try {
+      this.svgRef().nativeElement.releasePointerCapture(e.pointerId);
+    } catch {
+      // Already released.
+    }
+    const drag = this.drag();
+    if (!p.started || !drag) {
+      // A press that did not move is a click: on a card it selects them.
+      this.drag.set(null);
+      if (p.card && e.type === 'pointerup') this.onCardPick(p.card, e);
+      this.swallowArrangeClick = true;
+      setTimeout(() => (this.swallowArrangeClick = false), 50);
+      return;
+    }
+    // The glide to the new layout starts from where the pointer left things.
+    this.motion.displayed.set(this.shown());
+    this.drag.set(null);
+    this.swallowArrangeClick = true;
+    setTimeout(() => (this.swallowArrangeClick = false), 50);
+    if (drag.kind === 'card') this.arrange.moveCouple(drag.members, drag.dx);
+    else this.arrange.moveLine(drag.familyId, drag.dy);
+  }
+
+  protected toggleArrange(): void {
+    this.ui.arranging.update((on) => !on);
+  }
+
+  protected onTurn(e: { familyId: string; personId: string }): void {
+    this.arrange.turnCouple(e.familyId, e.personId);
+  }
+
   // -- picking ----------------------------------------------------------------
 
   protected onBackgroundClick(): void {
+    if (this.swallowArrangeClick) return;
     if (this.gestures.swallowClick()) return;
     this.ui.adding.set(null);
     this.store.selectPerson(null);
@@ -268,6 +386,7 @@ export class TreeChart {
 
   protected onCardPick(personId: string, event: Event): void {
     event.stopPropagation();
+    if (this.swallowArrangeClick) return;
     if (this.gestures.swallowClick()) return;
     if (this.ui.adding()?.personId !== personId) this.ui.adding.set(null);
     this.store.selectPerson(personId);
@@ -306,6 +425,10 @@ export class TreeChart {
   // -- keyboard ---------------------------------------------------------------
 
   protected onKey(e: KeyboardEvent): void {
+    if (this.ui.arranging() && this.arrangeKey(e)) {
+      e.preventDefault();
+      return;
+    }
     const key = chartKey(e);
     if (!key) return;
     if (key.kind === 'zoom') this.zoom(key.factor);
@@ -318,6 +441,29 @@ export class TreeChart {
       queueMicrotask(() => this.host.nativeElement.querySelector<SVGElement>(`[data-person="${next}"]`)?.focus({ preventScroll: true }));
     }
     e.preventDefault();
+  }
+
+  /**
+   * While arranging: Escape is done; Alt with an arrow moves the selected couple
+   * sideways, or the selected couple's line (click their marker) up and down.
+   */
+  private arrangeKey(e: KeyboardEvent): boolean {
+    if ((e.target as Element | null)?.closest?.('input, textarea, select')) return false;
+    if (e.key === 'Escape' && !this.press) {
+      this.ui.arranging.set(false);
+      return true;
+    }
+    const selection = this.store.selection();
+    if (selection?.kind === 'family' && e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+      const dy = e.key === 'ArrowUp' ? Math.max(lowestLineMove(this.displayed(), selection.id), -10) : 10;
+      this.arrange.moveLine(selection.id, dy);
+      return true;
+    }
+    const id = this.selectedId();
+    if (!id || !e.altKey || (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight')) return false;
+    const { members } = blockOf(this.displayed(), this.store.index(), id);
+    this.arrange.moveCouple(members, e.key === 'ArrowLeft' ? -20 : 20);
+    return true;
   }
 
   protected tinctureOf(personId: string) {

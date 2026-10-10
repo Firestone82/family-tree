@@ -1,6 +1,13 @@
 @let p = person();
 <stemma-person-header [person]="p" (closePanel)="people.close()" />
 <div class="panel-body">
+  @if (hidden()) {
+    <p class="hidden-note" role="status">
+      <stemma-icon name="info" [size]="16" />
+      <span>{{ t('relatives.hiddenNote', { level: level() }) }}</span>
+      <button type="button" class="link-btn" (click)="showEveryone()">{{ t('relatives.showEveryone') }}</button>
+    </p>
+  }
   <stemma-person-summary [person]="p" (add)="add($event)" />
   <stemma-person-name-form [person]="p" />
   <stemma-person-life-form [person]="p" />

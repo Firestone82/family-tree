@@ -1,4 +1,5 @@
 import { BackgroundImage, Extensions, Family, LifeEvent, Person, PrintSettings, Reach, TreeDocument } from '../model/types';
+import { arrangementOf } from '../model/arrangement';
 import { CURRENT_FORMAT, GENERATOR, ROOT_ELEMENT, XML_NAMESPACE, formatVersionString } from './format';
 import { Attrs, XmlWriter } from './xml-writer';
 
@@ -37,6 +38,7 @@ export function serializeTree(doc: TreeDocument, options: SerializeOptions = {})
   // older app that keeps them as unknown content would write them back.
   if (doc.print) writePrint(w, doc.print);
   if (doc.background) writeBackground(w, doc.background);
+  writeArrangement(w, doc);
 
   extElements(w, doc.ext);
   w.close();
@@ -72,6 +74,8 @@ function writeView(w: XmlWriter, doc: TreeDocument): void {
     ['showSex', v.showSex],
     ['sexColors', v.sexColors],
     ['showTree', v.showTree],
+    ['branches', reach(v.branches)],
+    ['inLawFamilies', v.inLawFamilies],
     ...extAttrs(v.ext),
   ];
   if (v.ext?.elements?.length) {
@@ -171,6 +175,7 @@ function writePrint(w: XmlWriter, p: PrintSettings): void {
     ['showSex', p.showSex],
     ['sexColors', p.sexColors],
     ['showTree', p.showTree],
+    ['inLawFamilies', p.inLawFamilies],
     ...extAttrs(p.ext),
   ];
   if (p.ext?.elements?.length) {
@@ -221,6 +226,34 @@ function writeEvent(w: XmlWriter, name: string, e: LifeEvent, extra: Attrs = [])
   } else {
     w.element(name, attrs);
   }
+}
+
+/** Changes made by hand to the layout, for the people and families in the tree, in their order. */
+function writeArrangement(w: XmlWriter, doc: TreeDocument): void {
+  if (!doc.arrangement) return;
+  const a = arrangementOf(doc);
+  const moves = doc.people.filter((p) => a.moves[p.id] !== undefined);
+  const lines = doc.families.filter((f) => a.lines[f.id] !== undefined);
+  const couples = doc.families.filter((f) => a.left[f.id] !== undefined);
+  if (!moves.length && !lines.length && !couples.length && !a.ext) return;
+  w.open('arrangement', extAttrs(a.ext));
+  for (const p of moves)
+    w.element('move', [
+      ['person', p.id],
+      ['dx', String(a.moves[p.id])],
+    ]);
+  for (const f of lines)
+    w.element('line', [
+      ['family', f.id],
+      ['dy', String(a.lines[f.id])],
+    ]);
+  for (const f of couples)
+    w.element('couple', [
+      ['family', f.id],
+      ['left', a.left[f.id]],
+    ]);
+  extElements(w, a.ext);
+  w.close();
 }
 
 function extAttrs(ext: Extensions | undefined): Attrs {

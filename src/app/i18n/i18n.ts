@@ -1,5 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { ChartLanguage, chartLanguage } from '../core/lang/language';
+import { displayName, sortName } from '../core/model/names';
 import { Notice } from '../core/model/notice';
 import { Person } from '../core/model/types';
 import { Preferences } from '../state/preferences';
@@ -66,6 +67,20 @@ export class I18n {
   /** "1898 – 1971", "b. 1993". */
   lifespan(person: Pick<Person, 'birth' | 'death'>): string {
     return this.dates().lifespan(person);
+  }
+
+  /** "Anna Hartmann", or "Unknown Hartmann" ("Neznámá Hartmannová") when nobody knows the given name. */
+  name(person: Person | undefined): string {
+    return displayName(person, this.unknown(person));
+  }
+
+  /** "Hartmann, Anna" for lists, with the same word for a given name nobody knows. */
+  sortName(person: Person): string {
+    return sortName(person, this.unknown(person));
+  }
+
+  private unknown(person: Person | undefined): string {
+    return this.dates().unknown(person?.sex ?? 'unknown');
   }
 }
 

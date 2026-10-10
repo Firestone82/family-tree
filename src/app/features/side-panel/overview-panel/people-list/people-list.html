@@ -25,6 +25,7 @@
         [members]="f.members"
         [open]="f.open"
         [countLabel]="f.count"
+        [offChartHint]="offChartHint()"
         (toggleOpen)="toggle(f.key, f.open)"
         (pick)="open.emit($event)"
       />

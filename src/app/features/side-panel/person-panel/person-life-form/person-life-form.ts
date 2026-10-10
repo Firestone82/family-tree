@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { displayName } from '../../../../core/model/names';
 import { PersonPatch } from '../../../../core/model/operations';
 import { GenDate, LifeEvent, Person } from '../../../../core/model/types';
 import { FileIo } from '../../../../core/services/file-io';
@@ -25,11 +24,12 @@ export class PersonLifeForm {
   private readonly people = inject(PersonActions);
   private readonly files = inject(FileIo);
   private readonly toast = inject(ToastService);
-  protected readonly t = inject(I18n).t;
+  private readonly i18n = inject(I18n);
+  protected readonly t = this.i18n.t;
 
   readonly person = input.required<Person>();
 
-  protected readonly name = computed(() => displayName(this.person()));
+  protected readonly name = computed(() => this.i18n.name(this.person()));
 
   private patch(patch: PersonPatch, field: string): void {
     this.people.update(this.person().id, patch, field);

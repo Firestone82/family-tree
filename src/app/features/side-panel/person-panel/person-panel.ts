@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { Person } from '../../../core/model/types';
+import { relativesOf } from '../../../core/poster/scope';
 import { I18n } from '../../../i18n/i18n';
 import { Icon } from '../../../shared/icon/icon';
 import { ChartModel } from '../../../state/chart-model';
@@ -27,6 +28,13 @@ export class PersonPanel {
   readonly person = input.required<Person>();
 
   protected readonly isFocus = computed(() => this.model.focusId() === this.person().id);
+  /** Left out of the chart by the Relatives setting (found in the list, or just added). */
+  protected readonly hidden = computed(() => this.model.hidden().has(this.person().id));
+  protected readonly level = computed(() => this.t(`relatives.${relativesOf(this.model.view())}`));
+
+  protected showEveryone(): void {
+    this.people.showEveryone(this.person().id);
+  }
 
   protected add(relation: Relation): void {
     this.people.startAdd(relation, this.person().id);

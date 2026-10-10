@@ -80,7 +80,10 @@ export function treeShape(layout: LayoutResult, index: TreeIndex, focusIds: read
   const placeholderOf = new Map(layout.placeholders.map((p) => [p.familyId, p]));
 
   // Horizontal bands taken by cards and placeholders: how much free space is above or below a point.
-  const bands = [...layout.rows.map((r) => ({ top: r.y, bottom: r.y + r.h })), ...layout.placeholders.map((p) => ({ top: p.cy - p.r, bottom: p.cy + p.r }))];
+  const bands = [
+    ...[...layout.rows, ...layout.lanes].map((r) => ({ top: r.y, bottom: r.y + r.h })),
+    ...layout.placeholders.map((p) => ({ top: p.cy - p.r, bottom: p.cy + p.r })),
+  ];
   const spaceAbove = (y: number) => y - Math.max(room.y, ...bands.filter((x) => x.bottom <= y - 0.5).map((x) => x.bottom));
   const spaceBelow = (y: number) => Math.min(room.y + room.h, ...bands.filter((x) => x.top >= y + 0.5).map((x) => x.top)) - y;
 

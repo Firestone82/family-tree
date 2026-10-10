@@ -16,13 +16,13 @@
   }
 </div>
 <div class="field">
-  <span class="field-label" id="print-branches">{{ t('print.relatives') }}</span>
-  <stemma-segmented
-    labelledBy="print-branches"
-    [compact]="true"
-    [options]="branches()"
-    [value]="branchValue()"
-    (valueChange)="model.set({ branches: $event })"
+  <span class="field-label" id="print-relatives">{{ t('relatives.label') }}</span>
+  <stemma-relatives-options
+    name="print-relatives"
+    labelledBy="print-relatives"
+    hints="chosen"
+    [value]="relatives()"
+    [counts]="model.relativesCounts()"
+    (valueChange)="setRelatives($event)"
   />
-  <span class="hint">{{ branchHint() }}</span>
 </div>

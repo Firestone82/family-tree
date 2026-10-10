@@ -12,7 +12,10 @@ export interface LayoutOptions {
   partnerGap: number;
   /** Space between siblings. */
   siblingGap: number;
-  /** Space between unrelated neighbours in a row. */
+  /**
+   * Space between neighbouring families in a row that are first cousins'; more
+   * distant families get more (see gapBetweenFamilies in layout.ts).
+   */
   familyGap: number;
   /** Space between separate trees. */
   componentGap: number;
@@ -31,7 +34,7 @@ export const COMFORTABLE_LAYOUT: LayoutOptions = {
   cardHeight: 70,
   partnerGap: 44,
   siblingGap: 22,
-  familyGap: 48,
+  familyGap: 64,
   componentGap: 140,
   rowGap: 78,
   trackGap: 11,
@@ -137,11 +140,23 @@ export interface LayoutResult {
   connectors: LayoutConnector[];
   links: LayoutLink[];
   rows: LayoutRow[];
+  /**
+   * Rows between the generations, with no generation number of their own: for
+   * the family of someone who married in, when their own generation's row has
+   * no room for it near them, or for a couple from two families, whose
+   * families' lines can then come down past the rest of their generation.
+   */
+  lanes: LayoutRow[];
   bounds: LayoutBounds;
   /** Generation index of every person (0 = top row). */
   ranks: ReadonlyMap<string, number>;
   /** Number of line crossings left after optimisation (for tests and tuning). */
   crossings: number;
+  /**
+   * Where the layout put everyone and the lines between rows, before any moves
+   * by hand: given to the next layout as its hint, so the chart keeps its order.
+   */
+  hint?: ReadonlyMap<string, number>;
 }
 
 export function toRoman(n: number): string {

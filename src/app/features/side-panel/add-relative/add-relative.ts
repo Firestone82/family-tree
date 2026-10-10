@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ElementRef, computed, effect, inject, input, signal, untracked } from '@angular/core';
-import { displayName } from '../../../core/model/names';
 import { PersonSource } from '../../../core/model/operations';
 import { RelationshipStatus } from '../../../core/model/relationship';
 import { ChildRelation, GenDate, Person, Sex } from '../../../core/model/types';
@@ -35,6 +34,8 @@ export class AddRelativePanel {
 
   protected readonly mode = signal<'new' | 'existing'>('new');
   protected readonly given = signal('');
+  /** Nobody knows the new person's given name. */
+  protected readonly unknownName = signal(false);
   private readonly surnameInput = signal<string | null>(null);
   private readonly sexInput = signal<Sex | null>(null);
   protected readonly birth = signal<GenDate | undefined>(undefined);
@@ -49,7 +50,7 @@ export class AddRelativePanel {
   protected readonly twin = signal(false);
 
   private readonly index = this.store.index;
-  protected readonly name = computed(() => displayName(this.index().person(this.request().personId)));
+  protected readonly name = computed(() => this.i18n.name(this.index().person(this.request().personId)));
   protected readonly title = computed(() => this.t(`add.title.${this.request().relation}`));
   protected readonly submitLabel = computed(() => this.t(`add.submit.${this.request().relation}`));
   protected readonly modes = computed<SegmentOption<'new' | 'existing'>[]>(() => [
@@ -90,7 +91,9 @@ export class AddRelativePanel {
 
   protected readonly twinLabel = computed(() => this.t('add.twin', { name: this.index().person(this.request().personId)?.name.given || this.name() }));
 
-  protected readonly canSubmit = computed(() => (this.mode() === 'new' ? !!(this.given().trim() || this.surname().trim()) : !!this.existingId()));
+  protected readonly canSubmit = computed(() =>
+    this.mode() === 'new' ? this.unknownName() || !!(this.given().trim() || this.surname().trim()) : !!this.existingId(),
+  );
 
   constructor() {
     // Start fresh for each request, and put the cursor in the first field.
@@ -99,6 +102,7 @@ export class AddRelativePanel {
       untracked(() => {
         this.mode.set('new');
         this.given.set('');
+        this.unknownName.set(false);
         this.surnameInput.set(null);
         this.sexInput.set(null);
         this.birth.set(undefined);
@@ -116,7 +120,7 @@ export class AddRelativePanel {
   }
 
   private names(people: Person[]): string {
-    return this.i18n.list(people.map((p) => p.name.given || displayName(p)));
+    return this.i18n.list(people.map((p) => p.name.given || this.i18n.name(p)));
   }
 
   protected setSurname(value: string): void {
@@ -148,7 +152,7 @@ export class AddRelativePanel {
         ? { existingId: this.existingId()! }
         : {
             draft: {
-              given: this.given(),
+              given: this.unknownName() ? '' : this.given(),
               surname: this.surname(),
               sex: this.sex(),
               birth: this.birth() ? { date: this.birth() } : undefined,

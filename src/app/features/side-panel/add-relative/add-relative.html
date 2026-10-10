@@ -13,11 +13,13 @@
     @if (mode() === 'new') {
       <stemma-new-person-fields
         [given]="given()"
+        [unknown]="unknownName()"
         [surname]="surname()"
         [sex]="sex()"
         [birth]="birth()"
         [deceased]="deceased()"
         (givenChange)="given.set($event)"
+        (unknownChange)="unknownName.set($event)"
         (surnameChange)="setSurname($event)"
         (sexChange)="setSex($event)"
         (birthChange)="birth.set($event)"

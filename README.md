@@ -13,7 +13,32 @@ keeps working as the app changes.
   unknown, adoption alongside birth parents, cousin marriages, marriages across
   generations, and separate trees side by side. The layout keeps line crossings
   to a minimum, keeps each family's children together under their own line, and
-  draws children in birth order.
+  draws children in birth order where that does not make lines cross. It counts
+  lines as they are drawn, so a family's line is not crossed by another's stem,
+  and couples are turned round when that saves a crossing. Brothers and
+  sisters stand side by side, with no other family between them, and families
+  stand further apart the more distantly they are related. When the family of
+  someone who married in has no room near them in its own generation's row, it
+  gets an extra row between the generations, right above them; and a couple
+  from two families with another family standing between theirs (a fiancée's
+  cousins, say) can get a row of their own just below their generation, so both
+  families' lines reach them without crossing anyone's.
+- **Arrange by hand** whatever the layout does not get right: drag a couple
+  sideways (moved far enough, they pass their neighbours), drag a family's line
+  up or down (the space between the rows grows when needed), or turn a couple
+  round. The changes are saved with the tree, used in prints, and kept as the
+  tree grows; each can be put back, or all at once.
+- **Who is shown**, next to the zoom buttons: the direct line, siblings (with
+  aunts, uncles, nieces and nephews), first cousins, everyone whose card has a
+  relationship name, or the whole tree. *Relatives* leaves out the families of
+  those who married in (a sister-in-law's parents, a fiancé's grandparents), so
+  a big tree is easier to work with. The choice is saved with the tree and is
+  where prints start from; nobody is deleted, and people left out are still in
+  the people list, greyed, to open and edit.
+- **People whose name is not known**: tick *Name not known* when adding someone,
+  instead of typing a placeholder such as X (or clear the given name of someone
+  already in the tree). The card says *Unknown* (*Neznámý*, *Neznámá* in a Czech
+  tree) on a dashed outline, with the surname when that is known.
 - **Fast entry**: select someone and add a parent, partner, child or sibling, either
   a new person or someone already in the tree. Sensible defaults (surname, sex,
   which partner is the other parent). Dates are typed the way people write them:
@@ -66,8 +91,8 @@ keeps working as the app changes.
     leafy branches) and **Modern** (white paper, fine lines);
   - the chosen couple in the middle of the page, with their families around
     them, or the whole tree fitted to the page;
-  - how far the print reaches: generations up, generations down, and side
-    branches (direct line, siblings, cousins, everyone);
+  - how far the print reaches: generations up, generations down, and who is
+    shown (direct line, siblings, cousins, relatives, everyone);
   - A4 to A0, US Letter and Tabloid, or a page sized to the tree, with the size
     the names will print at;
   - output to the printer, PDF, PNG or SVG (fonts embedded).
@@ -106,7 +131,7 @@ under Build and deployment choose **GitHub Actions** as the source.
 `File → Save as XML` writes the whole tree, including the chart settings, to a
 single file. It is designed to work between versions:
 
-- The root element carries `formatVersion="MAJOR.MINOR"` (currently 1.3); the namespace never changes.
+- The root element carries `formatVersion="MAJOR.MINOR"` (currently 1.4); the namespace never changes.
 - Files from **older** versions are upgraded on opening through a migration chain.
 - Files from **newer minor** versions open, and anything this version does not
   understand is written back unchanged on save, so no data is lost.
@@ -177,11 +202,20 @@ Edits are pure functions over immutable documents (`core/model/operations.ts`),
 which keeps undo simple and makes them easy to test. The layout
 (`core/layout/layout.ts`) works in five steps: generations, couple blocks,
 crossing reduction (barycentre sweeps from several starting orders, block flips,
-adjacent swaps, and moving people out from under other families' sibling bars),
-positioning (a spring model solved row by row with weighted isotonic regression),
-and line routing with stacked tracks. It is only recomputed when the shape of
-the tree changes, starts from the previous order so edits do not reshuffle the
-chart, and lays out 800 people in well under a second.
+adjacent swaps, swaps of whole branches of ancestors or descendants, and moving
+people out from between other families' children), positioning (a spring model
+solved row by row with weighted isotonic regression), and line routing with
+stacked tracks. When lines still cross or run under another family, the
+families of those who married in and couples from two families are tried in
+extra rows half a generation down, first one at a time and then those that help
+together, and kept there when that helps (a couple only when that saves a
+crossing); if lines still cross, children may leave birth order. Lines sharing a
+gap are stacked so that stems and drops cross as few of them as possible
+(`line-check.ts` measures the drawn lines for tests). Changes made by hand are
+applied last. It is only recomputed when the shape of the tree changes, starts
+from the previous layout (its order, where long lines pass and which extra rows
+it had) so edits do not reshuffle the chart, and lays out 800 people in well
+under a second.
 
 ## Adding a print style
 

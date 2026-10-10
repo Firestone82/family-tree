@@ -14,7 +14,7 @@ export const XML_NAMESPACE = 'urn:stemma:family-tree';
 export const ROOT_ELEMENT = 'familyTree';
 
 export const APP_NAME = 'Stemma';
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.4.0';
 
 export interface FormatVersion {
   major: number;
@@ -28,8 +28,10 @@ export interface FormatVersion {
  * 1.2  Adds showSex, sexColors and showTree to <view> and <print>.
  * 1.3  Adds <background> (a picture behind the chart) and birthGroup on
  *      <child> (twins, triplets).
+ * 1.4  Adds branches and inLawFamilies to <view>, and inLawFamilies to
+ *      <print>: how far out to the sides of the family the chart and prints go.
  */
-export const CURRENT_FORMAT: FormatVersion = { major: 1, minor: 3 };
+export const CURRENT_FORMAT: FormatVersion = { major: 1, minor: 4 };
 
 export function formatVersionString(v: FormatVersion = CURRENT_FORMAT): string {
   return `${v.major}.${v.minor}`;

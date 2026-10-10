@@ -4,10 +4,12 @@ import { Kin, kinship } from '../core/kinship/kinship';
 import { ChartLanguage, chartLanguage, kinLabel, surnameLinesIn } from '../core/lang/language';
 import { computeLayout } from '../core/layout/layout';
 import { COMFORTABLE_LAYOUT, LayoutOptions, LayoutResult, PLACE_LINE_HEIGHT } from '../core/layout/layout-types';
-import { displayName, initials } from '../core/model/names';
+import { displayName, initials, nameUnknown } from '../core/model/names';
 import { isBrokenUp, relationshipStatus } from '../core/model/relationship';
 import { birthGroupOf } from '../core/model/births';
+import { arrangementOf, isArranged } from '../core/model/arrangement';
 import { birthSurname } from '../core/model/surnames';
+import { RELATIVES, Relatives, Scope, ScopeOptions, relativesOf, relativesSettings, scopeDocument } from '../core/poster/scope';
 import { TreeIndex } from '../core/model/tree-index';
 import { ColorBy, Sex, TreeDocument, ViewSettings } from '../core/model/types';
 import { TextMeasurer } from '../core/services/text-measure';
@@ -29,6 +31,8 @@ export interface CardLabel {
   photo?: string;
   sex: Sex;
   deceased: boolean;
+  /** Nobody knows the given name: the card says "Unknown" and is drawn dashed. */
+  unknown: boolean;
 }
 
 /** Room the sex symbol takes from the first line of a card, and the focus mark from the last. */
@@ -93,7 +97,52 @@ export class ChartModel {
     return new Map(group ? group.memberIds.filter((m) => m !== id).map((m) => [m, group.memberIds.length]) : []);
   });
 
-  private readonly structure = computed(() => structureOf(this.store.doc(), this.store.loadId()), {
+  /**
+   * The part of the tree the chart shows by the Relatives setting, around the
+   * person in the middle and their partner. Undefined when that is everyone.
+   */
+  private readonly scope = computed<Scope | undefined>(() => {
+    // As the setting reads: a file's second cousins (branches 3) count as everyone.
+    const { branches, inLawFamilies } = relativesSettings(relativesOf(this.view()));
+    const around = this.around();
+    if (!around || (branches === 'all' && inLawFamilies)) return undefined;
+    return scopeDocument(this.store.doc(), this.store.index(), { ...around, branches, inLawFamilies });
+  });
+
+  /** People the Relatives setting leaves out of the chart. */
+  readonly hidden = computed<ReadonlySet<string>>(
+    () => {
+      const scope = this.scope();
+      return scope
+        ? new Set(
+            this.store
+              .doc()
+              .people.filter((p) => !scope.people.has(p.id))
+              .map((p) => p.id),
+          )
+        : NOBODY;
+    },
+    { equal: sameSet },
+  );
+
+  /** How many people each step of the Relatives setting shows. Worked out only when asked for. */
+  readonly relativesCounts = computed<Readonly<Record<Relatives, number>>>(() => {
+    const doc = this.store.doc();
+    const around = this.around();
+    const counts = {} as Record<Relatives, number>;
+    for (const r of RELATIVES) {
+      counts[r] = around && r !== 'everyone' ? scopeDocument(doc, this.store.index(), { ...around, ...relativesSettings(r) }).people.size : doc.people.length;
+    }
+    return counts;
+  });
+
+  /** The chart's part of the tree is reckoned from the couple in the middle, all generations up and down. */
+  private around(): Omit<ScopeOptions, 'branches' | 'inLawFamilies'> | undefined {
+    const centerId = this.focusId();
+    return centerId ? { centerId, partnerId: this.focusPartnerId(), ancestors: 'all', descendants: 'all' } : undefined;
+  }
+
+  private readonly structure = computed(() => structureOf(this.scope()?.doc ?? this.store.doc(), this.store.loadId()), {
     equal: (a, b) => a.key === b.key,
   });
 
@@ -103,7 +152,8 @@ export class ChartModel {
     const s = this.structure();
     const options = this.options();
     const prev = this.previous;
-    const hint = prev && prev.loadId === s.loadId ? new Map(prev.result.cards.map((c) => [c.personId, c.x + c.w / 2])) : undefined;
+    // Where the layout itself put everyone, without the moves made by hand, so its order stays put.
+    const hint = prev && prev.loadId === s.loadId ? prev.result.hint : undefined;
     const result = computeLayout(s.doc, options, hint, this.cardWidths());
     this.previous = { result, loadId: s.loadId };
     return result;
@@ -186,12 +236,13 @@ export class ChartModel {
       const dates = lang.lifespan(p);
       const place = p.birth?.place ?? p.death?.place ?? '';
       const relation = relations.get(p.id) ?? '';
-      const title = [displayName(p), relation, dates].filter(Boolean).join(', ');
+      const unknown = nameUnknown(p);
+      const title = [displayName(p, lang.unknown(p.sex)), relation, dates].filter(Boolean).join(', ');
       const bottom = p.id === focusId ? CORNER_ROOM : 0;
       const last = view.showPlaces ? 'place' : view.showDates ? 'dates' : birthRow ? 'birth' : 'surname';
       const names = surnames.get(p.id) ?? { surname: p.name.surname.trim(), birth: '' };
       out.set(p.id, {
-        given: this.measure.fit(p.name.given.trim() || lang.unnamed, fonts.given, width - (view.showRelationships ? 0 : top)),
+        given: this.measure.fit(unknown ? lang.unknown(p.sex) : p.name.given.trim(), fonts.given, width - (view.showRelationships ? 0 : top)),
         surname: this.measure.fit(names.surname, fonts.surname, width - (last === 'surname' ? bottom : 0)),
         birth: this.measure.fit(names.birth, fonts.birth, width - (last === 'birth' ? bottom : 0)),
         dates: view.showDates ? this.measure.fit(dates, fonts.dates, width - (last === 'dates' ? bottom : 0)) : '',
@@ -202,6 +253,7 @@ export class ChartModel {
         photo: view.showPhotos ? p.photo : undefined,
         sex: p.sex,
         deceased: !!p.death,
+        unknown,
       });
     }
     return out;
@@ -233,6 +285,12 @@ function shallowEqual<T extends object>(a: T, b: T): boolean {
   return ka.length === kb.length && ka.every((k) => a[k] === b[k]);
 }
 
+const NOBODY: ReadonlySet<string> = new Set();
+
+function sameSet<T>(a: ReadonlySet<T>, b: ReadonlySet<T>): boolean {
+  return a.size === b.size && [...a].every((x) => b.has(x));
+}
+
 function sameEntries<K, V>(a: ReadonlyMap<K, V>, b: ReadonlyMap<K, V>): boolean {
   return a.size === b.size && [...a].every(([k, v]) => b.get(k) === v);
 }
@@ -262,6 +320,9 @@ function structureOf(doc: TreeDocument, loadId: number): { key: string; doc: Tre
     people,
     families,
   };
-  const key = JSON.stringify([loadId, people.map((p) => p.id), families]);
+  // Changes made by hand are part of the layout too.
+  const arrangement = arrangementOf(doc);
+  if (isArranged(doc)) reduced.arrangement = arrangement;
+  const key = JSON.stringify([loadId, people.map((p) => p.id), families, reduced.arrangement ?? null]);
   return { key, doc: reduced, loadId };
 }

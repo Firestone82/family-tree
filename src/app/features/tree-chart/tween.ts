@@ -7,6 +7,7 @@ export const EMPTY_LAYOUT: LayoutResult = {
   connectors: [],
   links: [],
   rows: [],
+  lanes: [],
   bounds: { x: 0, y: 0, w: 0, h: 0 },
   ranks: new Map(),
   crossings: 0,

@@ -1,16 +1,19 @@
 import { Person } from './types';
 
-export function givenOrPlaceholder(person: Person): string {
-  return person.name.given.trim() || 'Unnamed';
+/**
+ * "Anna Marie Hartmann". Someone whose given name is not known is "Unknown
+ * Hartmann", with `unknown` in the language wanted (see I18n.name for the app's).
+ */
+export function displayName(person: Person | undefined, unknown = 'Unknown'): string {
+  if (!person) return 'Unknown person';
+  const given = person.name.given.trim() || unknown;
+  const surname = person.name.surname.trim();
+  return surname ? `${given} ${surname}` : given;
 }
 
-/** "Anna Marie Hartmann", or "Unnamed person" when nothing is filled in. */
-export function displayName(person: Person | undefined): string {
-  if (!person) return 'Unknown person';
-  const given = person.name.given.trim();
-  const surname = person.name.surname.trim();
-  const full = [given, surname].filter(Boolean).join(' ');
-  return full || 'Unnamed person';
+/** Whether nobody knows the person's given name: the chart says "Unknown" and draws the card dashed. */
+export function nameUnknown(person: Person): boolean {
+  return !person.name.given.trim();
 }
 
 /** Surname line with the birth surname when it differs: "Ashworth née Moreau". */
@@ -21,12 +24,11 @@ export function surnameLine(person: Person): string {
   return surname;
 }
 
-/** "Hartmann, Anna Marie" for alphabetical lists. */
-export function sortName(person: Person): string {
-  const given = person.name.given.trim();
+/** "Hartmann, Anna Marie" for alphabetical lists; "Hartmann, Unknown" when the given name is not known. */
+export function sortName(person: Person, unknown = 'Unknown'): string {
+  const given = person.name.given.trim() || unknown;
   const surname = person.name.surname.trim();
-  if (surname && given) return `${surname}, ${given}`;
-  return surname || given || 'Unnamed person';
+  return surname ? `${surname}, ${given}` : given;
 }
 
 let graphemes: Intl.Segmenter | null | undefined;

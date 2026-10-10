@@ -148,6 +148,13 @@ export interface ViewSettings {
    * Languages this version does not have are kept and drawn in English. Format 1.1.
    */
   language: string;
+  /**
+   * How far out to the sides the chart reaches from the direct line of the
+   * person in the middle, as `branches` in PrintSettings. Format 1.4.
+   */
+  branches: Reach;
+  /** With `branches` at 'all': whether the families of those who married in are shown too (see PrintSettings). Format 1.4. */
+  inLawFamilies: boolean;
   ext?: Extensions;
 }
 
@@ -178,6 +185,14 @@ export interface PrintSettings {
    * nieces and nephews, 2 adds first cousins, 3 second cousins.
    */
   branches: Reach;
+  /**
+   * With `branches` at 'all': whether the families of those who married in are
+   * shown too. When false, only people the chart has a relationship name for
+   * are shown (mother, cousin, sister-in-law, niece's fiancé), with their
+   * partners; a sister-in-law's parents or a fiancé's grandparents are left
+   * out. Nearer branches leave them out anyway. Format 1.4.
+   */
+  inLawFamilies: boolean;
   /** Overrides the tree's title on the page. */
   title?: string;
   /** Overrides the line under the title. */
@@ -218,6 +233,23 @@ export interface BackgroundImage {
   ext?: Extensions;
 }
 
+/**
+ * Changes made by hand to the automatic layout, kept with the tree: couples
+ * moved sideways, family lines moved up or down, and couples turned round.
+ * They apply on top of the layout as the tree changes, on the chart and in
+ * prints. Entries for people or families no longer in the tree are ignored.
+ * Format 1.4.
+ */
+export interface Arrangement {
+  /** How far each person's card is moved sideways from where the layout puts it, in chart units. A couple moves together. */
+  moves: Readonly<Record<string, number>>;
+  /** How far each family's line (the bar its children hang from) is moved down; up when negative. */
+  lines: Readonly<Record<string, number>>;
+  /** For couples turned round by hand: the partner drawn on the left, by family. */
+  left: Readonly<Record<string, string>>;
+  ext?: Extensions;
+}
+
 export interface TreeDocument {
   meta: TreeMeta;
   view: ViewSettings;
@@ -227,6 +259,8 @@ export interface TreeDocument {
   print?: PrintSettings;
   /** A picture behind the chart instead of the drawn tree. */
   background?: BackgroundImage;
+  /** Changes made by hand to the layout. Format 1.4. */
+  arrangement?: Arrangement;
   /** Unknown root attributes and top-level sections. */
   ext?: Extensions;
   /** Unknown attributes and elements inside <people> and <families>. */
@@ -252,6 +286,8 @@ export const DEFAULT_VIEW: ViewSettings = {
   showSex: true,
   sexColors: false,
   showTree: true,
+  branches: 'all',
+  inLawFamilies: true,
 };
 
 /** View settings for a tree started in this version. */
@@ -265,6 +301,7 @@ export const DEFAULT_PRINT: PrintSettings = {
   ancestors: 'all',
   descendants: 'all',
   branches: 'all',
+  inLawFamilies: true,
   showDates: true,
   showPlaces: true,
   showPhotos: true,
@@ -276,10 +313,12 @@ export const DEFAULT_PRINT: PrintSettings = {
   showTree: true,
 };
 
-/** Print settings before anything was chosen: the cards show what the chart shows. */
+/** Print settings before anything was chosen: the cards and the relatives shown are those of the chart. */
 export function printDefaults(view: ViewSettings): PrintSettings {
   return {
     ...DEFAULT_PRINT,
+    branches: view.branches,
+    inLawFamilies: view.inLawFamilies,
     showDates: view.showDates,
     showPlaces: view.showPlaces,
     showPhotos: view.showPhotos,

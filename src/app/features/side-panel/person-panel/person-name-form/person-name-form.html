@@ -7,7 +7,7 @@
     class="input"
     autocomplete="off"
     [value]="p.name.given"
-    [placeholder]="t('name.givenPlaceholder')"
+    [placeholder]="t('name.givenUnknown')"
     (input)="setName('given', $event)"
     (change)="trimName('given', $event)"
   />

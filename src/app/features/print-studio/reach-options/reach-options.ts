@@ -1,24 +1,17 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { PrintSettings, Reach } from '../../../core/model/types';
+import { Relatives, relativesOf, relativesSettings } from '../../../core/poster/scope';
 import { I18n } from '../../../i18n/i18n';
-import { MessageKey } from '../../../i18n/locales';
 import { Icon } from '../../../shared/icon/icon';
-import { SegmentOption, Segmented } from '../../../shared/segmented/segmented';
+import { RelativesOptions } from '../../../shared/relatives-options/relatives-options';
 import { PrintModel } from '../print-model';
-
-const BRANCH_HINT: Record<string, MessageKey> = {
-  '0': 'print.branchHint.direct',
-  '1': 'print.branchHint.siblings',
-  '2': 'print.branchHint.cousins',
-  all: 'print.branchHint.everyone',
-};
 
 type Direction = 'ancestors' | 'descendants';
 
 /** How many generations up and down, and how far out to the sides of the family. */
 @Component({
   selector: 'stemma-reach-options',
-  imports: [Icon, Segmented],
+  imports: [Icon, RelativesOptions],
   templateUrl: './reach-options.html',
   styleUrl: './reach-options.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -28,19 +21,7 @@ export class ReachOptions {
   protected readonly model = inject(PrintModel);
   protected readonly t = inject(I18n).t;
 
-  protected readonly branches = computed<SegmentOption<Reach>[]>(() => [
-    { value: 0, label: this.t('print.branch.direct') },
-    { value: 1, label: this.t('print.branch.siblings') },
-    { value: 2, label: this.t('print.branch.cousins') },
-    { value: 'all', label: this.t('print.branch.everyone') },
-  ]);
-
-  /** "All" covers any number beyond cousins too. */
-  protected readonly branchValue = computed<Reach>(() => {
-    const b = this.model.settings().branches;
-    return typeof b === 'number' && b > 2 ? 'all' : b;
-  });
-  protected readonly branchHint = computed(() => this.t(BRANCH_HINT[String(this.branchValue())] ?? BRANCH_HINT['all']));
+  protected readonly relatives = computed(() => relativesOf(this.model.settings()));
 
   protected readonly steppers = computed(() => {
     const s = this.model.settings();
@@ -60,6 +41,10 @@ export class ReachOptions {
       };
     });
   });
+
+  protected setRelatives(r: Relatives): void {
+    this.model.set(relativesSettings(r));
+  }
 
   protected step(key: Direction, delta: number): void {
     const max = key === 'ancestors' ? this.model.depth().up : this.model.depth().down;

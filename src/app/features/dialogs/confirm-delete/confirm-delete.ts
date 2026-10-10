@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, ElementRef, afterNextRender, computed, inject, input, output, viewChild } from '@angular/core';
-import { displayName } from '../../../core/model/names';
 import { TreeStore } from '../../../core/store/tree-store';
 import { I18n } from '../../../i18n/i18n';
 import { Icon } from '../../../shared/icon/icon';
@@ -16,14 +15,15 @@ import { PersonActions } from '../../../state/person-actions';
 export class ConfirmDelete {
   private readonly store = inject(TreeStore);
   private readonly people = inject(PersonActions);
-  protected readonly t = inject(I18n).t;
+  private readonly i18n = inject(I18n);
+  protected readonly t = this.i18n.t;
 
   readonly personId = input.required<string>();
   readonly done = output<void>();
 
   private readonly confirmButton = viewChild.required<ElementRef<HTMLButtonElement>>('confirmButton');
 
-  protected readonly name = computed(() => displayName(this.store.index().person(this.personId())) || this.t('person.unnamed'));
+  protected readonly name = computed(() => this.i18n.name(this.store.index().person(this.personId())));
 
   constructor() {
     // The dialog opens before its content is drawn, so it cannot pick the button itself.
