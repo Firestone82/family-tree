@@ -1,0 +1,15 @@
+@for (o of options(); track o.value) {
+  @let chosen = o.value === value();
+  <label class="option" [class.chosen]="chosen">
+    <input type="radio" [name]="name()" [value]="o.value" [checked]="chosen" (change)="valueChange.emit(o.value)" />
+    <span class="text">
+      <span class="label">{{ o.label }}</span>
+      @if (hints() === 'all' || chosen) {
+        <span class="hint">{{ o.hint }}</span>
+      }
+    </span>
+    @if (o.count !== undefined) {
+      <span class="count" [title]="o.title">{{ o.count }}</span>
+    }
+  </label>
+}

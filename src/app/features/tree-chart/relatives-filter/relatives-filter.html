@@ -1,0 +1,30 @@
+@let level = label();
+<button
+  type="button"
+  class="pill"
+  [class.limited]="shown() < total()"
+  (click)="ui.toggleMenu('relatives')"
+  aria-haspopup="dialog"
+  [attr.aria-expanded]="open()"
+  [attr.aria-label]="t('relatives.button', { level })"
+  [title]="t('relatives.button', { level })"
+>
+  <stemma-icon name="people" [size]="17" />
+  <span class="level">{{ level }}</span>
+  @if (shown() < total()) {
+    <span class="shown">{{ t('relatives.shown', { shown: shown(), total: total() }) }}</span>
+  }
+  <stemma-icon class="chevron" name="chevronUp" [size]="14" />
+</button>
+@if (open()) {
+  <div class="menu" role="dialog" aria-labelledby="chart-relatives-heading">
+    <h3 id="chart-relatives-heading">{{ t('relatives.heading') }}</h3>
+    <stemma-relatives-options
+      name="chart-relatives"
+      labelledBy="chart-relatives-heading"
+      [value]="value()"
+      [counts]="counts()"
+      (valueChange)="choose($event)"
+    />
+  </div>
+}

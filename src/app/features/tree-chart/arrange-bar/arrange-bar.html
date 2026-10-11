@@ -1,0 +1,4 @@
+<stemma-icon class="icon" name="move" [size]="18" />
+<span class="hint">{{ t('arrange.hint') }}</span>
+<button type="button" class="reset" [disabled]="!arranged()" (click)="arrange.resetAll()">{{ t('arrange.resetAll') }}</button>
+<button type="button" class="done" (click)="ui.arranging.set(false)">{{ t('arrange.done') }}</button>

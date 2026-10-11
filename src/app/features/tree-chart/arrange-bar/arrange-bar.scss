@@ -1,0 +1,69 @@
+// A bar at the top of the chart while it is being arranged by hand.
+:host {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100% - 24px);
+  padding: 6px 6px 6px 14px;
+  transform: translateX(-50%);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--sheet);
+  box-shadow: var(--shadow-1);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+}
+
+.icon {
+  flex: none;
+  color: var(--ink);
+}
+
+.hint {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+button {
+  flex: none;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.reset {
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-2);
+
+  &:hover:not(:disabled) {
+    color: var(--ink);
+    background: var(--sheet-2);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+}
+
+.done {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--sheet);
+  font-weight: 500;
+}
+
+/* On a phone the bar keeps its buttons; the hint is in their titles. */
+@media (max-width: 620px) {
+  .hint {
+    display: none;
+  }
+}

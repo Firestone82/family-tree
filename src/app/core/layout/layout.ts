@@ -106,12 +106,13 @@ export interface Interval {
 const DUMMY_WIDTH = 2;
 /**
  * Whole branches are moved past each other (see swapBranches) in trees up to
- * this many items, for at most this long each time: from every starting order
- * in small trees, from the best one in bigger trees.
+ * this many items, with at most this many swaps tried each time: from every
+ * starting order in small trees, from the best one in bigger trees. A count,
+ * not a time, so that a tree is laid out the same on every computer.
  */
 const BRANCH_MAX_ITEMS = 260;
 const BRANCH_EVERY_START = 60;
-const BRANCH_BUDGET_MS = 40;
+const BRANCH_TRIES = 60;
 /** Lines crossing are worse than someone standing under another family's line: this many times. */
 const CROSSING_WEIGHT = 3;
 const BAR_SEPARATION = 18;
@@ -473,8 +474,9 @@ class ComponentLayout {
   /**
    * Crossing reduction is a local search, so it runs from several starting
    * orders and keeps the best: fewest crossings and intrusions, then shortest
-   * lines. After three structured starts, seeded random starts run while the
-   * time budget allows, so the result is the same every time for the same tree.
+   * lines. After three structured starts come seeded random starts, fewer in
+   * bigger trees. Nothing depends on time, so a tree is laid out the same every
+   * time, on any computer.
    */
   private orderRows(): void {
     const original = new Map(this.items.map((item) => [item, [...item.members]]));
@@ -505,8 +507,6 @@ class ComponentLayout {
       for (let i = 0; i < randomStarts; i++) starts.push(() => this.randomOrder(random));
     }
 
-    // A safety net for very large trees; normal trees finish well inside it.
-    const budgetMs = 400;
     let best: ReturnType<ComponentLayout['snapshot']> | undefined;
     let bestPenalty = Infinity;
     let bestLength = Infinity;
@@ -515,10 +515,8 @@ class ComponentLayout {
       this.strictSiblings = strict;
       // Without birth order, only fewer crossings or intrusions than with it count.
       const toBeat = bestPenalty;
-      const startedAt = now();
       for (let s = 0; s < starts.length; s++) {
         if (s > 0 && bestPenalty === 0 && (hinted || s >= fixedStarts)) break;
-        if (s >= fixedStarts && now() - startedAt > budgetMs) break;
         reset();
         starts[s]();
         this.reduceCrossings(size <= BRANCH_EVERY_START);
@@ -1582,14 +1580,17 @@ class ComponentLayout {
    */
   private swapBranches(score: number): void {
     const R = this.rows.length;
-    const startedAt = now();
+    this.swapsLeft = BRANCH_TRIES;
     for (let round = 0; round < 3 && score > 0; round++) {
       const before = score;
       for (let r = 1; r < R - 1 && score > 0; r++) score = this.swapAt(r, 'up', score);
       for (let r = R - 2; r > 0 && score > 0; r--) score = this.swapAt(r, 'down', score);
-      if (score >= before || now() - startedAt > BRANCH_BUDGET_MS) break;
+      if (score >= before || this.swapsLeft <= 0) break;
     }
   }
+
+  /** How many more swaps swapBranches may try. */
+  private swapsLeft = 0;
 
   /**
    * Tries swapping each pair of neighbouring branches above row r (`up`: rows
@@ -1597,6 +1598,7 @@ class ComponentLayout {
    * that lowers the score and returns the score.
    */
   private swapAt(r: number, side: 'up' | 'down', score: number): number {
+    if (this.swapsLeft <= 0) return score;
     const R = this.rows.length;
     const from = side === 'up' ? 0 : r;
     const to = side === 'up' ? r : R - 1;
@@ -1615,6 +1617,7 @@ class ComponentLayout {
       if (ea.some((e) => eb.some((f) => this.crosses(e, f)))) pairs.push([a, b]);
     }
     for (const [a, b] of pairs) {
+      if (this.swapsLeft-- <= 0) break;
       const before = this.snapshot();
       for (let k = from; k <= to; k++) {
         const items = this.rows[k];
@@ -1975,10 +1978,6 @@ function mulberry32(seed: number): () => number {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
-}
-
-function now(): number {
-  return typeof performance !== 'undefined' ? performance.now() : Date.now();
 }
 
 function chainKey(familyId: string, childId: string): string {

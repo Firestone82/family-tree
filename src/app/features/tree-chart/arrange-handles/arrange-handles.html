@@ -1,0 +1,68 @@
+@for (g of grips(); track g.familyId) {
+  <svg:line
+    class="line-hit"
+    [class.active]="dragging() === g.familyId"
+    [attr.data-line]="g.familyId"
+    [attr.x1]="g.x1"
+    [attr.x2]="g.x2"
+    [attr.y1]="g.y"
+    [attr.y2]="g.y"
+    (click)="swallow($event)"
+  />
+  <svg:g
+    class="grip"
+    [class.active]="dragging() === g.familyId"
+    [attr.data-line]="g.familyId"
+    [attr.transform]="'translate(' + g.x + ',' + g.y + ')'"
+    (click)="swallow($event)"
+  >
+    <svg:rect x="-13" y="-8" width="26" height="16" rx="8" />
+    <svg:path d="M-3.5 -2.2 0 -5.2 3.5 -2.2M-3.5 2.2 0 5.2 3.5 2.2" />
+    <svg:title>{{ t('arrange.moveLine') }}</svg:title>
+  </svg:g>
+  @if (g.moved && dragging() !== g.familyId) {
+    <svg:g
+      class="put-back"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="t('arrange.putBackLine')"
+      [attr.transform]="'translate(' + (g.x + 26) + ',' + g.y + ')'"
+      (click)="onPutBackLine(g.familyId, $event)"
+      (keydown.enter)="onPutBackLine(g.familyId, $event)"
+    >
+      <svg:circle r="9" />
+      <svg:path [attr.d]="icons['reset']" transform="translate(-6,-6) scale(0.5)" />
+      <svg:title>{{ t('arrange.putBackLine') }}</svg:title>
+    </svg:g>
+  }
+}
+@for (s of switches(); track s.familyId) {
+  <svg:g
+    class="turn"
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="t('arrange.turn')"
+    [attr.transform]="'translate(' + s.x + ',' + s.y + ')'"
+    (click)="onTurn(s.familyId, s.right, $event)"
+    (keydown.enter)="onTurn(s.familyId, s.right, $event)"
+  >
+    <svg:circle r="10" />
+    <svg:path [attr.d]="icons['swap']" transform="translate(-6.5,-6.5) scale(0.54)" />
+    <svg:title>{{ t('arrange.turn') }}</svg:title>
+  </svg:g>
+}
+@for (m of moved(); track m.members.join(' ')) {
+  <svg:g
+    class="put-back"
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="t('arrange.putBack')"
+    [attr.transform]="'translate(' + m.x + ',' + m.y + ')'"
+    (click)="onPutBack(m.members, $event)"
+    (keydown.enter)="onPutBack(m.members, $event)"
+  >
+    <svg:circle r="9" />
+    <svg:path [attr.d]="icons['reset']" transform="translate(-6,-6) scale(0.5)" />
+    <svg:title>{{ t('arrange.putBack') }}</svg:title>
+  </svg:g>
+}
