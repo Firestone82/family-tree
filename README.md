@@ -37,8 +37,8 @@ keeps working as the app changes.
   the people list, greyed, to open and edit.
 - **People whose name is not known**: tick *Name not known* when adding someone,
   instead of typing a placeholder such as X (or clear the given name of someone
-  already in the tree). The card says *Unknown* (*Neznámý*, *Neznámá* in a Czech
-  tree) on a dashed outline, with the surname when that is known.
+  already in the tree). The card says *Unknown* (*Neznámý*, *Neznámá* with the
+  app in Czech) on a dashed outline, with the surname when that is known.
 - **Fast entry**: select someone and add a parent, partner, child or sibling, either
   a new person or someone already in the tree. Sensible defaults (surname, sex,
   which partner is the other parent). Dates are typed the way people write them:
@@ -47,13 +47,13 @@ keeps working as the app changes.
   person and their partner, and every card says how its person is related to
   them: Mother, Great-aunt, Sister-in-law, First cousin once removed, Wife's
   cousin. Half and step relations, adoption and in-laws are recognised.
-  Relationship names are available in English and Czech (switchable per tree;
-  Czech uses the proper genitive forms, e.g. *sestřenice dědečka*).
+  Relationship names are in the app's language, English or Czech (Czech uses
+  the proper genitive forms, e.g. *sestřenice dědečka*).
 - **Relationships with status**: married, engaged, partners, separated, divorced,
   widowed or annulled, chosen already when a partner is added. The marker
   between partners shows interlocked rings for a marriage; a couple who broke up
-  have their rings pulled apart, cut with a red slash for a divorce. A note such
-  as *divorced* sits under the couple.
+  have their rings pulled apart, cut with a red slash for a divorce. Under every
+  couple a note says how they stand: *married*, *engaged*, *divorced*, and so on.
 - **Twins, triplets and more**: children of a couple can be marked as born
   together (in the family panel, or when adding a sibling). They stand side by
   side and hang from one point on the chart; a twin of the person in the middle
@@ -61,18 +61,20 @@ keeps working as the app changes.
   birth: change it for one and it changes for all.
 - **Surnames that fill themselves in**: a new child, sibling or father gets the
   family name, and a surname at birth that is not written in is taken from the
-  father. In a Czech tree the form follows the sex: a daughter of Mikula is
-  Mikulová, of Černý Černá, of Marek Marková (and back, for a father).
+  father. With the app in Czech the form follows the sex: a daughter of Mikula
+  is Mikulová, of Černý Černá, of Marek Marková (and back, for a father).
 - **Pretty by default**: family-name colours on heraldic shields (Novák and
   Nováková count as one family), interlocked rings for marriages, a double slash
-  for divorce, generation numbers, portraits, four styles (Auto, Archive, Print,
-  Night), square or curved lines, and smooth animation when the tree changes.
-- **A tree behind the chart**, drawn like an illustration: a leafy crown over
-  the ancestors, limbs that fork at each couple, the trunk at the person in the
-  middle and roots reaching down to their children and grandchildren. It is
-  grown from the layout, so it follows the family as it changes, and it is drawn
-  in each style's own colours on screen and in prints.
-- **Or a picture of your own** behind the chart instead: SVG, PDF, JPEG, PNG or
+  for divorce, generation numbers, portraits, light and dark (Auto follows the
+  device), square or curved lines (curved all the way: through extra rows, and
+  over the people between partners), and smooth animation when the tree changes.
+- **A tree behind the printed family**, drawn like an illustration: a leafy
+  crown over the ancestors, limbs that fork at each couple, the trunk at the
+  person in the middle and roots reaching down to their children and
+  grandchildren. It is grown from the layout, so it follows the family as it
+  changes, and it is drawn in each print style's own colours. The chart on
+  screen stays plain.
+- **Or a picture of your own** behind it instead: SVG, PDF, JPEG, PNG or
   WebP, filling the area or shown whole, at the strength you choose. An SVG
   stays sharp at any size and a PDF is converted at print resolution, so a
   poster on A2 or A1 looks right. The picture is saved inside the XML file.
@@ -81,10 +83,10 @@ keeps working as the app changes.
   children of a couple are numbered in birth order.
 - **Sex at a glance**, each switchable: a ♂ or ♀ symbol in the corner of each
   card, and cards tinted blue for men and pink for women.
-- **In English and Czech**: the app's menus and panels follow the browser's
-  language and can be switched under Appearance. The words on the chart are a
-  separate setting saved with the tree, so a Czech tree prints in Czech for
-  anyone.
+- **In English and Czech**: one language for the app's menus and panels and
+  for the words on the chart and in prints (relationship names, notes about
+  couples, dates). It follows the browser's language, can be switched under
+  Appearance, and is kept in the browser.
 - **Print and export** (File, Print and export, or Ctrl+P) with a live preview:
   - three styles: **Heirloom** (vellum, ornamental frame, title on a ribbon),
     **Botanical** (a herbarium sheet; the family grows upwards from roots to
@@ -95,10 +97,15 @@ keeps working as the app changes.
     shown (direct line, siblings, cousins, relatives, everyone);
   - A4 to A0, US Letter and Tabloid, or a page sized to the tree, with the size
     the names will print at;
-  - output to the printer, PDF, PNG or SVG (fonts embedded).
+  - output to the printer, PDF, PNG or SVG (fonts embedded);
+  - the page in a window of its own (*New window*), as large as you like, with
+    zoom, while the settings stay on the right: it follows every change. Where
+    the browser has picture-in-picture (Chrome, Edge) the window stays in front
+    of the app; elsewhere it is an ordinary window.
 - **Versioned XML** (see below), plus a copy kept in the browser as you work.
 - Undo and redo, keyboard navigation (arrow keys move between relatives), light and
-  dark mode, and a bottom-sheet layout on phones.
+  dark mode (Auto, Dark or Light under Appearance), and a bottom-sheet layout on
+  phones.
 
 ## Getting started
 
@@ -156,8 +163,8 @@ src/app/
                            surnames change with sex (cs-surnames.ts)
     colors/                family colours
     xml/                   format constants, writer, parser, migrations
-    layout/                automatic layout, line drawing, and the tree behind
-                           the chart (tree-shape.ts, foliage.ts, organic.ts)
+    layout/                automatic layout, line drawing, and the tree drawn
+                           behind prints (tree-shape.ts, foliage.ts, organic.ts)
     poster/                printed pages: scope, paper, styles (themes/), PDF
     store/                 the open tree with undo/redo (signals)
     services/              files, image export, toasts, text measuring, background
@@ -166,14 +173,16 @@ src/app/
                            locales/ (en.ts is the reference, cs.ts)
   state/                   app state and actions shared by the features:
                            chart model, UI state, document, person, family and
-                           background actions, preferences, autosave, shortcuts
+                           background actions, preferences, light and dark
+                           (theme.ts), autosave, shortcuts
   features/                one folder per part of the screen
     top-bar/               title, undo/redo, file and appearance menus
-    tree-chart/            the SVG chart: cards, lines, unions, tree backdrop,
-                           quick add, zoom; pan/zoom, framing, keys and the glide
-                           between layouts are plain classes beside it
+    tree-chart/            the SVG chart: cards, lines, unions, quick add, zoom;
+                           pan/zoom, framing, keys and the glide between layouts
+                           are plain classes beside it
     side-panel/            overview, person, family and add-relative panels
-    print-studio/          the print and export studio
+    print-studio/          the print and export studio, and the page in a
+                           window of its own (preview-window/)
     dialogs/               confirmations, import report, XML viewer, format notes
     toasts/, empty-state/, sample-note/
   shared/                  small reusable components: icon, switch, segmented
@@ -228,8 +237,10 @@ A print style is one file in `src/app/core/poster/themes/` that exports a
 - **card**: width, padding, the badge (`shield`, `seal`, `bar` or `none`) and
   the lines (relationship, name, surname, surname at birth, dates, place);
 - **spacing and lines**: gaps between cards and rows, and `square`, `curved`
-  or `branch` lines; `flow: 'up'` draws the oldest generation at the bottom;
-- **tree**: the colours of the tree behind the chart: `wood`, `bark`, three
+  or `branch` lines (square and curved give way to the chart's Lines setting;
+  a `branch` style draws its own); `flow: 'up'` draws the oldest generation at
+  the bottom;
+- **tree**: the colours of the tree behind the family: `wood`, `bark`, three
   `canopy` tones (shade, body, light), the `leaves` and an `opacity`;
 - **page**: `background`, `header` and `footer` (each returns its height and a
   draw function), and optionally `overlay`, `cardShape`, `connectors`,
@@ -263,8 +274,9 @@ repairs made while reading a file) carry a code and English text; the app shows
 the translation of the code when there is one (`op.*`, `file.error.*`,
 `notice.xml.*`), so a new message works before it is translated.
 
-**The words on the chart and in prints** (relationship names, marriages, dates)
-come from a language pack in `src/app/core/lang/` (`en.ts`, `cs.ts`). Write a
+**The words on the chart and in prints** (relationship names, notes about
+couples, dates) come from a language pack in `src/app/core/lang/` (`en.ts`,
+`cs.ts`); the chart uses the pack of the app's language. Write a
 pack with the same functions and add it to `LANGUAGES` in `language.ts`. The
 relationship engine (`core/kinship/kinship.ts`) is language-neutral: it gives
 the pack the generations up and down, half, step, in-law and partner
@@ -279,9 +291,11 @@ partials the few classes many components share (buttons, fields, menus,
 dialogs, panel sections). Everything else is in the component's own `.scss`.
 
 The chart is coloured only through `--t-*` tokens (paper, cards, lines, the
-tints for men and women, the tree's wood, crown and leaves) and `--tc-*` tokens
-(family colours). `_chart-themes.scss` defines one set per chart style as SCSS
-maps, so a new chart style is a new map there.
+tints for men and women) and `--tc-*` tokens (family colours).
+`_chart-themes.scss` defines a light and a dark set as SCSS maps. The whole app
+follows light or dark as chosen under Appearance: `state/theme.ts` puts the
+choice on the page as `<html data-theme>` (none for Auto, which follows the
+device), and the tokens of the interface and the chart answer to it.
 
 ## Notes
 
@@ -293,6 +307,7 @@ maps, so a new chart style is a new map there.
   `downloads` capability, which does not allow `.xml`; the app then shows the XML
   to copy or save as a text file. In a normal browser it downloads directly.
   Printing through the browser is not available inside the artifact viewer;
-  save a PDF and print that instead.
+  save a PDF and print that instead. Nor is the page in a window of its own,
+  as the viewer opens no other windows.
 - PDF and PNG files are drawn at 200 dpi (less on very large paper, to stay
   within what phones can draw). For big posters from a print shop, use SVG.

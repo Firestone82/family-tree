@@ -10,7 +10,3 @@
     <stemma-background-picker idPrefix="print-bg" />
   </div>
 }
-<div class="field">
-  <span class="field-label" id="print-language">{{ t('print.language') }}</span>
-  <stemma-segmented labelledBy="print-language" [compact]="true" [options]="languages" [value]="language()" (valueChange)="model.setChartLanguage($event)" />
-</div>

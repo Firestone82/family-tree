@@ -3,7 +3,7 @@ import { ColorAssignment, assignColors } from '../core/colors/tinctures';
 import { Kin, kinship } from '../core/kinship/kinship';
 import { ChartLanguage, chartLanguage, kinLabel, surnameLinesIn } from '../core/lang/language';
 import { computeLayout } from '../core/layout/layout';
-import { COMFORTABLE_LAYOUT, LayoutOptions, LayoutResult, PLACE_LINE_HEIGHT } from '../core/layout/layout-types';
+import { COMFORTABLE_LAYOUT, LayoutOptions, LayoutResult } from '../core/layout/layout-types';
 import { displayName, initials, nameUnknown } from '../core/model/names';
 import { isBrokenUp, relationshipStatus } from '../core/model/relationship';
 import { birthGroupOf } from '../core/model/births';
@@ -11,9 +11,10 @@ import { arrangementOf, isArranged } from '../core/model/arrangement';
 import { birthSurname } from '../core/model/surnames';
 import { RELATIVES, Relatives, Scope, ScopeOptions, relativesOf, relativesSettings, scopeDocument } from '../core/poster/scope';
 import { TreeIndex } from '../core/model/tree-index';
-import { ColorBy, Sex, TreeDocument, ViewSettings } from '../core/model/types';
+import { Sex, TreeDocument, ViewSettings } from '../core/model/types';
 import { TextMeasurer } from '../core/services/text-measure';
 import { TreeStore } from '../core/store/tree-store';
+import { I18n } from '../i18n/i18n';
 import { CARD_METRICS, cardFonts } from './card-metrics';
 
 export interface CardLabel {
@@ -22,7 +23,6 @@ export interface CardLabel {
   /** The surname at birth when it differs from the surname: "née Barlow". */
   birth: string;
   dates: string;
-  place: string;
   /** How the person is related to the person the tree is centred on. */
   kin: string;
   initials: string;
@@ -52,13 +52,20 @@ const MAX_CARD_STRETCH = 2;
 export class ChartModel {
   private readonly store = inject(TreeStore);
   private readonly measure = inject(TextMeasurer);
+  private readonly i18n = inject(I18n);
 
   readonly view = computed<ViewSettings>(() => this.store.doc().view, { equal: shallowEqual });
-  readonly language = computed<ChartLanguage>(() => chartLanguage(this.view().language));
+  /**
+   * The words on the chart (relationship names, couples, dates) are in the
+   * app's language: one setting for both. The `language` a file carries is
+   * written when the tree is saved, for older versions.
+   */
+  readonly language = computed<ChartLanguage>(() => chartLanguage(this.i18n.code()));
 
   /**
    * Positions and font sizes inside a card. The `density` a file may carry is
-   * no longer used: every tree is drawn with the same spacing.
+   * no longer used: every tree is drawn with the same spacing. Places are not
+   * drawn on the chart (prints can show them), whatever `showPlaces` says.
    */
   readonly metrics = signal(CARD_METRICS).asReadonly();
 
@@ -67,7 +74,7 @@ export class ChartModel {
       const v = this.view();
       const m = this.metrics();
       const base = COMFORTABLE_LAYOUT;
-      const extra = (v.showPlaces ? PLACE_LINE_HEIGHT : 0) + (v.showRelationships ? m.kin.shift : 0) + (this.birthRow() ? m.birth.shift : 0);
+      const extra = (v.showRelationships ? m.kin.shift : 0) + (this.birthRow() ? m.birth.shift : 0);
       return extra ? { ...base, cardHeight: base.cardHeight + extra } : base;
     },
     { equal: (a, b) => a.cardWidth === b.cardWidth && a.cardHeight === b.cardHeight },
@@ -82,11 +89,6 @@ export class ChartModel {
 
   /** The focus person's current partner, who shares the middle of the chart with them. */
   readonly focusPartnerId = computed<string | undefined>(() => currentPartner(this.store.index(), this.focusId()));
-
-  /** The couple in the middle, for the tree drawn behind the chart. */
-  readonly focusIds = computed<readonly string[]>(() => [this.focusId(), this.focusPartnerId()].filter((id): id is string => !!id), {
-    equal: (a, b) => a.length === b.length && a.every((x, i) => x === b[i]),
-  });
 
   readonly kin = computed<ReadonlyMap<string, Kin>>(() => kinship(this.store.index(), this.focusId()));
 
@@ -188,7 +190,7 @@ export class ChartModel {
     { equal: sameEntries },
   );
 
-  /** The surname each person was born with: as recorded, or their father's in the tree's language. */
+  /** The surname each person was born with: as recorded, or their father's in the chart's language. */
   readonly birthSurnames = computed<ReadonlyMap<string, string>>(() => {
     const index = this.store.index();
     const form = this.language().surnameFor;
@@ -205,15 +207,15 @@ export class ChartModel {
   /** Whether any card has a line for a surname at birth: all cards then make room for one, so rows line up. */
   readonly birthRow = computed(() => [...this.surnameLines().values()].some((l) => !!l.birth));
 
-  readonly colors = computed<ColorAssignment>(() => this.colorsBy(this.view().colorBy));
-
-  /** Family colours, whatever the chart is coloured by: for the family groups of the people list. */
-  readonly familyColors = computed<ColorAssignment>(() => (this.view().colorBy === 'family' ? this.colors() : this.colorsBy('family')));
-
-  private colorsBy(colorBy: ColorBy): ColorAssignment {
+  /**
+   * The colours of the name shields: one per family name, taken from the
+   * surname each person was born with. The `colorBy` a file may carry is no
+   * longer used.
+   */
+  readonly colors = computed<ColorAssignment>(() => {
     const births = this.birthSurnames();
-    return assignColors(this.store.doc(), colorBy, this.layout().ranks, (p) => births.get(p.id) || p.name.surname.trim());
-  }
+    return assignColors(this.store.doc(), 'family', this.layout().ranks, (p) => births.get(p.id) || p.name.surname.trim());
+  });
 
   readonly labels = computed<ReadonlyMap<string, CardLabel>>(() => {
     this.measure.fontsVersion();
@@ -234,19 +236,17 @@ export class ChartModel {
     for (const p of doc.people) {
       const width = (widths.get(p.id) ?? cardWidth) - m.textX - m.padRight;
       const dates = lang.lifespan(p);
-      const place = p.birth?.place ?? p.death?.place ?? '';
       const relation = relations.get(p.id) ?? '';
       const unknown = nameUnknown(p);
       const title = [displayName(p, lang.unknown(p.sex)), relation, dates].filter(Boolean).join(', ');
       const bottom = p.id === focusId ? CORNER_ROOM : 0;
-      const last = view.showPlaces ? 'place' : view.showDates ? 'dates' : birthRow ? 'birth' : 'surname';
+      const last = view.showDates ? 'dates' : birthRow ? 'birth' : 'surname';
       const names = surnames.get(p.id) ?? { surname: p.name.surname.trim(), birth: '' };
       out.set(p.id, {
         given: this.measure.fit(unknown ? lang.unknown(p.sex) : p.name.given.trim(), fonts.given, width - (view.showRelationships ? 0 : top)),
         surname: this.measure.fit(names.surname, fonts.surname, width - (last === 'surname' ? bottom : 0)),
         birth: this.measure.fit(names.birth, fonts.birth, width - (last === 'birth' ? bottom : 0)),
         dates: view.showDates ? this.measure.fit(dates, fonts.dates, width - (last === 'dates' ? bottom : 0)) : '',
-        place: view.showPlaces ? this.measure.fit(place, fonts.place, width - bottom) : '',
         kin: relation ? this.measure.fit(relation, fonts.kin, width - top, m.kin.size * m.kin.spacing) : '',
         initials: initials(p),
         title,

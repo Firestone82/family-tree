@@ -1,4 +1,5 @@
 import { Injectable, effect, inject, untracked } from '@angular/core';
+import { updateView } from '../core/model/operations';
 import { ToastService } from '../core/services/toast';
 import { TreeStore } from '../core/store/tree-store';
 import { serializeTree } from '../core/xml/serializer';
@@ -60,7 +61,8 @@ export class Autosave {
   }
 
   private write(): void {
-    const xml = serializeTree(this.store.doc());
+    // As DocumentActions.xml(): with the language the chart is in.
+    const xml = serializeTree(updateView(this.store.doc(), { language: this.i18n.code() }));
     try {
       localStorage.setItem(TREE_KEY, xml);
       void idbDelete().catch(() => undefined);

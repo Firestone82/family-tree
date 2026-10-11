@@ -40,8 +40,8 @@ export class PeopleList {
 
   protected readonly families = computed(() => {
     const q = normalizeQuery(this.query());
-    const colors = this.model.colors().byPerson;
-    const familyColors = new Map(this.model.familyColors().legend.map((e) => [e.key, e.tincture]));
+    const colors = this.model.colors();
+    const familyColors = new Map(colors.legend.map((e) => [e.key, e.tincture]));
     const chosen = this.ui.familyOpen();
     const hidden = this.model.hidden();
     const people = this.store.doc().people.filter((p) => !q || searchText(p).includes(q));
@@ -49,7 +49,7 @@ export class PeopleList {
       id: p.id,
       name: this.i18n.sortName(p),
       dates: this.i18n.lifespan(p),
-      tincture: colors.get(p.id) ?? 'argent',
+      tincture: colors.byPerson.get(p.id) ?? 'argent',
       offChart: hidden.has(p.id),
     });
     return groupByFamily(people, this.i18n.compare).map((g) => ({

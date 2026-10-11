@@ -1,4 +1,14 @@
 <div class="stage">
+  @if (canPopOut() && svg()) {
+    <div class="pop-out">
+      <button type="button" class="btn small" (click)="popOut.emit()" [title]="t('print.window.open')">
+        <stemma-icon name="popOut" [size]="15" />{{ t('print.window.openShort') }}
+      </button>
+      @if (popOutFailed()) {
+        <p class="pop-out-failed" role="alert">{{ t('print.window.blocked') }}</p>
+      }
+    </div>
+  }
   @if (svg()) {
     <div #sheet class="sheet" [style.--ratio]="ratio()" role="img" [attr.aria-label]="t('print.previewOf', { summary: summary() })"></div>
   } @else {

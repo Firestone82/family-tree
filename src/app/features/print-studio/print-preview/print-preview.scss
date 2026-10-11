@@ -9,10 +9,38 @@
 }
 
 .stage {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 0;
   container-type: size;
+}
+
+/* Opens the page in a window of its own, over the top right corner of the light table. */
+.pop-out {
+  position: absolute;
+  top: -14px;
+  right: -16px;
+  z-index: 1;
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  max-width: 300px;
+
+  .btn {
+    box-shadow: var(--shadow-1);
+  }
+}
+
+.pop-out-failed {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--sheet);
+  color: var(--danger);
+  font-size: var(--text-xs);
+  box-shadow: var(--shadow-1);
 }
 
 .sheet {

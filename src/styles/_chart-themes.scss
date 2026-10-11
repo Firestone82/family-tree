@@ -1,13 +1,12 @@
-// The chart's colours, one set per chart style. Components of the chart use
-// only these tokens (--t-*), so a new style is a new set here.
+// The chart's colours, one set for light and one for dark. Components of the
+// chart use only these tokens (--t-*). The chart follows the app: light or
+// dark as chosen under Appearance (<html data-theme>), or as the device is set
+// when that is Auto (state/theme.ts).
 //
-// auto     follows light or dark mode on the device
-// archive  grey-green board with index-card names
-// print    white paper and black ink
-// night    dark slate
+// light  grey-green board with index-card names
+// dark   dark slate
 
 @use 'sass:list';
-@use 'sass:map';
 
 $light: (
   paper: #e9ece6,
@@ -28,16 +27,6 @@ $light: (
   male: #2f5d9e,
   female: #a33d5e,
   break: #b0443a,
-  tree-wood: #b9a787,
-  tree-bark: #a08d6b,
-  tree-shade: #cbd8c0,
-  tree-body: #d6e0cc,
-  tree-top: #e0e8d7,
-  tree-light: #e5ecdd,
-  leaf-0: #9bb38a,
-  leaf-1: #abc19b,
-  leaf-2: #bbcfac,
-  leaf-3: #cadbbc,
 );
 
 $dark: (
@@ -59,48 +48,6 @@ $dark: (
   male: #84aae2,
   female: #e08aa3,
   break: #e88a7c,
-  tree-wood: #3b3630,
-  tree-bark: #4a443c,
-  tree-shade: #18211b,
-  tree-body: #1b251e,
-  tree-top: #1f2a22,
-  tree-light: #212d24,
-  leaf-0: #2b3e2f,
-  leaf-1: #324836,
-  leaf-2: #3a523f,
-  leaf-3: #435d48,
-);
-
-$print: map.merge(
-  $light,
-  (
-    paper: #ffffff,
-    dots: transparent,
-    band: rgb(0 0 0 / 0.028),
-    card: #ffffff,
-    card-edge: #8f989e,
-    shadow: transparent,
-    ink: #12161a,
-    muted: #3d464d,
-    faint: #6b757c,
-    line: #2a3137,
-    line-path: #000000,
-    select: #12161a,
-    kin: #6b4318,
-    card-male: #eef3f9,
-    card-female: #fbeef1,
-    break: #9a2b20,
-    tree-wood: #e0d7cb,
-    tree-bark: #d0c4b5,
-    tree-shade: #e5f0e1,
-    tree-body: #ecf4e9,
-    tree-top: #f2f8f0,
-    tree-light: #f5faf3,
-    leaf-0: #c0dcb6,
-    leaf-1: #cce4c3,
-    leaf-2: #d8ebd0,
-    leaf-3: #e2f0dc,
-  )
 );
 
 // Family colours on the name shields.
@@ -206,16 +153,11 @@ stemma-chart {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) stemma-chart[data-style='auto'] {
+  :root:not([data-theme='light']) stemma-chart {
     @include tokens($dark, $tinctures-dark, #66717a);
   }
 }
 
-:root[data-theme='dark'] stemma-chart[data-style='auto'],
-stemma-chart[data-style='night'] {
+:root[data-theme='dark'] stemma-chart {
   @include tokens($dark, $tinctures-dark, #66717a);
-}
-
-stemma-chart[data-style='print'] {
-  @include tokens($print, $tinctures-light, #9aa3a9);
 }

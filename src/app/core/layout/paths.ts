@@ -4,9 +4,17 @@
  * geometry can be animated before it is turned into paths.
  */
 import { Family, LineStyle } from '../model/types';
-import { LayoutConnector, LayoutDrop, LayoutLink, LayoutUnion, Pt } from './layout-types';
+import { LayoutConnector, LayoutDrop, LayoutLink, LayoutPass, LayoutUnion, Pt } from './layout-types';
 
 const r1 = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * How much higher a curved bridge between partners peaks than the square one
+ * runs: a share of its height, but never more than a few units, so that it
+ * stays clear of the family lines in the gap above the row.
+ */
+const ARCH_RISE = 0.6;
+const ARCH_RISE_MAX = 9;
 
 /** A polyline with rounded corners. */
 export function roundedPath(points: Pt[], radius: number): string {
@@ -62,10 +70,47 @@ export function hCurve(a: Pt, b: Pt): string {
   return `M${r1(a.x)},${r1(a.y)}C${r1(mx)},${r1(a.y)} ${r1(mx)},${r1(b.y)} ${r1(b.x)},${r1(b.y)}`;
 }
 
-export function unionLinePath(union: LayoutUnion, radius = 8): string {
+/**
+ * The line between partners. With curved lines, the line of partners who
+ * have someone standing between them arches over in one sweep.
+ */
+export function unionLinePath(union: LayoutUnion, style: LineStyle = 'square', radius = 8): string {
   if (!union.line.length) return '';
   if (union.mode === 'split') return hCurve(union.line[0], union.line[union.line.length - 1]);
+  if (union.mode === 'bridge' && style === 'curved' && union.line.length === 5) return bridgeArch(union.line);
   return roundedPath(union.line, radius);
+}
+
+/**
+ * A bridge (see buildUnion in layout.ts) rises from the top of one partner's
+ * card, runs over the people between them and comes down beside the other:
+ * drawn curved, it rises and comes down in one arch, then goes straight on to
+ * the marker between the cards. The arch is a little higher than the square
+ * line runs, so that it reads as an arch even over a long way.
+ */
+function bridgeArch(line: Pt[]): string {
+  const [rise, top, over, marker, end] = line;
+  const height = rise.y - top.y;
+  const peak = height + Math.sign(height) * Math.min(Math.abs(height) * ARCH_RISE, ARCH_RISE_MAX);
+  // A cubic whose ends sit on the cards' top edge peaks at three quarters of its control points' height.
+  const lift = (peak * 4) / 3;
+  const c = r1(rise.y - lift);
+  return `M${r1(rise.x)},${r1(rise.y)}C${r1(rise.x)},${c} ${r1(over.x)},${c} ${r1(over.x)},${r1(rise.y)}L${r1(marker.x)},${r1(marker.y)}L${r1(end.x)},${r1(end.y)}`;
+}
+
+/**
+ * Where the note about a couple ("married", "divorced") goes: under the
+ * couple, on the line that leads to their children, `gap` below their cards;
+ * for partners in different rows, under the marker on the line between them.
+ * Null when there is no couple (a single parent, parents not known).
+ */
+export function unionLabelPoint(u: LayoutUnion, cardHeight: number, gap = 14): Pt | null {
+  if (u.mode === 'gap' || u.mode === 'bridge') return { x: u.cx, y: u.cy + cardHeight / 2 + gap };
+  if (u.mode === 'split') {
+    const at = unionMarkerPoint(u);
+    return at ? { x: at.x, y: at.y + gap + 5 } : null;
+  }
+  return null;
 }
 
 export interface DropPath {
@@ -105,6 +150,9 @@ export function connectorPaths(c: LayoutConnector, style: LineStyle, radius = 10
       }
       return { childId: drop.childId, relation: drop.relation, d: stemCurve(c.stem, c.clearY, target) };
     }
+    if (style === 'curved' && drop.through?.length) {
+      return { childId: drop.childId, relation: drop.relation, d: curveThrough(c, drop.through, target) };
+    }
     // A single child almost straight below its parents gets a straight line.
     const stem = single && Math.abs(drop.x - c.stem.x) <= SNAP ? { x: drop.x, y: c.stem.y } : c.stem;
     const pts: Pt[] = [stem];
@@ -118,6 +166,22 @@ export function connectorPaths(c: LayoutConnector, style: LineStyle, radius = 10
     }
     return { childId: drop.childId, relation: drop.relation, d: roundedPath(pts, radius) };
   });
+}
+
+/**
+ * A curved line to a child more than one row down. It runs straight down
+ * between the cards of every row it passes, and turns in an S-curve in each
+ * gap between the rows, where the square line has its bends.
+ */
+function curveThrough(c: LayoutConnector, through: readonly LayoutPass[], target: Pt): string {
+  const first = through[0];
+  let d = stemCurve(c.stem, c.clearY, { x: first.x, y: first.from });
+  for (let k = 0; k < through.length; k++) {
+    const pass = through[k];
+    const next = k + 1 < through.length ? { x: through[k + 1].x, y: through[k + 1].from } : target;
+    d += `L${r1(pass.x)},${r1(pass.to)}${sCurveTo({ x: pass.x, y: pass.to }, next)}`;
+  }
+  return d;
 }
 
 /** Each child's birth group in a family, for drawing twins (see connectorPaths). */

@@ -13,7 +13,6 @@ const GLIDE_MS = 380;
 export class LayoutMotion {
   /** The layout on screen; during a glide, a frame between two layouts. */
   readonly displayed = signal<LayoutResult>(EMPTY_LAYOUT);
-  readonly gliding = signal(false);
   /** Set when the person moves the chart during a glide; the view then stops following. */
   userMoved = false;
 
@@ -48,14 +47,12 @@ export class LayoutMotion {
       return false;
     }
     const start = performance.now();
-    this.gliding.set(true);
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / GLIDE_MS);
       const e = easeInOut(t);
       this.displayed.set(lerpLayout(from, target, e));
       if (!this.userMoved) this.viewport.view.set({ x: v0.x - shift.x * v0.k * e, y: v0.y - shift.y * v0.k * e, k: v0.k });
       this.frame = t < 1 ? requestAnimationFrame(step) : null;
-      if (t >= 1) this.gliding.set(false);
     };
     this.frame = requestAnimationFrame(step);
     return false;
@@ -64,6 +61,5 @@ export class LayoutMotion {
   stop(): void {
     if (this.frame !== null) cancelAnimationFrame(this.frame);
     this.frame = null;
-    this.gliding.set(false);
   }
 }

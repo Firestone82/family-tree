@@ -69,7 +69,9 @@ export class AddRelativePanel {
   });
 
   protected readonly sex = computed<Sex>(() => this.sexInput() ?? defaultSex(this.index(), this.request()));
-  protected readonly surname = computed(() => this.surnameInput() ?? defaultSurname(this.index(), this.request(), this.sex(), this.otherParentId()));
+  protected readonly surname = computed(
+    () => this.surnameInput() ?? defaultSurname(this.index(), this.request(), this.sex(), this.otherParentId(), this.i18n.code()),
+  );
   protected readonly sharedSiblings = computed(() => {
     const s = sharedSiblings(this.index(), this.request());
     return s ? { names: this.names(s.people), optional: s.optional } : null;

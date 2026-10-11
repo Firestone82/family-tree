@@ -27,6 +27,7 @@ import {
   LayoutDrop,
   LayoutLink,
   LayoutOptions,
+  LayoutPass,
   LayoutPlaceholder,
   LayoutResult,
   LayoutRow,
@@ -2178,17 +2179,20 @@ function assemble(parts: ComponentLayout[], o: LayoutOptions, moved: Readonly<Re
           continue;
         }
         const points: Pt[] = [];
+        const through: LayoutPass[] = [];
         let x = chain[0].x + chain[0].width / 2;
         const startX = x;
         for (let k = 0; k < chain.length; k++) {
           const nextX = k + 1 < chain.length ? chain[k + 1].x + chain[k + 1].width / 2 : target.x;
-          const y = lineY(chain[k].rank, `jog:${chainKey(f.id, link.childId)}:${chain[k].rank}`);
+          const rank = chain[k].rank;
+          const y = lineY(rank, `jog:${chainKey(f.id, link.childId)}:${rank}`);
+          through.push({ x, from: rowY[rank], to: rowY[rank] + rowH[rank] });
           points.push({ x, y });
           if (Math.abs(nextX - x) > 0.5) points.push({ x: nextX, y });
           x = nextX;
         }
         points.push(target);
-        drops.push({ childId: link.childId, relation: link.relation, x: startX, points });
+        drops.push({ childId: link.childId, relation: link.relation, x: startX, points, through });
       }
       if (drops.length) {
         connectors.push({ familyId: f.id, stem, clearY, barY: lineY(union.rank, `bar:${f.id}`), drops });

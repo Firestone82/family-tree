@@ -1,9 +1,5 @@
 <div class="field">
-  <span class="field-label" id="lang-app">{{ t('language.app') }}</span>
-  <stemma-segmented labelledBy="lang-app" [compact]="true" [options]="appOptions" [value]="appLanguage()" (valueChange)="appLanguageChange.emit($event)" />
-</div>
-<div class="field">
-  <span class="field-label" id="lang-chart">{{ t('language.chart') }}</span>
-  <stemma-segmented labelledBy="lang-chart" [compact]="true" [options]="chartOptions" [value]="chartValue()" (valueChange)="chartLanguageChange.emit($event)" />
-  <span class="hint">{{ t('language.chartHint') }}</span>
+  <span class="field-label" id="lang-app">{{ t('language.title') }}</span>
+  <stemma-segmented labelledBy="lang-app" [compact]="true" [options]="options" [value]="i18n.code()" (valueChange)="i18n.setLanguage($event)" />
+  <span class="hint">{{ t('language.hint') }}</span>
 </div>

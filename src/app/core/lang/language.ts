@@ -1,8 +1,8 @@
 /**
- * Words drawn on the chart and in prints: relationship names, marriage notes,
- * lifespans and page captions. This is the language of the tree itself, chosen
- * per tree; the app's interface has its own translations (src/app/i18n), which
- * borrow the dates from here.
+ * Words drawn on the chart and in prints: relationship names, notes about
+ * couples, lifespans and page captions, in the language chosen for the app.
+ * The app's interface has its own translations (src/app/i18n), which borrow
+ * the dates from here.
  *
  * To add a language, write a pack like en.ts and add it to LANGUAGES below.
  */
@@ -24,8 +24,9 @@ export interface ChartLanguage {
   /** How someone is related, in lower case: "mother", "wife's cousin". */
   kin(kin: Kin, sex: Sex): string;
   /**
-   * A short note under a couple, for a status their marker does not spell out:
-   * "engaged", "divorced". Dates and places of a wedding are not shown.
+   * A short note under a couple, saying how they stand: "married", "engaged",
+   * "divorced". Empty when that is not known. Dates and places of a wedding
+   * are not shown.
    */
   union(status: RelationshipStatus): string;
   /** "1898 – 1971", "b. 1993", "† 1971". */
@@ -46,14 +47,10 @@ export interface ChartLanguage {
   summary(generations: number, people: number): string;
   /** "Drawn 10 October 2026". */
   drawn(date: Date): string;
-  /** "Generation". */
-  generation: string;
   /** "Family tree", as a caption. */
   familyTree: string;
   /** Legend entry for names that appear only once. */
   others: string;
-  /** Legend entries when the colours show sex: "Women", "Men". */
-  sexes: Record<Sex, string>;
   /** A sibling born together with someone, in lower case: "twin sister", "triplet brother". `count` is how many were born. */
   bornWith(sex: Sex, count: number): string;
 }
@@ -78,7 +75,7 @@ export function kinLabel(language: ChartLanguage, kin: Kin | undefined, sex: Sex
 
 /**
  * The surname for a card, and the line under it when the surname at birth was
- * different: "Ashworth" and "née Barlow" in the tree's language. `birth` is the
+ * different: "Ashworth" and "née Barlow" in the given language. `birth` is the
  * surname at birth when it is known from elsewhere (the father's).
  */
 export function surnameLinesIn(language: ChartLanguage, person: Person, birth = person.name.birthSurname?.trim() ?? ''): { surname: string; birth: string } {

@@ -1,18 +1,36 @@
 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the backdrop closes the studio; Escape does the same from the keyboard -->
-<dialog #dialog class="studio" aria-labelledby="studio-title" (close)="onClosed()" (click)="onBackdrop($event)">
+<dialog
+  #dialog
+  class="studio"
+  [class.docked]="preview.isOpen()"
+  [class.left]="preview.side() === 'left'"
+  aria-labelledby="studio-title"
+  (close)="onClosed()"
+  (click)="onBackdrop($event)"
+>
   <header class="head">
     <h2 id="studio-title">{{ t('print.title') }}</h2>
     <button type="button" class="btn ghost icon" (click)="model.close()" [attr.aria-label]="t('common.close')"><stemma-icon name="close" /></button>
   </header>
 
   <div class="body">
-    <stemma-print-preview
-      [svg]="model.poster()?.svg ?? null"
-      [width]="model.poster()?.width ?? 0"
-      [height]="model.poster()?.height ?? 0"
-      [summary]="model.summary()"
-      [note]="model.sizeNote()"
-    />
+    @if (preview.isOpen()) {
+      <div class="away" role="status">
+        <p>{{ t('print.window.note') }}</p>
+        <button type="button" class="btn small" (click)="preview.close()"><stemma-icon name="popIn" [size]="15" />{{ t('print.window.back') }}</button>
+      </div>
+    } @else {
+      <stemma-print-preview
+        [svg]="model.poster()?.svg ?? null"
+        [width]="model.poster()?.width ?? 0"
+        [height]="model.poster()?.height ?? 0"
+        [summary]="model.summary()"
+        [note]="model.sizeNote()"
+        [canPopOut]="preview.available()"
+        [popOutFailed]="preview.failed()"
+        (popOut)="preview.open()"
+      />
+    }
 
     <div class="controls">
       <stemma-style-picker [current]="model.themeId()" (choose)="model.set({ theme: $event })" />

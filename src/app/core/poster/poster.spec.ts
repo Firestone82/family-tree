@@ -7,6 +7,7 @@ import { pdfFromJpeg } from './pdf';
 import { flipLayout, renderPoster } from './poster';
 import { RELATIVES, relativesOf, relativesSettings, scopeDocument } from './scope';
 import { POSTER_THEMES, posterTheme } from './themes';
+import { threeSpouses } from '../testing/fixtures';
 
 const measure = (text: string, font: string) => text.length * Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 12) * 0.5;
 
@@ -88,7 +89,7 @@ describe('printed page', () => {
     }
   });
 
-  it('writes relationship names, couples and surnames at birth in the tree language', () => {
+  it('writes relationship names, couples and surnames at birth in the language the tree was saved in', () => {
     const cs = { ...doc, view: { ...doc.view, language: 'cs' } };
     const result = renderPoster({ doc: cs, settings: settings(), measure });
     expect(result.svg).toContain('Tchyně');
@@ -98,6 +99,33 @@ describe('printed page', () => {
     expect(result.svg).not.toContain('sňatek 1991');
     // The surname at birth on its own line.
     expect(result.svg).toContain('>roz. Nováková<');
+  });
+
+  it('writes in the language it is given, whatever the tree was saved in', () => {
+    const result = renderPoster({ doc, settings: settings(), language: 'cs', measure });
+    expect(doc.view.language).toBe('en');
+    expect(result.svg).toContain('Tchyně');
+    expect(result.svg).not.toContain('Mother-in-law');
+  });
+
+  it('notes how every couple stands, whatever the settings saved in the file', () => {
+    const result = renderPoster({ doc, settings: settings({ showUnions: false }), measure });
+    for (const note of ['married', 'divorced', 'engaged']) expect(result.svg).toContain(`>${note}<`);
+  });
+
+  it('draws curved lines when the chart has them, in styles with lines of their own kind', () => {
+    const lineData = (svg: string) => [...svg.matchAll(/<path d="([^"]+)" fill="none" stroke="#4b3828"/g)].map((m) => m[1]);
+    const square = lineData(renderPoster({ doc, settings: settings({ theme: 'heirloom' }), measure }).svg);
+    const curved = lineData(renderPoster({ doc, settings: settings({ theme: 'heirloom' }), lines: 'curved', measure }).svg);
+    expect(square.some((d) => d.includes('Q'))).toBe(true);
+    expect(curved.length).toBe(square.length);
+    expect(curved.some((d) => d.includes('Q'))).toBe(false);
+    expect(curved.some((d) => d.includes('C'))).toBe(true);
+    // Botanical draws branches of its own, whatever the chart has.
+    const now = new Date(2026, 9, 11);
+    const botanical = (lines: 'square' | 'curved') =>
+      renderPoster({ doc: threeSpouses(), settings: settings({ theme: 'botanical' }), lines, measure, now }).svg;
+    expect(botanical('curved')).toBe(botanical('square'));
   });
 
   it('makes a card wider for a relationship name that does not fit', () => {

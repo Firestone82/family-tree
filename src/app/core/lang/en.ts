@@ -139,10 +139,14 @@ function shortDate(date: GenDate | undefined): string {
 }
 
 const UNION_NOTES: Partial<Record<RelationshipStatus, string>> = {
+  married: 'married',
   engaged: 'engaged',
-  divorced: 'divorced',
+  partners: 'partners',
   separated: 'separated',
+  divorced: 'divorced',
+  widowed: 'widowed',
   annulled: 'annulled',
+  ended: 'parted',
 };
 
 function union(status: RelationshipStatus): string {
@@ -177,10 +181,8 @@ export const english: ChartLanguage = {
     return capitalize(`${g}, ${p}`);
   },
   drawn: (date) => `Drawn ${longDate(date)}`,
-  generation: 'Generation',
   familyTree: 'Family tree',
   others: 'Other names',
-  sexes: { female: 'Women', male: 'Men', other: 'Other', unknown: 'Not recorded' },
   bornWith: (sex, count) => {
     const word = ['', '', 'twin', 'triplet', 'quadruplet', 'quintuplet', 'sextuplet'][count];
     if (!word) return bySex(sex, 'brother', 'sister', 'sibling');

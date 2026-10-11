@@ -19,13 +19,6 @@
   <rect class="backdrop" width="100%" height="100%" />
 
   <g class="world" [attr.transform]="worldTransform()">
-    @if (view.showTree) {
-      @if (store.doc().background; as picture) {
-        <g stemmaBackdropPicture [layout]="model.layout()" [picture]="picture" [faded]="gliding()"></g>
-      } @else {
-        <g stemmaTreeBackdrop [layout]="model.layout()" [focusIds]="model.focusIds()" [faded]="gliding()"></g>
-      }
-    }
     @if (view.showGenerations) {
       <g stemmaBands [layout]="displayed()"></g>
     }

@@ -1,4 +1,4 @@
-import { LayoutConnector, LayoutResult, Pt } from '../../core/layout/layout-types';
+import { LayoutConnector, LayoutPass, LayoutResult, Pt } from '../../core/layout/layout-types';
 
 export const EMPTY_LAYOUT: LayoutResult = {
   cards: [],
@@ -20,6 +20,8 @@ export function easeInOut(t: number): number {
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const lerpPt = (a: Pt, b: Pt, t: number): Pt => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) });
 const lerpPts = (a: Pt[], b: Pt[], t: number): Pt[] => (a.length === b.length ? b.map((p, i) => lerpPt(a[i], p, t)) : b);
+const lerpPasses = (a: LayoutPass[] | undefined, b: LayoutPass[] | undefined, t: number): LayoutPass[] | undefined =>
+  a && b && a.length === b.length ? b.map((p, i) => ({ x: lerp(a[i].x, p.x, t), from: lerp(a[i].from, p.from, t), to: lerp(a[i].to, p.to, t) })) : b;
 
 /**
  * A frame between two layouts. Things present in both move; new things appear
@@ -78,9 +80,16 @@ function lerpConnector(a: LayoutConnector | undefined, b: LayoutConnector, t: nu
     barY: lerp(a.barY, b.barY, t),
     drops: b.drops.map((d) => {
       const p = dropsA.get(d.childId);
-      if (p && p.points.length === d.points.length) return { ...d, x: lerp(p.x, d.x, t), points: lerpPts(p.points, d.points, t) };
+      if (p && p.points.length === d.points.length) {
+        return { ...d, x: lerp(p.x, d.x, t), points: lerpPts(p.points, d.points, t), through: lerpPasses(p.through, d.through, t) };
+      }
       // A new child's line grows out of the family's stem.
-      return { ...d, x: lerp(a.stem.x, d.x, t), points: d.points.map((pt) => ({ x: lerp(a.stem.x, pt.x, t), y: pt.y })) };
+      return {
+        ...d,
+        x: lerp(a.stem.x, d.x, t),
+        points: d.points.map((pt) => ({ x: lerp(a.stem.x, pt.x, t), y: pt.y })),
+        through: d.through?.map((pass) => ({ ...pass, x: lerp(a.stem.x, pass.x, t) })),
+      };
     }),
   };
 }

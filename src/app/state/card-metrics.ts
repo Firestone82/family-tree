@@ -8,10 +8,9 @@ export interface CardMetrics {
   photo: { r: number };
   given: { size: number; y: number };
   surname: { size: number; y: number };
-  /** The surname at birth under the surname ("née Barlow"); `shift` moves the dates and place down to make room. */
+  /** The surname at birth under the surname ("née Barlow"); `shift` moves the dates down to make room. */
   birth: { size: number; y: number; shift: number };
   dates: { size: number; y: number };
-  place: { size: number; y: number };
   /**
    * The relationship line at the top; `shift` moves the other lines down to make
    * room. `spacing` is its letter spacing in em, as in person-card.scss: a card
@@ -30,7 +29,6 @@ export const CARD_METRICS: CardMetrics = {
   surname: { size: 13.5, y: 42 },
   birth: { size: 11.5, y: 57, shift: 14 },
   dates: { size: 11.5, y: 58 },
-  place: { size: 11, y: 72 },
   kin: { size: 10.5, y: 18, shift: 12, spacing: 0.04 },
   radius: 5,
 };
@@ -45,7 +43,6 @@ export function cardFonts(m: CardMetrics) {
     surname: `500 ${m.surname.size}px ${FONT_SMALL_CAPS}`,
     birth: `500 ${m.birth.size}px ${FONT_SMALL_CAPS}`,
     dates: `400 ${m.dates.size}px ${FONT_SANS}`,
-    place: `400 ${m.place.size}px ${FONT_SANS}`,
     kin: `500 ${m.kin.size}px ${FONT_SMALL_CAPS}`,
   };
 }

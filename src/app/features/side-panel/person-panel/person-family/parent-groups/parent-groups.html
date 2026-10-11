@@ -16,7 +16,7 @@
     <div class="adds">
       @if (g.canAdd) {
         <button type="button" class="link-btn" (click)="people.startAdd('parent', person().id)">
-          <stemma-icon name="plus" [size]="14" />{{ t('parents.add') }}
+          <stemma-icon name="parent" [size]="15" />{{ t('parents.add') }}
         </button>
       }
       <button type="button" class="link-btn" (click)="people.unlinkFromParents(g.family.id, person().id)">
@@ -29,7 +29,7 @@
     <span class="group-label">{{ t('parents.biological') }}</span>
     <div class="adds">
       <button type="button" class="link-btn" (click)="people.startAdd('parent', person().id)">
-        <stemma-icon name="plus" [size]="14" />{{ t('parents.add') }}
+        <stemma-icon name="parent" [size]="15" />{{ t('parents.add') }}
       </button>
     </div>
   </div>

@@ -1,6 +1,6 @@
 /**
  * Where a person's surname at birth comes from when the file does not say:
- * their father's surname, in the form for their sex in the tree's language
+ * their father's surname, in the form for their sex in the language of the chart
  * (in Czech a daughter of Mikula is Mikulová).
  */
 import { surnameKey } from './names';

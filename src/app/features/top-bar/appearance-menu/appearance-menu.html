@@ -15,18 +15,7 @@
 @if (open()) {
   <div class="menu" role="dialog" [attr.aria-label]="t('appearance.title')">
     <stemma-look-options [view]="view()" (settingsChange)="set($event)" />
-    <stemma-language-options
-      [appLanguage]="i18n.code()"
-      [chartLanguage]="chartLanguage()"
-      (appLanguageChange)="i18n.setLanguage($event)"
-      (chartLanguageChange)="set({ language: $event })"
-    />
+    <stemma-language-options />
     <stemma-display-options [view]="view()" (settingsChange)="set($event)" />
-    @if (view().showTree) {
-      <div class="background">
-        <span class="field-label">{{ t('background.title') }}</span>
-        <stemma-background-picker idPrefix="look-bg" />
-      </div>
-    }
   </div>
 }

@@ -1,4 +1,4 @@
-import { relationshipStatus } from '../model/relationship';
+import { RELATIONSHIP_STATUSES, relationshipStatus } from '../model/relationship';
 import { Family, Person, Sex } from '../model/types';
 import { chartLanguage, LANGUAGES, surnameLinesIn } from './language';
 
@@ -27,10 +27,10 @@ describe('chart languages', () => {
     expect(en.fullDate(undefined)).toBe('');
   });
 
-  it('notes how a couple stands, without dates or places', () => {
+  it('notes how every couple stands, without dates or places', () => {
     const married = fam({ start: { date: { value: '1952-07-19' }, place: 'Lyon, France' } });
-    expect(en.union(relationshipStatus(married))).toBe('');
-    expect(cs.union(relationshipStatus(married))).toBe('');
+    expect(en.union(relationshipStatus(married))).toBe('married');
+    expect(cs.union(relationshipStatus(married))).toBe('manželé');
 
     const divorced = fam({ start: { date: { value: '1979' } }, end: { reason: 'divorce', date: { value: '1988' } } });
     expect(en.union(relationshipStatus(divorced))).toBe('divorced');
@@ -40,7 +40,16 @@ describe('chart languages', () => {
     expect(relationshipStatus(engaged)).toBe('engaged');
     expect(en.union('engaged')).toBe('engaged');
     expect(cs.union('engaged')).toBe('zasnoubení');
-    expect(en.union('partners')).toBe('');
+    expect(en.union('partners')).toBe('partners');
+    expect(en.union('widowed')).toBe('widowed');
+
+    // Every status a couple can be given has a note, in every language; only "not known" has none.
+    for (const language of LANGUAGES) {
+      for (const status of RELATIONSHIP_STATUSES) {
+        if (status === 'unknown') expect(language.union(status)).toBe('');
+        else expect(language.union(status), `${language.code} ${status}`).not.toBe('');
+      }
+    }
   });
 
   it('puts the surname at birth on a line of its own', () => {

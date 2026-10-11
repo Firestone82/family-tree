@@ -427,6 +427,29 @@ describe('layout', () => {
     expect(lineProblems(result, partnersIn(engagedCousins())).crossings).toBe(0);
   });
 
+  it('tells curved lines where they pass the rows between, so that they bend only between rows', () => {
+    for (const doc of [engagedCousins(), marriedIn(['S1', 'S2', 'S3'])]) {
+      const result = computeLayout(doc);
+      const long = result.connectors.flatMap((c) => c.drops).filter((d) => d.points.length > 1);
+      expect(long.length).toBeGreaterThan(0);
+      for (const drop of long) {
+        const card = result.cards.find((c) => c.personId === drop.childId)!;
+        expect(drop.through?.length).toBeGreaterThan(0);
+        for (const pass of drop.through!) {
+          // Each pass is a row between the parents and the child, and no card in it stands in the way.
+          expect(pass.from).toBeLessThan(card.y);
+          expect(pass.to).toBeGreaterThanOrEqual(pass.from);
+          const inRow = result.cards.filter((c) => c.y >= pass.from - 0.5 && c.y + c.h <= pass.to + 0.5);
+          for (const c of inRow) expect(pass.x <= c.x || pass.x >= c.x + c.w).toBe(true);
+        }
+      }
+      // Drawn curved, no line has the rounded corners of a square one.
+      for (const c of result.connectors) {
+        for (const p of connectorPaths(c, 'curved')) expect(p.d, p.d).not.toContain('Q');
+      }
+    }
+  });
+
   it('lays out the same again when given its own hint', () => {
     const doc = engagedCousins();
     const first = computeLayout(doc);

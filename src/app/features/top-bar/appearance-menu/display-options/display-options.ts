@@ -4,18 +4,15 @@ import { I18n } from '../../../../i18n/i18n';
 import { MessageKey } from '../../../../i18n/locales';
 import { Switch } from '../../../../shared/switch/switch';
 
-type DisplayKey = 'showRelationships' | 'showUnions' | 'showDates' | 'showPlaces' | 'showPhotos' | 'showGenerations' | 'showSex' | 'sexColors' | 'showTree';
+type DisplayKey = 'showRelationships' | 'showDates' | 'showPhotos' | 'showGenerations' | 'showSex' | 'sexColors';
 
 const SWITCHES: readonly { key: DisplayKey; label: MessageKey }[] = [
   { key: 'showRelationships', label: 'display.relationships' },
-  { key: 'showUnions', label: 'display.unions' },
   { key: 'showDates', label: 'display.dates' },
-  { key: 'showPlaces', label: 'display.places' },
   { key: 'showPhotos', label: 'display.photos' },
   { key: 'showGenerations', label: 'display.generations' },
   { key: 'showSex', label: 'display.sexSymbol' },
   { key: 'sexColors', label: 'display.sexColors' },
-  { key: 'showTree', label: 'display.tree' },
 ];
 
 /** What the chart shows: on/off switches. */

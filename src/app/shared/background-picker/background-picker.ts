@@ -10,9 +10,9 @@ import { SegmentOption, Segmented } from '../segmented/segmented';
 const SHARP_FOR_POSTERS = 4000;
 
 /**
- * Choosing a picture of one's own for behind the chart, instead of the drawn
- * tree: how it fills the area, how strong it is, and going back to the tree.
- * Used in the appearance menu and in the print studio.
+ * Choosing a picture of one's own for behind the printed tree, instead of the
+ * drawn one: how it fills the area, how strong it is, and going back to the
+ * drawn tree. Used in the print studio; the chart on screen has no background.
  */
 @Component({
   selector: 'stemma-background-picker',
@@ -26,7 +26,7 @@ export class BackgroundPicker {
   protected readonly actions = inject(BackgroundActions);
   protected readonly t = inject(I18n).t;
 
-  /** Prefix for the ids of the fields, so the picker can appear in two places. */
+  /** Prefix for the ids of the fields, so they are unique on the page. */
   readonly idPrefix = input('bg');
 
   protected readonly picture = computed(() => this.store.doc().background);

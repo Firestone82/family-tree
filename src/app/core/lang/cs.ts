@@ -246,10 +246,14 @@ function shortDate(date: GenDate | undefined): string {
 }
 
 const UNION_NOTES: Partial<Record<RelationshipStatus, string>> = {
+  married: 'manželé',
   engaged: 'zasnoubení',
-  divorced: 'rozvedeni',
+  partners: 'partneři',
   separated: 'odloučeni',
+  divorced: 'rozvedeni',
+  widowed: 'ovdovění',
   annulled: 'sňatek zrušen',
+  ended: 'rozešli se',
 };
 
 function union(status: RelationshipStatus): string {
@@ -292,10 +296,8 @@ export const czech: ChartLanguage = {
   summary: (generations, people) =>
     `${generations} ${plural(generations, 'generace', 'generace', 'generací')}, ${people} ${plural(people, 'osoba', 'osoby', 'osob')}`,
   drawn: (date) => `Nakresleno ${longDate(date)}`,
-  generation: 'Generace',
   familyTree: 'Rodokmen',
   others: 'Ostatní',
-  sexes: { female: 'Ženy', male: 'Muži', other: 'Jiné', unknown: 'Neuvedeno' },
   bornWith: (sex, count) => {
     const word = ['', '', 'dvojče', 'trojče', 'čtyřče', 'paterče', 'šesterče'][count];
     if (!word) return sex === 'male' ? 'bratr' : sex === 'female' ? 'sestra' : 'sourozenec';
