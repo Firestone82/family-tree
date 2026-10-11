@@ -24,7 +24,6 @@ import { Relation, UiState } from '../../state/ui-state';
 import { ArrangeDrag, DRAG_START, blockOf, lowestLineMove, previewLayout } from './arrange';
 import { ArrangeBar } from './arrange-bar/arrange-bar';
 import { ArrangeHandles } from './arrange-handles/arrange-handles';
-import { BackdropPicture } from './backdrop-picture/backdrop-picture';
 import { FamilyLines } from './family-lines/family-lines';
 import { Screen, coupleCentre, fitView, floatOver, revealView } from './framing';
 import { GenerationBands } from './generation-bands/generation-bands';
@@ -35,7 +34,6 @@ import { PersonCard } from './person-card/person-card';
 import { Placeholders } from './placeholders/placeholders';
 import { QuickAdd } from './quick-add/quick-add';
 import { RelativesFilter } from './relatives-filter/relatives-filter';
-import { TreeBackdrop } from './tree-backdrop/tree-backdrop';
 import { Unions } from './unions/unions';
 import { ChartViewport, clampZoom } from './viewport';
 import { ZoomControls } from './zoom-controls/zoom-controls';
@@ -48,26 +46,11 @@ import { ZoomControls } from './zoom-controls/zoom-controls';
  */
 @Component({
   selector: 'stemma-chart',
-  imports: [
-    TreeBackdrop,
-    BackdropPicture,
-    GenerationBands,
-    FamilyLines,
-    Unions,
-    Placeholders,
-    PersonCard,
-    QuickAdd,
-    ZoomControls,
-    RelativesFilter,
-    ArrangeHandles,
-    ArrangeBar,
-    Icon,
-  ],
+  imports: [GenerationBands, FamilyLines, Unions, Placeholders, PersonCard, QuickAdd, ZoomControls, RelativesFilter, ArrangeHandles, ArrangeBar, Icon],
   templateUrl: './tree-chart.html',
   styleUrl: './tree-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    '[attr.data-style]': 'model.view().style',
     '[class.is-panning]': 'gestures.panning()',
     '[class.arranging]': 'ui.arranging()',
     '[class.is-dragging]': '!!drag()',
@@ -100,7 +83,6 @@ export class TreeChart {
   protected readonly size = signal<Screen>({ w: 0, h: 0 });
   /** The layout on screen; between two layouts it is an in-between frame. */
   protected readonly displayed = this.motion.displayed;
-  protected readonly gliding = this.motion.gliding;
   protected readonly flashId = signal<string | null>(null);
 
   /** What is being dragged by hand while arranging, and how far. */

@@ -3,12 +3,12 @@
  * settings, centred on a couple, in a print style, on a sheet of paper.
  * The result is a standalone SVG string; exporting turns it into PNG or PDF.
  */
-import { LegendEntry, Tincture, assignColors } from '../colors/tinctures';
+import { Tincture, assignColors } from '../colors/tinctures';
 import { Kin, kinship } from '../kinship/kinship';
-import { ChartLanguage, chartLanguage, kinLabel, surnameLinesIn } from '../lang/language';
+import { chartLanguage, kinLabel, surnameLinesIn } from '../lang/language';
 import { computeLayout } from '../layout/layout';
 import { COMFORTABLE_LAYOUT, LayoutCard, LayoutOptions, LayoutResult, LayoutUnion, Pt } from '../layout/layout-types';
-import { bornTogether, connectorPaths, linkPath, unionLinePath, unionMarkerPoint } from '../layout/paths';
+import { bornTogether, connectorPaths, linkPath, unionLabelPoint, unionLinePath, unionMarkerPoint } from '../layout/paths';
 import { pictureBox } from '../layout/picture';
 import { unionMark } from '../layout/union-marks';
 import { dateYear } from '../model/dates';
@@ -19,7 +19,7 @@ import { birthSurname } from '../model/surnames';
 import { sexSymbolPath } from '../layout/symbols';
 import { TreeRoom, treeShape } from '../layout/tree-shape';
 import { TreeIndex } from '../model/tree-index';
-import { BackgroundImage, ColorBy, DEFAULT_PRINT, PrintSettings, Sex, TreeDocument, effectivePrint } from '../model/types';
+import { BackgroundImage, DEFAULT_PRINT, LineStyle, PrintSettings, TreeDocument, effectivePrint } from '../model/types';
 import { drawMark } from './marks';
 import { PX_PER_MM, paperSize } from './paper';
 import { CardLine, CardLines, CardLook, CardText, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from './poster-types';
@@ -31,6 +31,10 @@ export interface PosterInput {
   doc: TreeDocument;
   /** Defaults to the document's print settings. */
   settings?: PrintSettings;
+  /** Language of the words on the page, a BCP 47 tag. Defaults to the one the document was saved in. */
+  language?: string;
+  /** Square or curved family lines, as on the chart. Defaults to the print style's own; a style that draws its own lines (Botanical's branches) keeps them. */
+  lines?: LineStyle;
   /** Width of a text in a CSS font (canvas measureText in the browser). */
   measure(text: string, font: string): number;
   now?: Date;
@@ -69,7 +73,7 @@ const DASH: Record<string, string> = { adopted: '5 4', foster: '1.2 3.6', step: 
 export function renderPoster(input: PosterInput): PosterResult {
   const settings: PrintSettings = { ...DEFAULT_PRINT, ...(input.settings ?? effectivePrint(input.doc)) };
   const theme = posterTheme(settings.theme);
-  const language = chartLanguage(input.doc.view.language);
+  const language = chartLanguage(input.language ?? input.doc.view.language);
   const now = input.now ?? new Date();
   const fullIndex = new TreeIndex(input.doc);
   const centerId = pickCenter(input.doc, fullIndex, settings);
@@ -140,7 +144,8 @@ export function renderPoster(input: PosterInput): PosterResult {
     });
   }
 
-  const colors = assignColors(doc, input.doc.view.colorBy, layout.ranks, (p) => births.get(p.id) || p.name.surname.trim(), input.doc);
+  // One colour per family name, as on the chart.
+  const colors = assignColors(doc, 'family', layout.ranks, (p) => births.get(p.id) || p.name.surname.trim(), input.doc);
   const focusIds = [centerId, partnerId].filter((id): id is string => !!id && !!index.person(id));
   const rootIds = new Set<string>(focusIds);
   for (const id of focusIds) for (const a of index.ancestors(id)) rootIds.add(a);
@@ -162,10 +167,12 @@ export function renderPoster(input: PosterInput): PosterResult {
     chart: { x: 0, y: 0, w: 0, h: 0 },
     scale: 1,
     colors: colors.byPerson,
-    legend: colors.legend.map((l) => ({ ...l, label: legendLabel(l, input.doc.view.colorBy, language) })),
+    legend: colors.legend.map((l) => ({ ...l, label: l.key === '' ? language.others : l.label })),
     kin,
     texts,
     lines,
+    // A style that draws its own lines (Botanical's branches) keeps them; the others follow the chart.
+    lineStyle: theme.line.style === 'branch' ? 'square' : (input.lines ?? theme.line.style),
     focusIds,
     rootIds,
     title,
@@ -186,7 +193,8 @@ export function renderPoster(input: PosterInput): PosterResult {
 
   const paper = paperSize(settings.paper);
   const gutter = settings.showGenerations && layout.rows.length ? GUTTER : 0;
-  const unionPad = settings.showUnions ? UNION_LABEL_GAP + 10 : 0;
+  // Room under the bottom row for the notes about couples.
+  const unionPad = UNION_LABEL_GAP + 10;
   // Room above the oldest generation for the crown of the drawn tree (a picture of one's own fills the chart area as it is).
   const picture = settings.showTree ? input.doc.background : undefined;
   const crownPad = settings.showTree && !picture ? cardHeight * 0.8 : 0;
@@ -280,6 +288,8 @@ export function renderPoster(input: PosterInput): PosterResult {
     language.drawn(now),
     ...[...texts.values()].flatMap((t) => [t.kin, t.given, t.surname, t.birth, t.dates, t.place, t.initials]),
     ...ctx.legend.map((l) => l.label),
+    // The notes about couples ("manželé", "rozvedeni").
+    ...ctx.layout.unions.map((u) => ctx.language.union(ctx.status(u.familyId))),
     'IVXLCDM0123456789–·,. ?',
   ].join('');
 
@@ -344,7 +354,7 @@ function drawChart(ctx: PosterContext, gutter: number, room: TreeRoom): string {
   const W = ctx.options.cardWidth;
   const H = ctx.options.cardHeight;
   for (const u of layout.unions) {
-    const d = unionLinePath(u);
+    const d = unionLinePath(u, ctx.lineStyle);
     if (d)
       parts.push(el('path', { d, fill: 'none', stroke: pal.line, 'stroke-width': theme.line.width, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }));
     const at = unionMarkerPoint(u);
@@ -353,34 +363,33 @@ function drawChart(ctx: PosterContext, gutter: number, room: TreeRoom): string {
     parts.push(theme.unionMarker ? theme.unionMarker(ctx, u, mx, my) : defaultUnionMarker(ctx, u, mx, my));
   }
 
-  if (settings.showUnions) {
-    const max = W + ctx.options.partnerGap - 16;
-    for (const u of layout.unions) {
-      if (u.mode !== 'gap' && u.mode !== 'bridge') continue;
-      const fam = ctx.index.family(u.familyId);
-      if (!fam) continue;
-      const label = ctx.fit(ctx.language.union(relationshipStatus(fam)), theme.unionFont, max);
-      if (!label) continue;
-      // Under the couple in the middle, clear of the frame around them.
-      const isFocus = fam.partners.every((p) => ctx.focusIds.includes(p));
-      parts.push(
-        el(
-          'text',
-          {
-            x: u.cx,
-            y: u.cy + H / 2 + UNION_LABEL_GAP + (isFocus && focus ? 9 : 0),
-            'text-anchor': 'middle',
-            ...fontAttrs(theme.unionFont),
-            fill: pal.muted,
-            stroke: pal.paper,
-            'stroke-width': 4.5,
-            'stroke-linejoin': 'round',
-            'paint-order': 'stroke',
-          },
-          text(label),
-        ),
-      );
-    }
+  // How every couple stands: "married", "engaged", "divorced"…
+  const max = W + ctx.options.partnerGap - 16;
+  for (const u of layout.unions) {
+    const fam = ctx.index.family(u.familyId);
+    const at = unionLabelPoint(u, H, UNION_LABEL_GAP);
+    if (!fam || !at) continue;
+    const label = ctx.fit(ctx.language.union(relationshipStatus(fam)), theme.unionFont, max);
+    if (!label) continue;
+    // Under the couple in the middle, clear of the frame around them.
+    const isFocus = u.mode !== 'split' && fam.partners.every((p) => ctx.focusIds.includes(p));
+    parts.push(
+      el(
+        'text',
+        {
+          x: at.x,
+          y: at.y + (isFocus && focus ? 9 : 0),
+          'text-anchor': 'middle',
+          ...fontAttrs(theme.unionFont),
+          fill: pal.muted,
+          stroke: pal.paper,
+          'stroke-width': 4.5,
+          'stroke-linejoin': 'round',
+          'paint-order': 'stroke',
+        },
+        text(label),
+      ),
+    );
   }
 
   for (const p of layout.placeholders) {
@@ -558,10 +567,9 @@ function drawTree(ctx: PosterContext, room: TreeRoom): string {
 
 function defaultConnectors(ctx: PosterContext): string {
   const { theme, layout } = ctx;
-  const style = theme.line.style === 'curved' ? 'curved' : 'square';
   const out: string[] = [];
   for (const c of layout.connectors) {
-    for (const p of connectorPaths(c, style, theme.line.radius, bornTogether(ctx.index.family(c.familyId)))) {
+    for (const p of connectorPaths(c, ctx.lineStyle, theme.line.radius, bornTogether(ctx.index.family(c.familyId)))) {
       out.push(
         el('path', {
           d: p.d,
@@ -672,14 +680,7 @@ function focusRect(ctx: PosterContext): Rect | undefined {
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
 
-/** A legend entry in the chart's language: family names as they are, other groups in words. */
-function legendLabel(entry: LegendEntry, colorBy: ColorBy, language: ChartLanguage): string {
-  if (entry.key === '') return language.others;
-  if (colorBy === 'sex') return language.sexes[entry.key as Sex] ?? entry.label;
-  if (colorBy === 'generation') return `${language.generation} ${entry.label}`;
-  return entry.label;
-}
-
+/** The first and last year anyone on the page was born or died. */
 function yearRange(doc: TreeDocument): { from: number; to: number } | undefined {
   let from = Infinity;
   let to = -Infinity;
@@ -711,7 +712,11 @@ export function flipLayout(L: LayoutResult): LayoutResult {
       stem: fp(c.stem),
       clearY: fy(c.clearY),
       barY: fy(c.barY),
-      drops: c.drops.map((d) => ({ ...d, points: d.points.map(fp) })),
+      drops: c.drops.map((d) => ({
+        ...d,
+        points: d.points.map(fp),
+        through: d.through?.map((t) => ({ x: t.x, from: fy(t.from), to: fy(t.to) })),
+      })),
     })),
     links: L.links.map((l) => ({ ...l, from: fp(l.from), clearY: fy(l.clearY), to: fp(l.to) })),
     rows: L.rows.map((r) => ({ ...r, y: fy(r.y + r.h) })),

@@ -166,21 +166,24 @@ Elements appear in the order shown. All attributes not marked required are optio
 
 ### `<view>`
 
-How the chart is drawn. Every attribute has a default.
+How the chart is drawn. Every attribute has a default. Some are no longer
+used by the app, which reads them, keeps them and writes them back, so that a
+file keeps its settings for the versions of Stemma that use them.
 
 | Attribute | Values | Default |
 | --- | --- | --- |
-| `style` | `auto` (follows light/dark mode), `archive`, `print`, `night` | `auto` |
-| `colorBy` | `family`, `generation`, `sex`, `none` | `family` |
-| `lines` | `square`, `curved` | `square` |
+| `style` | `auto` (follows light/dark mode), `archive`, `print`, `night`. No longer used: light or dark is a setting of the app (Auto, Dark, Light under Appearance), kept in the browser, for the app and the chart alike. Kept and written back. | `auto` |
+| `colorBy` | `family`, `generation`, `sex`, `none`. No longer used: the name shields are always coloured by family. Kept and written back. | `family` |
+| `lines` | `square`, `curved`. Prints use them too, in the styles whose lines are square or curved. | `square` |
 | `density` | `comfortable`, `compact`. No longer used: the chart always has the same spacing. Kept and written back. | `comfortable` |
-| `showDates`, `showPlaces`, `showPhotos`, `showGenerations` | `true`, `false` | `true`, `false`, `true`, `true` |
+| `showDates`, `showPhotos`, `showGenerations` | `true`, `false` | `true` |
+| `showPlaces` | `true`, `false`. No longer used: the chart does not show places (prints can, see `<print>`). Kept and written back. | `false` |
 | `showRelationships` (1.1) | Relationship names on the cards. `true`, `false` | `true` |
-| `showUnions` (1.1) | A note under each couple whose marker does not say it all: engaged, divorced, separated, annulled. (Earlier versions also show the dates and places of the wedding.) `true`, `false` | `true` |
-| `language` (1.1) | Language of the words on the chart and in prints, a BCP 47 tag: `en`, `cs`. Languages the app does not have are kept and drawn in English. | `en` |
+| `showUnions` (1.1) | `true`, `false`. No longer used: every couple has a note saying how they stand (married, engaged, partners, separated, divorced, widowed, annulled, parted), on the chart and in prints. (Earlier versions show a note only where the marker does not say it all, and only when this is `true`; the first ones also show the dates and places of the wedding.) Kept and written back. | `true` |
+| `language` (1.1) | The language of the words on the chart when the file was saved, a BCP 47 tag: `en`, `cs`. Stemma has one language for the app and the chart, a setting of the browser, and writes it here when it saves; earlier versions draw the chart and prints in it (in English when they do not have it). | `en` |
 | `showSex` (1.2) | A ♂ or ♀ symbol in the top right corner of each card. `true`, `false` | `true` |
 | `sexColors` (1.2) | Cards tinted by sex: blue for men, pink for women. `true`, `false` | `false` |
-| `showTree` (1.2) | A drawn tree behind the chart: its crown over the ancestors, its trunk at the person in the middle, its roots down to the descendants. When the file has a `<background>` (1.3), that picture is shown instead. `true`, `false` | `true` |
+| `showTree` (1.2) | `true`, `false`. No longer used: the chart on screen has no tree or picture behind it; prints have their own `showTree` (see `<print>`), which this is the default for. (Earlier versions draw a tree behind the chart, or the `<background>` picture.) Kept and written back. | `true` |
 | `branches` (1.4) | How far out to the sides the chart reaches from the direct line of the home person and their partner, as on `<print>`: `0` the direct line, `1` adds siblings, aunts, uncles, nieces and nephews, `2` first cousins, `all` everyone. A number above 2 is kept and shown as `all`. | `all` |
 | `inLawFamilies` (1.4) | With `branches="all"`: `false` leaves out everyone who has no relationship name as seen from the home person, such as the parents of a sister-in-law or a fiancé's family; the partners of everyone shown stay. `true`, `false` | `true` |
 
@@ -195,8 +198,8 @@ app's *Who is shown* setting has five steps, stored as these two attributes:
 | Relatives | `all` | `false` |
 | Everyone | `all` | `true` |
 
-The language of the app's own menus and panels is a setting of the browser, not
-of the tree, and is not stored in the file.
+The language of the app, its menus and panels and the words on the chart, is a
+setting of the browser, not of the tree; the file records it in `language`.
 
 ### `<person>`
 
@@ -289,13 +292,14 @@ How the tree is printed and exported. Every attribute is optional.
 | `branches` | Side branches: `0` the direct line, `1` adds siblings, aunts, uncles, nieces and nephews, `2` first cousins, `all` everyone. Partners of everyone included are always included. | `all` |
 | `inLawFamilies` (1.4) | With `branches="all"`: `false` prints only the people with a relationship name as seen from the person in the middle, and their partners, as on `<view>`. | `true` |
 | `title`, `subtitle` | Text for the page, instead of the tree's title and the generated summary. | |
-| `showDates`, `showPlaces`, `showPhotos`, `showUnions`, `showRelationships`, `showGenerations` | What the printed cards and page show. | `true` |
-| `showSex`, `sexColors`, `showTree` (1.2) | Sex symbols, cards tinted by sex, and the tree behind the chart, as on `<view>`. | `true`, `false`, `true` |
+| `showDates`, `showPlaces`, `showPhotos`, `showUnions`, `showRelationships`, `showGenerations` | What the printed cards and page show. `showUnions` is no longer used: every couple has a note saying how they stand. | `true` |
+| `showSex`, `sexColors`, `showTree` (1.2) | Sex symbols, cards tinted by sex, and the tree drawn behind the family (or the `<background>` picture). | `true`, `false`, `true` |
 
 ### `<background>` (1.3)
 
-A picture of the person's own, drawn behind the chart and in prints instead of
-the generated tree, wherever `showTree` is on. It is embedded like a photo.
+A picture of the person's own, drawn behind the tree in prints instead of the
+generated tree, when `showTree` is on in the print settings (earlier versions
+also draw it behind the chart). It is embedded like a photo.
 
 | Attribute | Values | Default |
 | --- | --- | --- |

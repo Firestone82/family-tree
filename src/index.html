@@ -9,6 +9,13 @@
     <meta name="theme-color" content="#e9ece6" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#13181c" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <script>
+      // Light or dark, as chosen under Appearance (state/theme.ts), before the app starts.
+      try {
+        var theme = JSON.parse(localStorage.getItem('stemma.prefs.v1') || '{}').theme;
+        if (theme === 'light' || theme === 'dark') document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <app-root></app-root>

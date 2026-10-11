@@ -3,8 +3,9 @@
  * the keys here. Messages use {name} placeholders; messages with a {count}
  * can give plural forms ({ one, few, many, other }) for the language's rules.
  *
- * Words drawn on the chart and in prints (relationship names, marriages,
- * lifespans) are not here: they belong to the tree's chart language, see core/lang.
+ * Words drawn on the chart and in prints (relationship names, notes about
+ * couples, lifespans) are not here: they come from the language pack of the
+ * app's language, see core/lang.
  */
 import { Message } from '../message';
 
@@ -81,27 +82,16 @@ export const en = {
   'appearance.title': 'Appearance',
   'look.style': 'Style',
   'look.style.auto': 'Auto',
-  'look.style.archive': 'Archive',
-  'look.style.print': 'Print',
-  'look.style.night': 'Night',
   'look.style.autoHint': 'Follows light or dark mode on this device.',
-  'look.style.archiveHint': 'Grey-green board with index-card names.',
-  'look.style.printHint': 'White paper and black ink, best for printing.',
-  'look.style.nightHint': 'Dark slate, easy on the eyes at night.',
-  'look.colour': 'Colour the shields by',
-  'look.colour.family': 'Family',
-  'look.colour.generation': 'Generation',
-  'look.colour.sex': 'Sex',
-  'look.colour.none': 'None',
+  'look.style.dark': 'Dark',
+  'look.style.light': 'Light',
   'look.lines': 'Lines',
   'look.lines.square': 'Square',
   'look.lines.curved': 'Curved',
-  'language.app': 'Language of the app',
-  'language.chart': 'Words on the chart',
-  'language.chartHint': 'Relationship names, marriages and dates on the chart and in prints. Saved with the tree.',
+  'language.title': 'Language',
+  'language.hint': 'For the app, and for the words on the chart and in prints.',
 
   'display.relationships': 'Relationship names',
-  'display.unions': 'Marriages',
   'display.dates': 'Dates',
   'display.places': 'Places',
   'display.photos': 'Photos',
@@ -126,7 +116,7 @@ export const en = {
   'background.fit.cover': 'Fill the area',
   'background.fit.contain': 'Whole picture',
   'background.opacity': 'Strength',
-  'background.set': 'The picture is behind the chart.',
+  'background.set': 'The picture is behind the tree on the page.',
   'background.removed': 'Back to the drawn tree.',
   'background.error.unsupported': 'Choose an SVG, PDF, JPEG, PNG or WebP file.',
   'background.error.empty': 'That picture is empty.',
@@ -232,14 +222,7 @@ export const en = {
   'overview.tip.keys': 'With someone selected, the arrow keys move to their parents, children and neighbours.',
   'overview.tip.save': 'Everything is kept in this browser as you work. Use File, then Save as XML, to keep a copy you can open in any version of Stemma.',
   'legend.familyTitle': 'Family colours',
-  'legend.generationTitle': 'Generations',
-  'legend.sexTitle': 'Colours',
-  'legend.generationN': 'Generation {n}',
   'legend.others': 'Others',
-  'legend.sex.female': 'Women',
-  'legend.sex.male': 'Men',
-  'legend.sex.other': 'Other',
-  'legend.sex.unknown': 'Not recorded',
   'legend.familyHint':
     'Each family name gets its own colour on the name shields. Women and men of one family share it (Novák and Nováková count as one name), and people take the colour of the surname they were born with.',
 
@@ -506,6 +489,15 @@ export const en = {
   'print.preview': 'Preview of the page',
   'print.previewOf': 'Preview: {summary}',
   'print.preparing': 'Preparing the page…',
+  'print.window.open': 'Open the page in a window of its own',
+  'print.window.openShort': 'New window',
+  'print.window.title': 'Preview: {title}',
+  'print.window.note':
+    'The page is open in a window of its own and changes as you change the settings. Put it where you like: the settings keep to the other side of the screen.',
+  'print.window.back': 'Show the page here',
+  'print.window.blocked': 'The browser did not open the window. Allow pop-up windows for this site and try again.',
+  'print.window.fit': 'Whole page',
+  'print.window.actual': 'Actual size',
   'print.size.paper': '{paper} {orientation}, {w} × {h} mm',
   'print.size.px': '{w} × {h} px',
   'print.people.all': { one: '{count} person', other: '{count} people' },
@@ -535,7 +527,6 @@ export const en = {
   'print.all': 'All',
   'print.none': 'None',
   'print.cards': 'On the page',
-  'print.language': 'Language',
   'print.paper': 'Paper',
   'print.size': 'Size',
   'print.fit': 'Fit to the tree',

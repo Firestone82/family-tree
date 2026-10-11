@@ -10,7 +10,7 @@ import { ChartLanguage } from '../lang/language';
 import { LayoutCard, LayoutOptions, LayoutResult, LayoutUnion } from '../layout/layout-types';
 import { RelationshipStatus } from '../model/relationship';
 import { TreeIndex } from '../model/tree-index';
-import { Person, PrintSettings, TreeDocument } from '../model/types';
+import { LineStyle, Person, PrintSettings, TreeDocument } from '../model/types';
 
 export interface FontSpec {
   /** CSS font-family list; only the bundled faces (Alegreya, Alegreya SC, Alegreya Sans) are embedded in exports. */
@@ -153,6 +153,8 @@ export interface PosterContext {
   texts: ReadonlyMap<string, CardText>;
   /** Which optional lines the cards have. */
   lines: CardLines;
+  /** Square or curved family lines (see PosterInput.lines). */
+  lineStyle: LineStyle;
   /** The person in the middle and their partner. */
   focusIds: readonly string[];
   /** The couple in the middle and all their ancestors (the roots, in a tree that grows upwards). */

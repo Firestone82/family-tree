@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { ColorBy, LineStyle, TreeStyle, ViewSettings } from '../../../../core/model/types';
+import { LineStyle, ViewSettings } from '../../../../core/model/types';
 import { I18n } from '../../../../i18n/i18n';
 import { SegmentOption, Segmented } from '../../../../shared/segmented/segmented';
+import { THEME_CHOICES, Theme, ThemeChoice } from '../../../../state/theme';
 
-/** The chart's style, what colours the name shields, and the lines. */
+/** Light or dark (a setting of this browser), and the chart's lines (saved with the tree). */
 @Component({
   selector: 'stemma-look-options',
   imports: [Segmented],
@@ -13,36 +14,12 @@ import { SegmentOption, Segmented } from '../../../../shared/segmented/segmented
 })
 export class LookOptions {
   protected readonly t = inject(I18n).t;
+  protected readonly theme = inject(Theme);
 
   readonly view = input.required<ViewSettings>();
   readonly settingsChange = output<Partial<ViewSettings>>();
 
-  protected readonly styles = computed<SegmentOption<TreeStyle>[]>(() => [
-    { value: 'auto', label: this.t('look.style.auto') },
-    { value: 'archive', label: this.t('look.style.archive') },
-    { value: 'print', label: this.t('look.style.print') },
-    { value: 'night', label: this.t('look.style.night') },
-  ]);
-
-  protected readonly styleHint = computed(() => {
-    switch (this.view().style) {
-      case 'auto':
-        return this.t('look.style.autoHint');
-      case 'archive':
-        return this.t('look.style.archiveHint');
-      case 'print':
-        return this.t('look.style.printHint');
-      case 'night':
-        return this.t('look.style.nightHint');
-    }
-  });
-
-  protected readonly colors = computed<SegmentOption<ColorBy>[]>(() => [
-    { value: 'family', label: this.t('look.colour.family') },
-    { value: 'generation', label: this.t('look.colour.generation') },
-    { value: 'sex', label: this.t('look.colour.sex') },
-    { value: 'none', label: this.t('look.colour.none') },
-  ]);
+  protected readonly styles = computed<SegmentOption<ThemeChoice>[]>(() => THEME_CHOICES.map((value) => ({ value, label: this.t(`look.style.${value}`) })));
 
   protected readonly lines = computed<SegmentOption<LineStyle>[]>(() => [
     { value: 'square', label: this.t('look.lines.square') },

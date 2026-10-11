@@ -12,6 +12,11 @@
   min-width: 92px;
 }
 
+/* In the studio kept to the right (the page in a window of its own): two buttons a row. */
+:host-context(.docked) .btn {
+  flex: 1 1 calc(50% - 4px);
+}
+
 @media (max-width: 860px) {
   :host {
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));

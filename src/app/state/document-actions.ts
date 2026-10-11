@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { updateMeta } from '../core/model/operations';
+import { updateMeta, updateView } from '../core/model/operations';
 import { sampleDocument } from '../core/model/sample';
 import { emptyDocument } from '../core/model/types';
 import { Autosave } from './autosave';
@@ -117,8 +117,9 @@ export class DocumentActions {
     }
   }
 
+  /** The tree as XML. It records the language of the chart, for older versions of Stemma, which draw the chart in it. */
   xml(): string {
-    return serializeTree(this.store.doc());
+    return serializeTree(updateView(this.store.doc(), { language: this.i18n.code() }));
   }
 
   /** Saves through a download, or shows the XML to copy where downloads of .xml are not allowed. */

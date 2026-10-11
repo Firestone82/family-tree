@@ -73,7 +73,7 @@
   }
 
   <div class="form-actions">
-    <button type="submit" class="btn primary" [disabled]="!canSubmit()"><stemma-icon name="plus" [size]="16" />{{ submitLabel() }}</button>
+    <button type="submit" class="btn primary" [disabled]="!canSubmit()"><stemma-icon [name]="req.relation" [size]="17" />{{ submitLabel() }}</button>
     <button type="button" class="btn" (click)="cancel()">{{ t('common.cancel') }}</button>
   </div>
 </form>

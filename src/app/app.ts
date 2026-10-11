@@ -10,6 +10,7 @@ import { TopBar } from './features/top-bar/top-bar';
 import { TreeChart } from './features/tree-chart/tree-chart';
 import { DocumentActions } from './state/document-actions';
 import { Shortcuts } from './state/shortcuts';
+import { Theme } from './state/theme';
 import { UiState } from './state/ui-state';
 
 /** The app: a bar on top, the chart with the side panel, and the dialogs over them. */
@@ -34,6 +35,8 @@ export class App {
   protected readonly isEmpty = computed(() => this.store.doc().people.length === 0);
 
   constructor() {
+    // Started with the app, so the light or dark choice applies from the first frame.
+    inject(Theme);
     this.documents.restore();
   }
 }

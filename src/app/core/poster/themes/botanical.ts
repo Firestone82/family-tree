@@ -7,6 +7,7 @@ import { LayoutCard, LayoutUnion, Pt } from '../../layout/layout-types';
 import { yearSpan } from '../../lang/language';
 import { centerline, leaves, sprig, taperedPath } from '../branches';
 import { CardLook, FontSpec, PageBlock, PosterContext, PosterTheme, Rect, UNKNOWN_DASH } from '../poster-types';
+import { unionLabelPoint } from '../../layout/paths';
 import { unionMark } from '../../layout/union-marks';
 import { el, fontAttrs, hash, n, seededRandom, text } from '../svg';
 import { SANS, SERIF, SMALL_CAPS } from './fonts';
@@ -217,8 +218,10 @@ export const botanical: PosterTheme = {
     const { layout } = c;
     const H = c.options.cardHeight;
     const avoid: Rect[] = layout.cards.map((card) => ({ x: card.x, y: card.y, w: card.w, h: card.h }));
-    if (c.settings.showUnions) {
-      for (const u of layout.unions) avoid.push({ x: u.cx - 70, y: u.cy + H / 2 + 2, w: 140, h: 18 });
+    // Leaves keep clear of the notes about couples.
+    for (const u of layout.unions) {
+      const at = unionLabelPoint(u, H, 15);
+      if (at) avoid.push({ x: at.x - 70, y: at.y - 13, w: 140, h: 18 });
     }
     const roots: string[] = [];
     const branches: string[] = [];

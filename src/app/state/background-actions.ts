@@ -7,7 +7,7 @@ import { BackgroundImage, TreeDocument } from '../core/model/types';
 import { I18n } from '../i18n/i18n';
 import { MessageKey } from '../i18n/locales';
 
-/** The picture behind the chart: choosing one, how it is placed, and going back to the drawn tree. */
+/** The picture behind the tree in prints: choosing one, how it is placed, and going back to the drawn tree. */
 @Injectable({ providedIn: 'root' })
 export class BackgroundActions {
   private readonly store = inject(TreeStore);
@@ -27,9 +27,8 @@ export class BackgroundActions {
       const before = this.store.doc().background;
       this.store.update((doc) => ({
         ...doc,
-        // A new picture keeps how the last one was placed, and is shown.
+        // A new picture keeps how the last one was placed.
         background: before ? { ...picture, fit: before.fit, opacity: before.opacity } : picture,
-        view: { ...doc.view, showTree: true },
       }));
       this.toast.show(this.i18n.t('background.set'));
     } catch (e) {

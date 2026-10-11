@@ -6,11 +6,11 @@
     [disabled]="!needsParents()"
     [title]="needsParents() ? t('person.addParent') : t('person.parentsFull')"
   >
-    <stemma-icon name="plus" [size]="16" />{{ t('relation.parent') }}
+    <stemma-icon name="parent" [size]="21" />{{ t('relation.parent') }}
   </button>
-  <button type="button" class="btn" (click)="add.emit('partner')"><stemma-icon name="plus" [size]="16" />{{ t('relation.partner') }}</button>
-  <button type="button" class="btn" (click)="add.emit('child')"><stemma-icon name="plus" [size]="16" />{{ t('relation.child') }}</button>
-  <button type="button" class="btn" (click)="add.emit('sibling')"><stemma-icon name="plus" [size]="16" />{{ t('relation.sibling') }}</button>
+  <button type="button" class="btn" (click)="add.emit('partner')"><stemma-icon name="partner" [size]="21" />{{ t('relation.partner') }}</button>
+  <button type="button" class="btn" (click)="add.emit('child')"><stemma-icon name="child" [size]="21" />{{ t('relation.child') }}</button>
+  <button type="button" class="btn" (click)="add.emit('sibling')"><stemma-icon name="sibling" [size]="21" />{{ t('relation.sibling') }}</button>
 </div>
 @if (facts().length) {
   <div class="facts">

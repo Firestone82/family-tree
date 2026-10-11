@@ -54,7 +54,4 @@
 @if (l.dates) {
   <svg:text class="dates" [attr.font-size]="m.dates.size" [attr.x]="m.textX" [attr.y]="m.dates.y + lifeShift()">{{ l.dates }}</svg:text>
 }
-@if (l.place) {
-  <svg:text class="place" [attr.font-size]="m.place.size" [attr.x]="m.textX" [attr.y]="m.place.y + lifeShift()">{{ l.place }}</svg:text>
-}
 <svg:title>{{ l.title }}</svg:title>

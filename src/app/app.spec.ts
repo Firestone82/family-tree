@@ -39,7 +39,17 @@ describe('App', () => {
     expect(localStorage.getItem('stemma.tree.v1')).toContain('<title>Renamed</title>');
   });
 
-  it('speaks the language chosen for the app', async () => {
+  it('notes how every couple on the chart stands', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const notes = [...el.querySelectorAll('stemma-chart text.label')].map((t) => t.textContent?.trim());
+    expect(notes).toContain('married');
+    expect(notes).toContain('divorced');
+    expect(notes).toContain('engaged');
+  });
+
+  it('speaks the language chosen for the app, on the chart too', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     TestBed.inject(I18n).setLanguage('cs');
@@ -47,5 +57,9 @@ describe('App', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('stemma-sample-note')?.textContent).toContain('ukázková rodina');
     expect(document.documentElement.lang).toBe('cs');
+    // The example tree was saved with English words on the chart; the chart follows the app.
+    const kin = [...el.querySelectorAll('stemma-chart text.kin')].map((t) => t.textContent?.trim());
+    expect(kin).toContain('Otec');
+    expect([...el.querySelectorAll('stemma-chart text.label')].map((t) => t.textContent?.trim())).toContain('manželé');
   });
 });

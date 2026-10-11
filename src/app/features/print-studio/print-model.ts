@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { bloodRelatives } from '../../core/kinship/kinship';
-import { updatePrint, updateView } from '../../core/model/operations';
+import { updatePrint } from '../../core/model/operations';
 import { relationshipStatus } from '../../core/model/relationship';
 import { DEFAULT_PRINT, PrintSettings, effectivePrint } from '../../core/model/types';
 import { PAPERS, PX_PER_MM } from '../../core/poster/paper';
@@ -42,7 +42,6 @@ export class PrintModel {
   readonly busy = signal<PrintOutput | null>(null);
 
   readonly settings = computed<PrintSettings>(() => ({ ...DEFAULT_PRINT, ...effectivePrint(this.store.doc()) }));
-  readonly chartLanguage = computed(() => this.store.doc().view.language);
 
   /** The page, drawn only while the studio is open and the fonts can be measured. */
   readonly poster = computed<PosterResult | null>(() => {
@@ -50,7 +49,8 @@ export class PrintModel {
     this.measure.fontsVersion();
     const doc = this.store.doc();
     if (!doc.people.length) return null;
-    return renderPoster({ doc, settings: this.settings(), measure: (t, f) => this.measure.width(t, f) });
+    // The words on the page are in the app's language, and the lines are square or curved as on the chart.
+    return renderPoster({ doc, settings: this.settings(), language: this.i18n.code(), lines: doc.view.lines, measure: (t, f) => this.measure.width(t, f) });
   });
 
   readonly themeId = computed(() => this.poster()?.theme.id ?? this.settings().theme);
@@ -138,11 +138,6 @@ export class PrintModel {
 
   set(patch: Partial<PrintSettings>): void {
     this.store.update((doc) => updatePrint(doc, patch), 'print');
-  }
-
-  /** The words on the chart are a setting of the tree, shared with the screen. */
-  setChartLanguage(code: string): void {
-    this.store.update((doc) => updateView(doc, { language: code }));
   }
 
   /** Waits for the fonts of all print styles, so text is measured with the real letters. */

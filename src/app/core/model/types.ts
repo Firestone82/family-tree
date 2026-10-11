@@ -123,29 +123,42 @@ export type ColorBy = 'family' | 'generation' | 'sex' | 'none';
 export type LineStyle = 'square' | 'curved';
 export type Density = 'comfortable' | 'compact';
 
-/** How the chart is drawn. Saved in the file so a tree reopens looking the same. */
+/**
+ * How the chart is drawn. Saved in the file so a tree reopens looking the same.
+ * Settings marked "no longer used" are read, kept and written back, for the
+ * versions of the app that use them (see docs/xml-format.md).
+ */
 export interface ViewSettings {
+  /** No longer used: light or dark is a setting of the app, kept in the browser (state/theme.ts). */
   style: TreeStyle;
+  /** No longer used: the name shields are always coloured by family. */
   colorBy: ColorBy;
+  /** Square or curved lines, on the chart and in prints. */
   lines: LineStyle;
+  /** No longer used: every tree is drawn with the same spacing. */
   density: Density;
   showDates: boolean;
+  /** No longer used: the chart does not show places; prints have their own setting. */
   showPlaces: boolean;
   showPhotos: boolean;
   showGenerations: boolean;
   /** Relationship names on the cards (Mother, Cousin...), relative to the home person. Format 1.1. */
   showRelationships: boolean;
-  /** Marriage and partnership dates, places and status beside each couple. Format 1.1. */
+  /** No longer used: every couple has a note saying how they stand. Format 1.1. */
   showUnions: boolean;
   /** A symbol for each person's sex in the corner of their card. Format 1.2. */
   showSex: boolean;
   /** Cards tinted by sex: blue for men, rose for women. Format 1.2. */
   sexColors: boolean;
-  /** A drawn tree behind the chart: trunk at the centred couple, branches to their ancestors. Format 1.2. */
+  /**
+   * No longer used on the chart, which has nothing behind it; the default for
+   * the drawn tree (or picture) behind the family in prints. Format 1.2.
+   */
   showTree: boolean;
   /**
-   * Language of the words drawn on the chart and in prints, as a BCP 47 tag ('en', 'cs').
-   * Languages this version does not have are kept and drawn in English. Format 1.1.
+   * The language of the words on the chart when the tree was saved, as a BCP 47
+   * tag ('en', 'cs'). The app has one language, a setting of the browser, and
+   * writes it here when it saves; older versions draw the chart in it. Format 1.1.
    */
   language: string;
   /**
@@ -200,6 +213,7 @@ export interface PrintSettings {
   showDates: boolean;
   showPlaces: boolean;
   showPhotos: boolean;
+  /** No longer used: every couple has a note saying how they stand. */
   showUnions: boolean;
   showRelationships: boolean;
   showGenerations: boolean;
@@ -215,8 +229,8 @@ export interface PrintSettings {
 export type BackgroundFit = 'cover' | 'contain';
 
 /**
- * A picture of the person's own behind the chart, instead of the drawn tree
- * (format 1.3). Shown wherever `showTree` is on.
+ * A picture of the person's own behind the printed family, instead of the
+ * drawn tree (format 1.3). Shown where the print settings' `showTree` is on.
  */
 export interface BackgroundImage {
   /** The picture as a data: URL (SVG, PNG, JPEG or WebP; a PDF is converted when it is chosen). */

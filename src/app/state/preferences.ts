@@ -6,8 +6,10 @@ const KEY = 'stemma.prefs.v1';
 export interface Prefs {
   /** The person has seen and dismissed the note about the example family. */
   sampleNoteDismissed?: boolean;
-  /** Language of the app, as a language code. */
+  /** Language of the app and of the words on the chart and in prints, as a language code. */
   language?: string;
+  /** Light or dark look of the app and the chart: 'auto' (follows the device), 'light' or 'dark'. */
+  theme?: string;
 }
 
 /**

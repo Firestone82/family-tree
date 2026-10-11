@@ -23,13 +23,14 @@ export function defaultSex(index: TreeIndex, req: AddRequest): Sex {
 
 /**
  * The surname a new relative most likely has: the father's, passed down the
- * family, in the form for their sex in the tree's language (a Czech daughter
+ * family, in the form for their sex in the given language (a Czech daughter
  * of Mikula is Mikulová). A new mother's or partner's surname is not guessed.
+ * The app passes its own language; without one, the tree's saved language is used.
  */
-export function defaultSurname(index: TreeIndex, req: AddRequest, sex: Sex, otherParentId: string | null): string {
+export function defaultSurname(index: TreeIndex, req: AddRequest, sex: Sex, otherParentId: string | null, language = index.doc.view.language): string {
   const me = index.person(req.personId);
   if (!me) return '';
-  const form = chartLanguage(index.doc.view.language).surnameFor;
+  const form = chartLanguage(language).surnameFor;
   const known = maleSurnames(index);
   const adapt = (surname: string) => (surname ? form(surname, sex, known) : '');
   switch (req.relation) {

@@ -1,6 +1,6 @@
-@if (entries().length && title()) {
+@if (entries().length) {
   <section class="panel-section">
-    <h3>{{ title() }}</h3>
+    <h3>{{ t('legend.familyTitle') }}</h3>
     <ul class="legend">
       @for (l of entries(); track l.key) {
         <li>
@@ -10,8 +10,6 @@
         </li>
       }
     </ul>
-    @if (colorBy() === 'family') {
-      <p class="hint">{{ t('legend.familyHint') }}</p>
-    }
+    <p class="hint">{{ t('legend.familyHint') }}</p>
   </section>
 }

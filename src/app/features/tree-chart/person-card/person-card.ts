@@ -50,7 +50,7 @@ export class PersonCard {
   readonly pick = output<Event>();
 
   protected readonly shift = computed(() => (this.kinRow() ? this.metrics().kin.shift : 0));
-  /** Where the dates and the place move to, below the line for the surname at birth. */
+  /** Where the dates move to, below the line for the surname at birth. */
   protected readonly lifeShift = computed(() => this.shift() + (this.birthRow() ? this.metrics().birth.shift : 0));
   protected readonly transform = computed(() => {
     const c = this.card();

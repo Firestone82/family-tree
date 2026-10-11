@@ -1,5 +1,21 @@
+/** A small card, as on the chart: a rounded rectangle, for the icons of relatives. */
+function card(x: number, y: number, w: number, h: number, r = 1.5): string {
+  return `M${x + r},${y}h${w - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 -${r},${r}h${2 * r - w}a${r},${r} 0 0 1 -${r},-${r}v${2 * r - h}a${r},${r} 0 0 1 ${r},-${r}Z`;
+}
+
+// The relatives one can add, drawn like the chart: the person as an empty card,
+// the relative as a filled one (ICON_FILLS) above, below or beside them.
+const UPPER = card(6, 2.5, 12, 6.5);
+const LOWER = card(6, 15, 12, 6.5);
+const BESIDE = card(14, 8.5, 8, 7);
+const UNDER_BAR = card(14, 12, 8, 7);
+
 /** 24×24 line icons drawn for this app, as path data. */
 export const ICONS: Record<string, string> = {
+  parent: UPPER + LOWER + 'M12 9v6',
+  child: UPPER + LOWER + 'M12 9v6',
+  partner: card(2, 8.5, 8, 7) + BESIDE + 'M10 12h4',
+  sibling: 'M12 4.5V8M6 12V8h12v4' + card(2, 12, 8, 7) + UNDER_BAR,
   plus: 'M12 5v14M5 12h14',
   minus: 'M5 12h14',
   undo: 'M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11',
@@ -39,6 +55,16 @@ export const ICONS: Record<string, string> = {
   move: 'M12 4v16M4 12h16M9.5 6.5 12 4l2.5 2.5M9.5 17.5 12 20l2.5-2.5M6.5 9.5 4 12l2.5 2.5M17.5 9.5 20 12l-2.5 2.5',
   swap: 'M5 8.5h13M14.5 5 18 8.5 14.5 12M19 15.5H6M9.5 12 6 15.5 9.5 19',
   reset: 'M5 12a7 7 0 1 0 2.05-4.95M5 4.5v3.5h3.5',
+  popOut: 'M13.5 4.5h6v6M19.5 4.5l-8 8M17.5 13.5v5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5V8A1.5 1.5 0 0 1 6 6.5h5',
+  popIn: 'M4.5 6A1.5 1.5 0 0 1 6 4.5h12A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18ZM14.5 4.5v15M7.5 9h4M7.5 12h4',
   printer:
     'M7 8.5V4h10v4.5M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5.5A1.5 1.5 0 0 1 5 8.5h14a1.5 1.5 0 0 1 1.5 1.5v5.5A1.5 1.5 0 0 1 19 17h-2M7 14h10v6H7zM16.5 11.5h.01',
+};
+
+/** Parts of icons that are filled rather than drawn in outline: the relative being added. */
+export const ICON_FILLS: Record<string, string> = {
+  parent: UPPER,
+  child: LOWER,
+  partner: BESIDE,
+  sibling: UNDER_BAR,
 };

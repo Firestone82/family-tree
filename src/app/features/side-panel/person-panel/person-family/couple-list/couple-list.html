@@ -53,7 +53,7 @@
         }
         <div class="adds">
           <button type="button" class="link-btn" (click)="addChild(c.partner?.id ?? null)">
-            <stemma-icon name="plus" [size]="14" />{{ c.partner ? t('couples.addChildWith', { name: c.partner.given }) : t('couples.addChild') }}
+            <stemma-icon name="child" [size]="15" />{{ c.partner ? t('couples.addChildWith', { name: c.partner.given }) : t('couples.addChild') }}
           </button>
         </div>
       </div>
@@ -63,11 +63,11 @@
   }
   <div class="adds">
     <button type="button" class="link-btn" (click)="people.startAdd('partner', person().id)">
-      <stemma-icon name="plus" [size]="14" />{{ t('couples.addPartner') }}
+      <stemma-icon name="partner" [size]="15" />{{ t('couples.addPartner') }}
     </button>
     @if (couples().length) {
       <button type="button" class="link-btn" (click)="people.startAdd('child', person().id)">
-        <stemma-icon name="plus" [size]="14" />{{ t('couples.addChild') }}
+        <stemma-icon name="child" [size]="15" />{{ t('couples.addChild') }}
       </button>
     }
   </div>

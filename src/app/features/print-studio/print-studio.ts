@@ -8,12 +8,15 @@ import { OutputActions } from './output-actions/output-actions';
 import { PaperOptions } from './paper-options/paper-options';
 import { PrintModel } from './print-model';
 import { PrintPreview } from './print-preview/print-preview';
+import { PreviewWindow } from './preview-window/preview-window';
 import { ReachOptions } from './reach-options/reach-options';
 import { StylePicker } from './style-picker/style-picker';
 
 /**
  * Print and export: the page on the left, and on the right the print style,
- * who is in the middle, how far the tree reaches, what the cards show and the paper.
+ * who is in the middle, how far the tree reaches, what the cards show and the
+ * paper. The page can have a window of its own (PreviewWindow); the studio
+ * then keeps to the right of the screen with the settings.
  */
 @Component({
   selector: 'stemma-print-studio',
@@ -25,6 +28,7 @@ import { StylePicker } from './style-picker/style-picker';
 export class PrintStudio {
   private readonly ui = inject(UiState);
   protected readonly model = inject(PrintModel);
+  protected readonly preview = inject(PreviewWindow);
   protected readonly t = inject(I18n).t;
 
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');

@@ -42,9 +42,6 @@ export const COMFORTABLE_LAYOUT: LayoutOptions = {
   junctionRadius: 7,
 };
 
-/** Extra card height when places are shown. */
-export const PLACE_LINE_HEIGHT = 14;
-
 export interface LayoutCard {
   personId: string;
   /** Top-left corner. */
@@ -95,6 +92,19 @@ export interface LayoutDrop {
   x: number;
   /** Points after the bar; the last one is the top centre of the child's card. */
   points: Pt[];
+  /**
+   * For a line to a child more than one row down: the rows it passes on the
+   * way, in order, with where it runs between their cards (x) and where it
+   * enters and leaves each row (y). A curved line turns only between them.
+   */
+  through?: LayoutPass[];
+}
+
+/** Where a line passes a row between its cards: straight down at `x`, from `from` to `to`. */
+export interface LayoutPass {
+  x: number;
+  from: number;
+  to: number;
 }
 
 /** The lines from a family to its children: a stem, a bar and one drop per child. */

@@ -4,8 +4,8 @@
   </button>
 }
 @if (!parentsFull()) {
-  <button type="button" (click)="add.emit('parent')"><stemma-icon name="plus" [size]="14" [stroke]="2" />{{ t('relation.parent') }}</button>
+  <button type="button" (click)="add.emit('parent')"><stemma-icon name="parent" [size]="16" [stroke]="2" />{{ t('relation.parent') }}</button>
 }
-<button type="button" (click)="add.emit('partner')"><stemma-icon name="plus" [size]="14" [stroke]="2" />{{ t('relation.partner') }}</button>
-<button type="button" (click)="add.emit('child')"><stemma-icon name="plus" [size]="14" [stroke]="2" />{{ t('relation.child') }}</button>
-<button type="button" (click)="add.emit('sibling')"><stemma-icon name="plus" [size]="14" [stroke]="2" />{{ t('relation.sibling') }}</button>
+<button type="button" (click)="add.emit('partner')"><stemma-icon name="partner" [size]="16" [stroke]="2" />{{ t('relation.partner') }}</button>
+<button type="button" (click)="add.emit('child')"><stemma-icon name="child" [size]="16" [stroke]="2" />{{ t('relation.child') }}</button>
+<button type="button" (click)="add.emit('sibling')"><stemma-icon name="sibling" [size]="16" [stroke]="2" />{{ t('relation.sibling') }}</button>

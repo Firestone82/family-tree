@@ -13,9 +13,13 @@
   padding: 12px 10px 8px;
 }
 
-.background {
-  display: grid;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--rule);
+/* On a phone the button is not at the edge of the bar: the menu spans the screen under it. */
+@media (max-width: 860px) {
+  .menu {
+    position: fixed;
+    top: calc(var(--bar-height) + 6px);
+    right: 12px;
+    left: 12px;
+    width: auto;
+  }
 }

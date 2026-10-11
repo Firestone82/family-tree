@@ -1,4 +1,4 @@
-// Groups of settings in the print studio, and the copy of the page that is printed.
+// Groups of settings in the print studio, the copy of the page that is printed, and the page in a window of its own.
 
 .studio-group {
   display: grid;
@@ -18,4 +18,102 @@
 /* The copy of the page that is printed; hidden on screen. */
 .stemma-print {
   display: none;
+}
+
+/*
+ * The page in a window of its own (print-studio/preview-window): a bar with
+ * what is printed and the zoom, and the page on a light table. The window
+ * gets the app's style sheets, so these rules and the tokens apply there.
+ */
+body.preview-window {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: color-mix(in srgb, var(--paper) 82%, var(--ink) 6%);
+}
+
+.pw-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 20px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--sheet);
+}
+
+.pw-about {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pw-title {
+  overflow: hidden;
+  font-size: var(--text-lg);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pw-summary {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.pw-note.warn {
+  color: var(--danger);
+  font-weight: 500;
+}
+
+.pw-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pw-percent {
+  min-width: 46px;
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* Room around the page is MARGIN in preview-page.ts. */
+.pw-stage {
+  display: flex;
+  min-height: 0;
+  padding: 28px;
+  overflow: auto;
+
+  &.zoomed {
+    cursor: grab;
+  }
+
+  &.dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+}
+
+.pw-sheet {
+  flex: none;
+  margin: auto;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.12),
+    0 14px 40px rgb(0 0 0 / 0.2);
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.pw-wait {
+  margin: auto;
+  color: var(--ink-3);
 }
